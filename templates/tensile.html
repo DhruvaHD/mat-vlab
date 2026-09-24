@@ -1,0 +1,479 @@
+{% extends "base.html" %}
+
+{% block title %}Tensile Test Laboratory — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-4 tensile-mobile-flow">
+  <!-- Header Breadcrumb & Title -->
+  <div class="tensile-order-title mb-4">
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-decoration-none text-muted">Home</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('experiments') }}" class="text-decoration-none text-muted">Experiments</a></li>
+        <li class="breadcrumb-item active text-info" aria-current="page">Tensile Test</li>
+      </ol>
+    </nav>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Flagship Experiment</span>
+          <span class="badge bg-light text-primary border">ASTM E8 / ISO 6892-1</span>
+        </div>
+        <h1 class="fw-bold text-navy fs-2 mb-0">Uniaxial Tensile Test on Universal Testing Machine (UTM)</h1>
+      </div>
+
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('simulation') }}" class="btn btn-lab-primary">
+          <i class="fas fa-desktop me-1"></i> Virtual Simulation
+        </a>
+        <a href="{{ url_for('manual_entry') }}" class="btn btn-lab-secondary">
+          <i class="fas fa-keyboard me-1"></i> Manual Data Entry
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODE SELECTION CALLOUT (SECTION F & G GATEWAY) -->
+  <div class="tensile-order-modes lab-card p-4 mb-5" id="mode-selection-gateway" style="border: 2px solid var(--steel-blue); background: linear-gradient(180deg, #edf4fa 0%, #ffffff 100%);">
+    <div class="text-center mb-4">
+      <span class="badge-lab mb-2">Select Experiment Workflow</span>
+      <h3 class="fw-bold text-navy mb-1">CHOOSE YOUR EXPERIMENT MODE</h3>
+      <p class="text-secondary small">Select how you wish to conduct the tensile testing laboratory session:</p>
+    </div>
+
+    <div class="row g-4">
+      <!-- Mode 1: Virtual Simulation -->
+      <div class="col-md-6">
+        <div class="mode-card">
+          <div>
+            <div class="mode-card-icon">
+              <i class="fas fa-desktop"></i>
+            </div>
+            <span class="mode-badge mode-badge-sim">MODE 1</span>
+            <h4 class="fw-bold text-navy mb-2">VIRTUAL SIMULATION</h4>
+            <p class="text-secondary small mb-3">
+              Perform an interactive simulated experiment with real-time UTM machine movement, specimen elongation, localized necking visuals, and progressive stress-strain curves.
+            </p>
+            <ul class="list-unstyled text-start small text-secondary mb-4 ps-3">
+              <li class="mb-1"><i class="fas fa-check text-warning me-2"></i> Select Mild Steel, Aluminium, Copper, Brass</li>
+              <li class="mb-1"><i class="fas fa-check text-warning me-2"></i> Interactive load slider &amp; step controls</li>
+              <li class="mb-1"><i class="fas fa-check text-warning me-2"></i> Real-time digital force &amp; strain telemetry</li>
+              <li class="mb-1"><i class="fas fa-check text-warning me-2"></i> Labeled clearly as <strong>SIMULATION DATA</strong></li>
+            </ul>
+          </div>
+          <a href="{{ url_for('simulation') }}" class="btn btn-lab-primary w-100 py-2">
+            <i class="fas fa-play me-2"></i> Launch Virtual Simulation
+          </a>
+        </div>
+      </div>
+
+      <!-- Mode 2: Manual Data Entry -->
+      <div class="col-md-6">
+        <div class="mode-card">
+          <div>
+            <div class="mode-card-icon text-steel" style="border-color: rgba(43, 108, 176, 0.4); background: rgba(43, 108, 176, 0.1);">
+              <i class="fas fa-keyboard text-steel"></i>
+            </div>
+            <span class="mode-badge mode-badge-manual">MODE 2</span>
+            <h4 class="fw-bold text-navy mb-2">MANUAL DATA ENTRY</h4>
+            <p class="text-secondary small mb-3">
+              Enter readings obtained from a real laboratory experiment conducted in your college workshop or research facility. Analyze your data and generate a formal report.
+            </p>
+            <ul class="list-unstyled text-start small text-secondary mb-4 ps-3">
+              <li class="mb-1"><i class="fas fa-check text-primary me-2"></i> Input physical specimen dimensions ($d_0, L_0$)</li>
+              <li class="mb-1"><i class="fas fa-check text-primary me-2"></i> Dynamic observation table (Load vs Extension)</li>
+              <li class="mb-1"><i class="fas fa-check text-primary me-2"></i> Import CSV files directly or download template</li>
+              <li class="mb-1"><i class="fas fa-check text-primary me-2"></i> Generates downloadable <strong>PDF Lab Report</strong></li>
+            </ul>
+          </div>
+          <a href="{{ url_for('manual_entry') }}" class="btn btn-lab-secondary w-100 py-2">
+            <i class="fas fa-edit me-2"></i> Enter Real Lab Data
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Educational Tabs (Sections A, B, C, D, E, H) -->
+  <ul class="nav nav-tabs nav-tabs-lab mb-4" id="tensileTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab-apparatus" data-bs-toggle="tab" data-bs-target="#content-apparatus" type="button" role="tab">
+        <i class="fas fa-microscope me-1"></i> Apparatus (UTM)
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-objective" data-bs-toggle="tab" data-bs-target="#content-objective" type="button" role="tab">
+        <i class="fas fa-bullseye me-1"></i> Objective
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-theory" data-bs-toggle="tab" data-bs-target="#content-theory" type="button" role="tab">
+        <i class="fas fa-brain me-1"></i> Theory &amp; Necking
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-specimen" data-bs-toggle="tab" data-bs-target="#content-specimen" type="button" role="tab">
+        <i class="fas fa-ruler-combined me-1"></i> Specimen
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-procedure" data-bs-toggle="tab" data-bs-target="#content-procedure" type="button" role="tab">
+        <i class="fas fa-list-ol me-1"></i> Procedure (SOP)
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-calculations" data-bs-toggle="tab" data-bs-target="#content-calculations" type="button" role="tab">
+        <i class="fas fa-square-root-variable me-1"></i> Calculations
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="tensileTabsContent">
+    <!-- C. APPARATUS (INTERACTIVE UTM DIAGRAM) -->
+    <div class="tab-pane fade show active tensile-order-apparatus" id="content-apparatus" role="tabpanel">
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <div class="utm-container">
+            <div class="d-flex justify-content-between align-items-center mb-2 px-2">
+              <span class="text-navy fw-bold small"><i class="fas fa-hand-pointer text-steel me-1"></i> Interactive Equipment Inspector</span>
+              <span class="text-secondary small">Click any component to inspect details</span>
+            </div>
+            <!-- Embedded Interactive SVG -->
+            <div class="d-flex justify-content-center align-items-center w-100" style="min-height: 280px; max-height: 540px;">
+              {% include "static/images/utm_diagram.svg" ignore missing %}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="lab-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h5 class="text-navy fw-bold mb-0">Component Inspector</h5>
+              <select id="utm-component-select" class="form-select form-select-sm form-lab-control w-auto">
+                <option value="part-load-cell">Load Cell (50 kN)</option>
+                <option value="part-crosshead">Movable Crosshead</option>
+                <option value="part-upper-grip">Upper Hydraulic Grip</option>
+                <option value="part-specimen">Tensile Specimen</option>
+                <option value="part-extensometer">Clip-on Extensometer</option>
+                <option value="part-lower-grip">Lower Fixed Grip</option>
+                <option value="part-lead-screws">Twin Lead Screws</option>
+                <option value="part-control-panel">Control Console</option>
+              </select>
+            </div>
+
+            <div class="p-3 rounded mb-3" style="background: rgba(43, 108, 176, 0.08); border: 1px solid rgba(43, 108, 176, 0.2);">
+              <span id="inspector-category" class="badge bg-primary bg-opacity-25 text-primary mb-1">Sensory &amp; Transduction System</span>
+              <h4 id="inspector-title" class="text-navy fw-bold mb-1">Precision Strain-Gauge Load Cell</h4>
+              <div id="inspector-role" class="text-steel small fw-semibold">Axial Force Measurement Transducer</div>
+            </div>
+
+            <div class="mb-3">
+              <h6 class="text-secondary small fw-bold text-uppercase mb-1">Working Principle &amp; Function</h6>
+              <p id="inspector-principle" class="text-secondary small mb-0">
+                Consists of an elastic metallic proof body bonded with foil strain gauges in a full Wheatstone bridge configuration. Under applied tensile tension, minuscule elastic strain alters resistance, producing a proportional millivolt electrical signal calibrated directly to force.
+              </p>
+            </div>
+
+            <div class="mb-3">
+              <h6 class="text-secondary small fw-bold text-uppercase mb-1">Technical Specifications</h6>
+              <div id="inspector-specs" class="p-2 rounded bg-light border border-secondary border-opacity-25 text-steel font-mono small">
+                Capacity: 50 kN | Accuracy: Class 0.5 (ISO 7500-1) | Non-linearity: ±0.25% Full Scale
+              </div>
+            </div>
+
+            <div>
+              <h6 class="text-secondary small fw-bold text-uppercase mb-1">Laboratory Operation &amp; Safety</h6>
+              <div id="inspector-safety" class="p-2 rounded bg-warning bg-opacity-10 border border-warning border-opacity-50 text-dark small">
+                Never exceed rated load capacity (overload limit: 150%). Tare/Zero the load cell reading prior to gripping the specimen.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- D. SPECIMEN GEOMETRY -->
+    <div class="tab-pane fade tensile-order-specimen" id="content-specimen" role="tabpanel">
+      <div class="lab-card p-4">
+        <h4 class="text-navy fw-bold mb-3">ASTM E8 / ISO 6892 Tensile Specimen Geometry</h4>
+        <p class="text-secondary">
+          Accurate tensile property measurement requires standardized specimen geometry. The test piece comprises enlarged grip sections (ends) and a reduced central parallel section (gauge section).
+        </p>
+
+        <div class="utm-container mb-4">
+          <img src="{{ url_for('static', filename='images/specimen_diagram.svg') }}" alt="Tensile Specimen Schematic" class="img-fluid rounded w-100">
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h6 class="text-steel fw-bold mb-2"><i class="fas fa-ruler me-1"></i> Gauge Length ($L_0$)</h6>
+              <p class="text-secondary small mb-0">
+                The primary calibrated length over which strain and elongation are recorded. In proportional test pieces, $L_0 = 5 \times d_0$ (e.g. $L_0 = 50.0 \text{ mm}$ for $d_0 = 10.0 \text{ mm}$).
+              </p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h6 class="text-warning fw-bold mb-2"><i class="fas fa-bezier-curve me-1"></i> Shoulder Transition Fillet ($R$)</h6>
+              <p class="text-secondary small mb-0">
+                A generous smooth transition radius ($R \ge 10 \text{ mm}$) connects the gauge length to the larger grip ends to avoid notch stress concentrations.
+              </p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h6 class="text-success fw-bold mb-2"><i class="fas fa-grip-lines-vertical me-1"></i> Grip Ends ($D$)</h6>
+              <p class="text-secondary small mb-0">
+                Enlarged diameter ($D = 16 \text{ mm}$) to accommodate serrated wedge jaws, ensuring no plastic deformation occurs inside the grip fixtures.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B. THEORY & NECKING -->
+    <div class="tab-pane fade tensile-order-theory" id="content-theory" role="tabpanel">
+      <div class="lab-card p-4">
+        <h4 class="text-navy fw-bold mb-3">Mechanical Metallurgy &amp; Deformation Mechanics</h4>
+        <p class="text-secondary mb-4">
+          When a ductile metallic specimen undergoes uniaxial tension, deformation progresses through distinct physical regimes governed by dislocation dynamics and crystal plasticity.
+        </p>
+
+        <div class="utm-container mb-4">
+          <h6 class="text-navy fw-bold mb-2 px-2"><i class="fas fa-layer-group text-steel me-1"></i> 5 Progressive Stages of Tensile Ductile Fracture</h6>
+          <img src="{{ url_for('static', filename='images/necking_stages.svg') }}" alt="Necking and Fracture Stages" class="img-fluid rounded w-100">
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h5 class="text-navy fw-bold mb-2">1. Elastic Deformation (Hooke's Law)</h5>
+              <p class="text-secondary small mb-0">
+                At small loads, strain is completely reversible. The interatomic bonds stretch elastically without dislocation movement. Governed by Hooke's Law:
+                <br><strong class="text-steel font-mono">σ = E × ε</strong>
+                <br>where $E$ is Young's Modulus (stiffness).
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h5 class="text-navy fw-bold mb-2">2. Yielding &amp; Plastic Flow</h5>
+              <p class="text-secondary small mb-0">
+                At the yield strength ($\sigma_y$), shear stresses activate dislocation glide along slip planes. In mild steel, interstitial carbon atoms pin dislocations (Cottrell atmospheres), producing upper and lower yield points with Lüders band propagation.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h5 class="text-navy fw-bold mb-2">3. Strain Hardening &amp; UTS</h5>
+              <p class="text-secondary small mb-0">
+                Dislocations multiply and entangle, increasing resistance to further plastic deformation. The load reaches a global maximum ($P_{max}$) defining the Ultimate Tensile Strength (UTS). At UTS, $d\sigma / d\epsilon = \sigma$ (Considère's Criterion).
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h5 class="text-navy fw-bold mb-2">4. Localized Necking &amp; Cup-and-Cone Rupture</h5>
+              <p class="text-secondary small mb-0">
+                Cross-sectional shrinkage concentrates at the weakest gauge section. Triaxial tensile stress induces central microvoid nucleation around second-phase inclusions, coalescing into an internal crack that terminates in 45° shear lips ('cup-and-cone').
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- E. PROCEDURE (SOP) -->
+    <div class="tab-pane fade tensile-order-procedure" id="content-procedure" role="tabpanel">
+      <div class="lab-card p-4">
+        <h4 class="text-navy fw-bold mb-3">Standard Operating Procedure (ASTM E8 / ISO 6892-1)</h4>
+        <div class="timeline p-2">
+          <div class="d-flex gap-3 mb-4">
+            <div class="badge-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">1</div>
+            <div>
+              <h6 class="text-navy fw-bold mb-1">Specimen Dimension Inspection</h6>
+              <p class="text-secondary small mb-0">Measure the initial gauge diameter ($d_0$) at three locations using a digital vernier micrometer (0.01 mm resolution). Record the mean diameter and calculate original area $A_0 = \pi d_0^2 / 4$.</p>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3 mb-4">
+            <div class="badge-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">2</div>
+            <div>
+              <h6 class="text-navy fw-bold mb-1">Punch Gauge Marking</h6>
+              <p class="text-secondary small mb-0">Using a center punch and divider gauge, lightly place two punch marks separated exactly by the standard gauge length ($L_0 = 50.0 \text{ mm}$) along the center of the reduced section.</p>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3 mb-4">
+            <div class="badge-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">3</div>
+            <div>
+              <h6 class="text-navy fw-bold mb-1">Specimen Gripping &amp; Alignment</h6>
+              <p class="text-secondary small mb-0">Insert specimen ends into upper and lower hydraulic wedge grips. Verify vertical collinearity to avoid bending moments. Apply hydraulic clamping pressure (150–200 bar).</p>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3 mb-4">
+            <div class="badge-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">4</div>
+            <div>
+              <h6 class="text-navy fw-bold mb-1">Extensometer Mounting &amp; Taring</h6>
+              <p class="text-secondary small mb-0">Attach the knife-edge averaging clip-on extensometer across the punch marks. Zero/Tare the load cell readout and extensometer channels in the DAQ console.</p>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3 mb-4">
+            <div class="badge-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">5</div>
+            <div>
+              <h6 class="text-navy fw-bold mb-1">Quasi-Static Uniaxial Loading</h6>
+              <p class="text-secondary small mb-0">Set crosshead displacement rate to standard quasi-static strain rate (0.5 to 2.0 mm/min). Initiate crosshead motion and log load-extension pairs at 50–100 Hz.</p>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3 mb-4">
+            <div class="badge-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">6</div>
+            <div>
+              <h6 class="text-navy fw-bold mb-1">Necking, Extensometer Removal &amp; Fracture</h6>
+              <p class="text-secondary small mb-0">Observe neck formation. If using a delicate mechanical extensometer, remove it prior to rupture to prevent shock damage. Run machine until specimen fractures completely.</p>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3">
+            <div class="badge-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">7</div>
+            <div>
+              <h6 class="text-navy fw-bold mb-1">Post-Test Fracture Dimensional Analysis</h6>
+              <p class="text-secondary small mb-0">Fit the two fractured specimen halves snugly together. Measure the final distance between gauge marks ($L_f$) and minimum neck diameter ($d_f$). Calculate % Elongation and % Reduction in Area.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- H. CALCULATIONS & FORMULAS -->
+    <div class="tab-pane fade tensile-order-calculations" id="content-calculations" role="tabpanel">
+      <div class="lab-card p-4">
+        <h4 class="text-navy fw-bold mb-3">Standard Mechanical Property Formulas</h4>
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h6 class="text-steel fw-bold">Original Cross-Sectional Area ($A_0$)</h6>
+              <div class="p-2 my-2 bg-white rounded border font-mono text-steel small fw-bold">A₀ = (π × d₀²) / 4</div>
+              <p class="text-secondary small mb-0">Used as the nominal reference area for all engineering stress calculations.</p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h6 class="text-steel fw-bold">Engineering Stress ($\sigma$)</h6>
+              <div class="p-2 my-2 bg-white rounded border font-mono text-steel small fw-bold">σ = P / A₀  (N/mm² or MPa)</div>
+              <p class="text-secondary small mb-0">Ratio of instantaneous axial force to original undeformed cross-sectional area.</p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h6 class="text-steel fw-bold">Engineering Strain ($\epsilon$)</h6>
+              <div class="p-2 my-2 bg-white rounded border font-mono text-steel small fw-bold">ε = ΔL / L₀ = (L - L₀) / L₀</div>
+              <p class="text-secondary small mb-0">Linear elongation relative to original gauge length (dimensionless or %).</p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h6 class="text-steel fw-bold">Young's Modulus ($E$)</h6>
+              <div class="p-2 my-2 bg-white rounded border font-mono text-steel small fw-bold">E = Δσ / Δε  (in GPa)</div>
+              <p class="text-secondary small mb-0">Slope of the linear elastic proportional limit region determined by linear regression.</p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h6 class="text-steel fw-bold">0.2% Offset Proof Stress ($\sigma_{0.2\%}$)</h6>
+              <div class="p-2 my-2 bg-white rounded border font-mono text-steel small fw-bold">σ = E × (ε - 0.002)</div>
+              <p class="text-secondary small mb-0">Intersection of offset linear slope with the stress-strain curve for materials lacking sharp yield points.</p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h6 class="text-steel fw-bold">Percentage Elongation (%EL) &amp; Reduction in Area (%RA)</h6>
+              <div class="p-2 my-2 bg-white rounded border font-mono text-steel small fw-bold">%EL = [(L_f - L₀) / L₀] × 100%<br>%RA = [(A₀ - A_f) / A₀] × 100%</div>
+              <p class="text-secondary small mb-0">Primary engineering measures of metallurgical ductility.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- A. OBJECTIVE -->
+    <div class="tab-pane fade tensile-order-objective" id="content-objective" role="tabpanel">
+      <div class="lab-card p-4">
+        <h4 class="text-navy fw-bold mb-3">Experimental Objective</h4>
+        <div class="alert-lab-info p-3 mb-4">
+          <p class="mb-0">
+            <strong>Primary Goal:</strong> To determine the fundamental mechanical and elastic properties of standard engineering metallic specimens subjected to uniaxial tensile loading in accordance with <strong>ASTM E8 / ISO 6892-1</strong> standards.
+          </p>
+        </div>
+
+        <h6 class="text-navy fw-bold mb-2">Specific Learning Outcomes:</h6>
+        <ul class="text-secondary small mb-0 ps-3">
+          <li class="mb-2">Operate a simulated Universal Testing Machine (UTM) and identify all primary sensory and kinematic subcomponents.</li>
+          <li class="mb-2">Convert raw laboratory force-extension records into standard Engineering Stress-Strain curves.</li>
+          <li class="mb-2">Calculate Young's Modulus ($E$) using linear least-squares regression within the elastic regime.</li>
+          <li class="mb-2">Identify the Upper and Lower Yield Points or apply the 0.2% offset proof stress method for continuous yielding alloys.</li>
+          <li class="mb-2">Determine the Ultimate Tensile Strength (UTS), Modulus of Resilience ($U_r$), and Tensile Toughness ($U_t$).</li>
+          <li class="mb-2">Quantify ductility through percentage elongation (%EL) and percentage reduction in area (%RA).</li>
+          <li class="mb-0">Evaluate fracture surface morphology (cup-and-cone ductile shear vs flat cleavage rupture).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 9: QUICK ACTION LINKS -->
+  <div id="quick-action-links" class="tensile-order-quicklinks lab-card p-4 mt-2 mb-4">
+    <div class="text-center mb-3">
+      <span class="badge-lab mb-1">Laboratory Actions</span>
+      <h4 class="fw-bold text-navy mb-1">Quick Access &amp; Navigation</h4>
+      <p class="text-secondary small mb-0">Jump directly to simulation curves, calculated results, assessment quizzes, or lab reports.</p>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-3 col-6">
+        <a href="{{ url_for('simulation') }}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center justify-content-center h-100 text-decoration-none">
+          <i class="fas fa-chart-line fs-3 mb-2 text-primary"></i>
+          <span class="fw-bold text-navy">Stress-Strain Graph</span>
+          <span class="text-secondary small">Simulation Trace</span>
+        </a>
+      </div>
+      <div class="col-md-3 col-6">
+        <a href="{{ url_for('results') }}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center justify-content-center h-100 text-decoration-none">
+          <i class="fas fa-square-root-variable fs-3 mb-2 text-steel"></i>
+          <span class="fw-bold text-navy">View Results</span>
+          <span class="text-secondary small">Calculated Properties</span>
+        </a>
+      </div>
+      <div class="col-md-3 col-6">
+        <a href="{{ url_for('quizzes') }}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center justify-content-center h-100 text-decoration-none">
+          <i class="fas fa-graduation-cap fs-3 mb-2 text-warning"></i>
+          <span class="fw-bold text-navy">Quiz &amp; Viva</span>
+          <span class="text-secondary small">10 Questions</span>
+        </a>
+      </div>
+      <div class="col-md-3 col-6">
+        <a href="{{ url_for('manual_entry') }}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center justify-content-center h-100 text-decoration-none">
+          <i class="fas fa-file-pdf fs-3 mb-2 text-success"></i>
+          <span class="fw-bold text-navy">Lab Report</span>
+          <span class="text-secondary small">ASTM PDF Report</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/apparatus.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Knowledge Assessment &amp; Quizzes — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="text-center mb-4">
+    <span class="badge-lab mb-2">Conceptual Competency Verification</span>
+    <h1 class="fw-bold text-navy fs-2">Tensile Testing &amp; Mechanics Quiz</h1>
+    <p class="text-secondary mx-auto" style="max-width: 650px;">
+      Evaluate your understanding of uniaxial tensile mechanics, UTM apparatus sensors, Hooke's Law, 0.2% offset proof stress, necking, and ASTM E8 standards.
+    </p>
+  </div>
+
+  <!-- Score Banner (Revealed upon Submission) -->
+  <div id="quiz-result-banner" class="lab-card p-4 mb-4 border-info d-none">
+    <div class="row align-items-center g-3">
+      <div class="col-md-3 text-center border-end border-secondary border-opacity-25">
+        <div class="text-secondary small text-uppercase">Your Assessment Score</div>
+        <div id="quiz-score-display" class="fs-1 fw-bold text-steel font-mono">0 / 10</div>
+        <div id="quiz-percentage-display" class="badge bg-primary text-white fs-6">0%</div>
+      </div>
+      <div class="col-md-9 ps-md-4">
+        <h5 class="text-navy fw-bold mb-1">Performance Evaluation</h5>
+        <p id="quiz-feedback-message" class="text-secondary small mb-3">Feedback will appear here.</p>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-lab-secondary" onclick="resetQuiz()">
+            <i class="fas fa-redo me-1"></i> Retake Quiz
+          </button>
+          <a href="{{ url_for('simulation') }}" class="btn btn-sm btn-lab-primary">
+            <i class="fas fa-play me-1"></i> Return to Virtual Simulation
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz Progress / Action Header -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <span id="quiz-answered-count" class="badge bg-light text-primary border">
+      0 of {{ questions|length }} answered
+    </span>
+    <button type="button" class="btn btn-sm btn-lab-success" onclick="submitQuiz()">
+      <i class="fas fa-paper-plane me-1"></i> Submit Assessment
+    </button>
+  </div>
+
+  <!-- Questions List -->
+  <div class="d-flex flex-column gap-4 mb-5" id="questions-container">
+    {% for q in questions %}
+    <div class="lab-card p-4" id="quiz-card-{{ q.id }}">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="badge bg-secondary bg-opacity-25 text-primary">Question #{{ loop.index }}</span>
+        <span class="badge bg-light text-secondary border">{{ q.difficulty }}</span>
+      </div>
+
+      <h5 class="text-navy fw-bold mb-3">{{ q.question }}</h5>
+
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <button type="button" class="btn form-lab-control w-100 text-start quiz-option-btn" id="opt-{{ q.id }}-A" data-option="A" onclick="selectOption({{ q.id }}, 'A')">
+            <strong>A.</strong> {{ q.option_a }}
+          </button>
+        </div>
+        <div class="col-md-6">
+          <button type="button" class="btn form-lab-control w-100 text-start quiz-option-btn" id="opt-{{ q.id }}-B" data-option="B" onclick="selectOption({{ q.id }}, 'B')">
+            <strong>B.</strong> {{ q.option_b }}
+          </button>
+        </div>
+        <div class="col-md-6">
+          <button type="button" class="btn form-lab-control w-100 text-start quiz-option-btn" id="opt-{{ q.id }}-C" data-option="C" onclick="selectOption({{ q.id }}, 'C')">
+            <strong>C.</strong> {{ q.option_c }}
+          </button>
+        </div>
+        <div class="col-md-6">
+          <button type="button" class="btn form-lab-control w-100 text-start quiz-option-btn" id="opt-{{ q.id }}-D" data-option="D" onclick="selectOption({{ q.id }}, 'D')">
+            <strong>D.</strong> {{ q.option_d }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Scientific Explanation Accordion (Reveals on Submit) -->
+      <div id="explanation-{{ q.id }}" class="p-3 rounded bg-light border border-info border-opacity-50 d-none">
+        <div class="text-steel fw-bold small mb-1"><i class="fas fa-lightbulb me-1"></i> Scientific Explanation:</div>
+        <p class="text-secondary small mb-0">{{ q.explanation }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Bottom Submit Button -->
+  <div class="text-center">
+    <button type="button" class="btn btn-lg btn-lab-success px-5" onclick="submitQuiz()">
+      <i class="fas fa-paper-plane me-2"></i> Submit Quiz &amp; Calculate Score
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const questions = {{ questions|tojson }};
+  initQuiz(questions);
+});
+</script>
+{% endblock %}

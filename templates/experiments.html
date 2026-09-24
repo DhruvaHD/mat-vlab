@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+
+{% block title %}Experiments Catalog — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <span class="badge-lab mb-2">Virtual Testing Modules</span>
+    <h1 class="fw-bold text-navy fs-1">Materials Testing Experiments</h1>
+    <p class="text-secondary mx-auto" style="max-width: 680px;">
+      Explore standardized destructive and non-destructive materials testing methodologies according to ASTM, ISO, and IS international standards.
+    </p>
+  </div>
+
+  <div class="row g-4">
+    <!-- 1. TENSILE TEST (ACTIVE / FULLY IMPLEMENTED) -->
+    <div class="col-lg-4 col-md-6">
+      <div class="lab-card h-100 d-flex flex-column" style="border-color: rgba(43, 108, 176, 0.4);">
+        <div class="position-relative mb-3 rounded overflow-hidden" style="height: 180px; background: var(--bg-secondary); border: 1px solid var(--border-color);">
+          <img src="{{ url_for('static', filename='images/specimen_diagram.svg') }}" alt="Tensile Test Specimen" class="w-100 h-100 object-fit-contain p-2">
+          <span class="position-absolute top-0 end-0 m-2 badge bg-success text-white">
+            <i class="fas fa-check-circle me-1"></i> Active / Implemented
+          </span>
+          <span class="position-absolute bottom-0 start-0 m-2 badge bg-light text-primary border">
+            ASTM E8 / ISO 6892
+          </span>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25">Quasi-Static Uniaxial</span>
+          <span class="text-secondary small"><i class="fas fa-signal text-warning me-1"></i> Intermediate</span>
+        </div>
+
+        <h4 class="text-navy fw-bold mb-2">Tensile Test (UTM)</h4>
+        <p class="text-secondary small mb-4 flex-grow-1">
+          Evaluate uniaxial tension on standard dogbone specimens. Measure Young's Modulus ($E$), Yield Strength ($\sigma_y$), Ultimate Tensile Strength (UTS), and fracture ductility. Includes interactive simulation and manual reading data reduction.
+        </p>
+
+        <div class="d-flex gap-2 pt-3 border-top border-secondary border-opacity-25">
+          <a href="{{ url_for('tensile_hub') }}" class="btn btn-sm btn-lab-secondary flex-fill">
+            <i class="fas fa-book-open me-1"></i> Learn &amp; Theory
+          </a>
+          <a href="{{ url_for('simulation') }}" class="btn btn-sm btn-lab-primary flex-fill">
+            <i class="fas fa-play me-1"></i> Start Experiment
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. COMPRESSION TEST (COMING SOON) -->
+    <div class="col-lg-4 col-md-6">
+      <div class="lab-card h-100 d-flex flex-column opacity-75">
+        <div class="position-relative mb-3 rounded overflow-hidden d-flex align-items-center justify-content-center" style="height: 180px; background: var(--bg-secondary); border: 1px solid var(--border-color);">
+          <div class="text-center p-3">
+            <i class="fas fa-compress-arrows-alt text-steel fs-1 mb-2"></i>
+            <div class="text-secondary small">Platen Compression Cylinder</div>
+          </div>
+          <span class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark fw-bold">
+            <i class="fas fa-clock me-1"></i> Coming Soon
+          </span>
+          <span class="position-absolute bottom-0 start-0 m-2 badge bg-light text-secondary border">
+            ASTM E9
+          </span>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25">Uniaxial Compression</span>
+          <span class="text-secondary small"><i class="fas fa-signal text-warning me-1"></i> Intermediate</span>
+        </div>
+
+        <h4 class="text-navy fw-bold mb-2">Compression Test</h4>
+        <p class="text-secondary small mb-4 flex-grow-1">
+          Investigate compressive yield strength, buckling phenomena, barreling, and crushing behavior of brittle cast irons, structural ceramics, and ductile metals under opposing platens.
+        </p>
+
+        <div class="d-flex gap-2 pt-3 border-top border-secondary border-opacity-25">
+          <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" data-bs-toggle="modal" data-bs-target="#modalCompression">
+            <i class="fas fa-info-circle me-1"></i> Overview
+          </button>
+          <button type="button" class="btn btn-sm btn-secondary flex-fill" disabled>
+            Coming Soon
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. HARDNESS TEST (COMING SOON) -->
+    <div class="col-lg-4 col-md-6">
+      <div class="lab-card h-100 d-flex flex-column opacity-75">
+        <div class="position-relative mb-3 rounded overflow-hidden d-flex align-items-center justify-content-center" style="height: 180px; background: var(--bg-secondary); border: 1px solid var(--border-color);">
+          <div class="text-center p-3">
+            <i class="fas fa-bullseye text-warning fs-1 mb-2"></i>
+            <div class="text-secondary small">Brinell, Rockwell &amp; Vickers Indentation</div>
+          </div>
+          <span class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark fw-bold">
+            <i class="fas fa-clock me-1"></i> Coming Soon
+          </span>
+          <span class="position-absolute bottom-0 start-0 m-2 badge bg-light text-secondary border">
+            ASTM E10 / E18 / E384
+          </span>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25">Surface Indentation</span>
+          <span class="text-secondary small"><i class="fas fa-signal text-primary me-1"></i> Basic</span>
+        </div>
+
+        <h4 class="text-navy fw-bold mb-2">Hardness Test</h4>
+        <p class="text-secondary small mb-4 flex-grow-1">
+          Quantify macro and micro resistance to localized plastic penetration using steel/carbide spheres (Brinell HBW), diamond Brale cones (Rockwell HRC), and pyramid indenters (Vickers HV).
+        </p>
+
+        <div class="d-flex gap-2 pt-3 border-top border-secondary border-opacity-25">
+          <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" data-bs-toggle="modal" data-bs-target="#modalHardness">
+            <i class="fas fa-info-circle me-1"></i> Overview
+          </button>
+          <button type="button" class="btn btn-sm btn-secondary flex-fill" disabled>
+            Coming Soon
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. IMPACT TEST (COMING SOON) -->
+    <div class="col-lg-4 col-md-6">
+      <div class="lab-card h-100 d-flex flex-column opacity-75">
+        <div class="position-relative mb-3 rounded overflow-hidden d-flex align-items-center justify-content-center" style="height: 180px; background: var(--bg-secondary); border: 1px solid var(--border-color);">
+          <div class="text-center p-3">
+            <i class="fas fa-hammer text-danger fs-1 mb-2"></i>
+            <div class="text-secondary small">Charpy V-Notch &amp; Izod Pendulum</div>
+          </div>
+          <span class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark fw-bold">
+            <i class="fas fa-clock me-1"></i> Coming Soon
+          </span>
+          <span class="position-absolute bottom-0 start-0 m-2 badge bg-light text-secondary border">
+            ASTM E23 / ISO 148
+          </span>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25">Dynamic Fracture</span>
+          <span class="text-secondary small"><i class="fas fa-signal text-warning me-1"></i> Intermediate</span>
+        </div>
+
+        <h4 class="text-navy fw-bold mb-2">Impact Test (Charpy / Izod)</h4>
+        <p class="text-secondary small mb-4 flex-grow-1">
+          Measure dynamic energy absorption under high strain-rate impact loading and determine Ductile-to-Brittle Transition Temperature (DBTT) in structural BCC steels.
+        </p>
+
+        <div class="d-flex gap-2 pt-3 border-top border-secondary border-opacity-25">
+          <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" data-bs-toggle="modal" data-bs-target="#modalImpact">
+            <i class="fas fa-info-circle me-1"></i> Overview
+          </button>
+          <button type="button" class="btn btn-sm btn-secondary flex-fill" disabled>
+            Coming Soon
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. FATIGUE TEST (COMING SOON) -->
+    <div class="col-lg-4 col-md-6">
+      <div class="lab-card h-100 d-flex flex-column opacity-75">
+        <div class="position-relative mb-3 rounded overflow-hidden d-flex align-items-center justify-content-center" style="height: 180px; background: var(--bg-secondary); border: 1px solid var(--border-color);">
+          <div class="text-center p-3">
+            <i class="fas fa-wave-square text-purple fs-1 mb-2"></i>
+            <div class="text-secondary small">Rotating Bending S-N Endurance</div>
+          </div>
+          <span class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark fw-bold">
+            <i class="fas fa-clock me-1"></i> Coming Soon
+          </span>
+          <span class="position-absolute bottom-0 start-0 m-2 badge bg-light text-secondary border">
+            ASTM E466 / ISO 1099
+          </span>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25">Cyclic Loading</span>
+          <span class="text-secondary small"><i class="fas fa-signal text-danger me-1"></i> Advanced</span>
+        </div>
+
+        <h4 class="text-navy fw-bold mb-2">Fatigue Test</h4>
+        <p class="text-secondary small mb-4 flex-grow-1">
+          Simulate millions of alternating stress cycles ($R = -1$) to construct Wöhler S-N curves, identify endurance limits in ferrous alloys, and understand fatigue crack initiation.
+        </p>
+
+        <div class="d-flex gap-2 pt-3 border-top border-secondary border-opacity-25">
+          <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" data-bs-toggle="modal" data-bs-target="#modalFatigue">
+            <i class="fas fa-info-circle me-1"></i> Overview
+          </button>
+          <button type="button" class="btn btn-sm btn-secondary flex-fill" disabled>
+            Coming Soon
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. CREEP TEST (COMING SOON) -->
+    <div class="col-lg-4 col-md-6">
+      <div class="lab-card h-100 d-flex flex-column opacity-75">
+        <div class="position-relative mb-3 rounded overflow-hidden d-flex align-items-center justify-content-center" style="height: 180px; background: var(--bg-secondary); border: 1px solid var(--border-color);">
+          <div class="text-center p-3">
+            <i class="fas fa-temperature-high text-danger fs-1 mb-2"></i>
+            <div class="text-secondary small">High-Temperature Constant Load Furnace</div>
+          </div>
+          <span class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark fw-bold">
+            <i class="fas fa-clock me-1"></i> Coming Soon
+          </span>
+          <span class="position-absolute bottom-0 start-0 m-2 badge bg-light text-secondary border">
+            ASTM E139 / ISO 204
+          </span>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25">Time-Dependent Strain</span>
+          <span class="text-secondary small"><i class="fas fa-signal text-danger me-1"></i> Advanced</span>
+        </div>
+
+        <h4 class="text-navy fw-bold mb-2">Creep &amp; Stress Rupture</h4>
+        <p class="text-secondary small mb-4 flex-grow-1">
+          Examine time-dependent plastic strain under constant tensile load at homologous temperatures ($T > 0.4 T_m$). Study primary, secondary steady-state, and tertiary creep stages.
+        </p>
+
+        <div class="d-flex gap-2 pt-3 border-top border-secondary border-opacity-25">
+          <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" data-bs-toggle="modal" data-bs-target="#modalCreep">
+            <i class="fas fa-info-circle me-1"></i> Overview
+          </button>
+          <button type="button" class="btn btn-sm btn-secondary flex-fill" disabled>
+            Coming Soon
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Preview Modals for Coming Soon Experiments -->
+<!-- Compression Modal -->
+<div class="modal fade" id="modalCompression" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background-color: var(--bg-card); border-color: var(--border-color); color: var(--text-main);">
+      <div class="modal-header border-secondary border-opacity-25">
+        <h5 class="modal-title fw-bold text-navy"><i class="fas fa-compress-arrows-alt text-steel me-2"></i> Compression Test (ASTM E9)</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-secondary">
+          The compression test applies inward opposing axial forces to evaluate compressive modulus, yield strength, and plastic flow under compressive stress.
+        </p>
+        <h6 class="fw-bold text-navy">Future Virtual Features:</h6>
+        <ul class="text-secondary small mb-3">
+          <li>Interactive platen friction simulation (barreling effect)</li>
+          <li>Buckling stability vs aspect ratio ($L/D$) analysis</li>
+          <li>Brittle fracture (shear wedge failure in cast iron)</li>
+        </ul>
+        <div class="alert alert-secondary border mb-0 small">
+          <i class="fas fa-info-circle text-warning me-1"></i> This module is currently under development in Phase 2.
+        </div>
+      </div>
+      <div class="modal-footer border-secondary border-opacity-25">
+        <button type="button" class="btn btn-sm btn-lab-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hardness Modal -->
+<div class="modal fade" id="modalHardness" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background-color: var(--bg-card); border-color: var(--border-color); color: var(--text-main);">
+      <div class="modal-header border-secondary border-opacity-25">
+        <h5 class="modal-title fw-bold text-navy"><i class="fas fa-bullseye text-warning me-2"></i> Hardness Test Overview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-secondary">
+          Hardness measures local resistance to permanent surface indentation.
+        </p>
+        <h6 class="fw-bold text-navy">Planned Scales:</h6>
+        <ul class="text-secondary small mb-3">
+          <li><strong>Brinell (HBW):</strong> 10 mm tungsten carbide ball at 3000 kgf load</li>
+          <li><strong>Rockwell (HRC/HRB):</strong> 120° diamond spheroconical indenter or 1/16" ball</li>
+          <li><strong>Vickers (HV):</strong> 136° square-based diamond pyramid</li>
+        </ul>
+        <div class="alert alert-secondary border mb-0 small">
+          <i class="fas fa-info-circle text-warning me-1"></i> Indentation optical microscope measurement module scheduled for Phase 2.
+        </div>
+      </div>
+      <div class="modal-footer border-secondary border-opacity-25">
+        <button type="button" class="btn btn-sm btn-lab-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Impact Modal -->
+<div class="modal fade" id="modalImpact" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background-color: var(--bg-card); border-color: var(--border-color); color: var(--text-main);">
+      <div class="modal-header border-secondary border-opacity-25">
+        <h5 class="modal-title fw-bold text-navy"><i class="fas fa-hammer text-danger me-2"></i> Charpy Impact Test (ASTM E23)</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-secondary">
+          Evaluates notch sensitivity and dynamic fracture energy absorption by swinging a weighted pendulum hammer through a 10 mm notched specimen.
+        </p>
+        <h6 class="fw-bold text-navy">Key Concepts:</h6>
+        <ul class="text-secondary small mb-3">
+          <li>Potential energy conversion ($E = mgh_1 - mgh_2$)</li>
+          <li>Ductile-to-Brittle Transition Temperature (DBTT) curve</li>
+          <li>Fracture appearance: % Shear fibrous area vs cleavage crystallization</li>
+        </ul>
+        <div class="alert alert-secondary border mb-0 small">
+          <i class="fas fa-info-circle text-warning me-1"></i> Interactive pendulum release simulation in Phase 2.
+        </div>
+      </div>
+      <div class="modal-footer border-secondary border-opacity-25">
+        <button type="button" class="btn btn-sm btn-lab-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Fatigue Modal -->
+<div class="modal fade" id="modalFatigue" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background-color: var(--bg-card); border-color: var(--border-color); color: var(--text-main);">
+      <div class="modal-header border-secondary border-opacity-25">
+        <h5 class="modal-title fw-bold text-navy"><i class="fas fa-wave-square text-purple me-2"></i> Fatigue Testing (ASTM E466)</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-secondary">
+          Characterizes material degradation under fluctuating stresses well below the nominal monotonic yield strength.
+        </p>
+        <h6 class="fw-bold text-navy">Planned Simulation:</h6>
+        <ul class="text-secondary small mb-3">
+          <li>Basquin's equation and Wöhler S-N curve plotting</li>
+          <li>Fatigue limit ($\sigma_e$) identification in structural steels</li>
+          <li>Beach marks &amp; striation progression visualization</li>
+        </ul>
+      </div>
+      <div class="modal-footer border-secondary border-opacity-25">
+        <button type="button" class="btn btn-sm btn-lab-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Creep Modal -->
+<div class="modal fade" id="modalCreep" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background-color: var(--bg-card); border-color: var(--border-color); color: var(--text-main);">
+      <div class="modal-header border-secondary border-opacity-25">
+        <h5 class="modal-title fw-bold text-navy"><i class="fas fa-temperature-high text-danger me-2"></i> High-Temperature Creep Test</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-secondary">
+          Examines slow, permanent deformation of engineering components under sustained mechanical stress at elevated temperatures.
+        </p>
+        <h6 class="fw-bold text-navy">Key Parameters:</h6>
+        <ul class="text-secondary small mb-3">
+          <li>Larson-Miller parameter ($LMP = T(\log t_r + C)$)</li>
+          <li>Steady-state creep rate ($\dot{\epsilon}_{ss}$)</li>
+          <li>Dislocation climb &amp; diffusional vacancy transport</li>
+        </ul>
+      </div>
+      <div class="modal-footer border-secondary border-opacity-25">
+        <button type="button" class="btn btn-sm btn-lab-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}My Saved Experiments — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+      <span class="badge-lab mb-2">Persistent Database Storage</span>
+      <h1 class="fw-bold text-navy fs-2 mb-0">My Laboratory Experiments</h1>
+      <p class="text-secondary small mb-0">
+        Review your saved tensile simulations and manual physical laboratory test runs stored in SQLite.
+      </p>
+    </div>
+
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('manual_entry') }}" class="btn btn-sm btn-lab-primary">
+        <i class="fas fa-plus me-1"></i> New Lab Entry
+      </a>
+      <a href="{{ url_for('simulation') }}" class="btn btn-sm btn-lab-secondary">
+        <i class="fas fa-play me-1"></i> New Simulation
+      </a>
+    </div>
+  </div>
+
+  {% if experiments and experiments|length > 0 %}
+  <div class="lab-card p-4">
+    <div class="table-responsive rounded border border-secondary border-opacity-25">
+      <table class="table table-lab align-middle mb-0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title &amp; Material</th>
+            <th>Testing Mode</th>
+            <th>Readings</th>
+            <th>UTS (MPa)</th>
+            <th>Modulus (GPa)</th>
+            <th>% Elongation</th>
+            <th>Date &amp; Time</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for exp in experiments %}
+          <tr>
+            <td class="font-mono text-muted">#{{ exp.id }}</td>
+            <td>
+              <div class="fw-bold text-navy">{{ exp.title }}</div>
+              <div class="text-steel small">{{ exp.material_name }}</div>
+            </td>
+            <td>
+              {% if exp.mode == 'VIRTUAL_SIMULATION' %}
+              <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50">
+                Simulation
+              </span>
+              {% else %}
+              <span class="badge bg-info bg-opacity-25 text-primary border border-info border-opacity-50">
+                Manual Lab Data
+              </span>
+              {% endif %}
+            </td>
+            <td class="font-mono">{{ exp.readings_count }} pts</td>
+            <td class="font-mono text-danger fw-bold">{{ exp.uts_mpa or '—' }}</td>
+            <td class="font-mono text-steel">{{ exp.youngs_modulus_gpa or '—' }}</td>
+            <td class="font-mono text-success">{{ exp.elongation_pct or '—' }}%</td>
+            <td class="text-secondary small">{{ exp.created_at }}</td>
+            <td class="text-center">
+              <div class="btn-group btn-group-sm">
+                <a href="{{ url_for('view_experiment', experiment_id=exp.id) }}" class="btn btn-outline-info" title="View Full Results">
+                  <i class="fas fa-eye"></i> View
+                </a>
+                <a href="{{ url_for('download_report_by_id', experiment_id=exp.id) }}" class="btn btn-outline-success" title="Download PDF Report">
+                  <i class="fas fa-file-pdf"></i> PDF
+                </a>
+                <button type="button" class="btn btn-outline-danger" onclick="confirmDeleteExperiment({{ exp.id }})" title="Delete Run">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <!-- Empty State -->
+  <div class="lab-card p-5 text-center">
+    <div class="mode-card-icon mx-auto mb-3" style="width: 64px; height: 64px;">
+      <i class="fas fa-folder-open text-muted"></i>
+    </div>
+    <h4 class="text-navy fw-bold mb-2">No Saved Experiments Found</h4>
+    <p class="text-secondary mx-auto mb-4" style="max-width: 500px;">
+      You have not saved any laboratory experiments yet. Conduct an interactive tensile simulation or enter manual laboratory readings to populate your portfolio!
+    </p>
+    <div class="d-flex justify-content-center gap-3">
+      <a href="{{ url_for('simulation') }}" class="btn btn-lab-primary">
+        <i class="fas fa-play me-1"></i> Start Virtual Simulation
+      </a>
+      <a href="{{ url_for('manual_entry') }}" class="btn btn-lab-secondary">
+        <i class="fas fa-keyboard me-1"></i> Enter Real Lab Readings
+      </a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function confirmDeleteExperiment(id) {
+  if (confirm(`Are you sure you want to permanently delete Experiment #${id}? This will remove all associated readings and calculation results.`)) {
+    fetch(`/api/experiment/${id}`, { method: 'DELETE' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showToast(`Experiment #${id} deleted successfully.`, 'success');
+          setTimeout(() => window.location.reload(), 800);
+        } else {
+          showToast('Failed to delete experiment.', 'danger');
+        }
+      })
+      .catch(err => {
+        showToast('Error communicating with database.', 'danger');
+      });
+  }
+}
+</script>
+{% endblock %}

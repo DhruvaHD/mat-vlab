@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{% block title %}MAT-VLAB — Virtual Materials Testing Laboratory{% endblock %}</title>
+
+  <!-- Google Fonts: Poppins (Headings), Inter (Body), JetBrains Mono (Telemetry) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Plotly.js -->
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+
+  <!-- Custom Laboratory Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-matvlab sticky-top">
+    <div class="container-fluid px-2 px-sm-3 px-lg-4">
+      <a class="navbar-brand" href="{{ url_for('index') }}">
+        <div class="brand-icon">
+          <i class="fas fa-atom"></i>
+        </div>
+        <span class="brand-text">MAT-VLAB</span>
+      </a>
+
+      <!-- Mobile Hamburger Button with comfortable 44px touch target -->
+      <button class="navbar-toggler border-0 shadow-none px-2 py-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation" style="min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+              <i class="fas fa-home me-1"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'experiments' or active_page == 'tensile' %}active{% endif %}" href="{{ url_for('experiments') }}">
+              <i class="fas fa-flask me-1"></i> Experiments
+            </a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if active_page == 'simulation' or active_page == 'manual' %}active{% endif %}" href="#" id="vlabDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-microscope me-1"></i> Virtual Lab
+            </a>
+            <ul class="dropdown-menu dropdown-menu-matvlab shadow-sm border" aria-labelledby="vlabDropdown">
+              <li>
+                <a class="dropdown-item py-2" href="{{ url_for('simulation') }}">
+                  <i class="fas fa-desktop text-primary me-2"></i> Virtual Simulation Mode
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2" href="{{ url_for('manual_entry') }}">
+                  <i class="fas fa-keyboard text-success me-2"></i> Manual Data Entry Mode
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item py-2" href="{{ url_for('tensile_hub') }}">
+                  <i class="fas fa-book-open text-warning me-2"></i> Tensile Theory &amp; Apparatus
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'materials' %}active{% endif %}" href="{{ url_for('materials') }}">
+              <i class="fas fa-cubes me-1"></i> Materials
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'compare' %}active{% endif %}" href="{{ url_for('compare') }}">
+              <i class="fas fa-balance-scale me-1"></i> Compare
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'my_experiments' %}active{% endif %}" href="{{ url_for('my_experiments') }}">
+              <i class="fas fa-folder-open me-1"></i> My Experiments
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'quizzes' %}active{% endif %}" href="{{ url_for('quizzes') }}">
+              <i class="fas fa-graduation-cap me-1"></i> Quizzes
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'about' %}active{% endif %}" href="{{ url_for('about') }}">
+              <i class="fas fa-info-circle me-1"></i> About
+            </a>
+          </li>
+        </ul>
+
+        <div class="d-flex align-items-center gap-2 pt-2 pt-lg-0">
+          <a href="{{ url_for('simulation') }}" class="btn btn-sm btn-nav-cta w-100 w-lg-auto">
+            <i class="fas fa-play me-1"></i> Start Virtual Lab
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="flex-grow-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Laboratory Footer -->
+  <footer class="footer-matvlab">
+    <div class="container py-4">
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="brand-icon" style="width: 30px; height: 30px; font-size: 0.95rem;">
+              <i class="fas fa-atom"></i>
+            </div>
+            <span class="fw-bold fs-5 text-navy">MAT-VLAB</span>
+          </div>
+          <p class="text-secondary small mb-3">
+            Interactive Virtual Materials Testing &amp; Analysis Laboratory designed for Materials Science, Metallurgical, and Mechanical Engineering students.
+          </p>
+          <div class="badge-lab">
+            <span class="badge-pulse"></span> Virtual UTM Station Active
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-6">
+          <h6 class="footer-heading">Testing Labs</h6>
+          <ul class="list-unstyled small mb-0">
+            <li class="mb-2"><a href="{{ url_for('tensile_hub') }}" class="footer-link">Tensile Testing</a></li>
+            <li class="mb-2"><a href="{{ url_for('simulation') }}" class="footer-link">UTM Simulation</a></li>
+            <li class="mb-2"><a href="{{ url_for('manual_entry') }}" class="footer-link">Manual Data Entry</a></li>
+            <li class="mb-2"><a href="{{ url_for('experiments') }}" class="footer-link">All Experiments</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-3 col-6">
+          <h6 class="footer-heading">Engineering Tools</h6>
+          <ul class="list-unstyled small mb-0">
+            <li class="mb-2"><a href="{{ url_for('materials') }}" class="footer-link">Material Database</a></li>
+            <li class="mb-2"><a href="{{ url_for('compare') }}" class="footer-link">Material Comparison</a></li>
+            <li class="mb-2"><a href="{{ url_for('my_experiments') }}" class="footer-link">Saved Experiments</a></li>
+            <li class="mb-2"><a href="{{ url_for('quizzes') }}" class="footer-link">Knowledge Assessment</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-3">
+          <h6 class="footer-heading">Testing Standards</h6>
+          <p class="text-secondary small mb-2">
+            Formulas and evaluation algorithms aligned with international mechanical testing protocols:
+          </p>
+          <div class="d-flex flex-wrap gap-1">
+            <span class="badge bg-white text-navy border">ASTM E8 / E8M</span>
+            <span class="badge bg-white text-navy border">ISO 6892-1</span>
+            <span class="badge bg-white text-navy border">IS 1608</span>
+            <span class="badge bg-white text-navy border">ASTM E83</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-disclaimer text-center mt-4 pt-3 border-top">
+        <p class="mb-2 text-secondary small">
+          <strong class="text-navy">Academic Notice:</strong> MAT-VLAB is an educational learning simulator and laboratory data processing system developed for student curriculum study. It serves to reinforce experimental understanding when physical equipment access is limited, and does not replace certified physical testing accreditation.
+        </p>
+        <p class="mb-0 text-secondary small fw-semibold">
+          MAT-VLAB | Concept by Dhruva H D
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Global App JS -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

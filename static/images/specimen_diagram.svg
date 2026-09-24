@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380" width="100%" height="100%">
+  <defs>
+    <linearGradient id="specimenBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="25%" stop-color="#94a3b8"/>
+      <stop offset="50%" stop-color="#cbd5e1"/>
+      <stop offset="75%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#0284c7"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#dc2626"/>
+    </marker>
+  </defs>
+
+  <style>
+    .dim-line { stroke: #0284c7; stroke-width: 1.5; }
+    .dim-line-red { stroke: #dc2626; stroke-width: 1.5; }
+    .ext-line { stroke: #94a3b8; stroke-width: 1; stroke-dasharray: 3,3; }
+    .dim-text { font-family: 'Inter', system-ui, sans-serif; font-size: 13px; font-weight: 700; fill: #0284c7; }
+    .dim-text-red { font-family: 'Inter', system-ui, sans-serif; font-size: 13px; font-weight: 700; fill: #dc2626; }
+    .label-text { font-family: 'Inter', system-ui, sans-serif; font-size: 12px; font-weight: 600; fill: #475569; }
+  </style>
+
+  <rect width="900" height="380" fill="#f8fafc" rx="10" stroke="#e2e8f0" stroke-width="1.5"/>
+
+  <!-- Centerline -->
+  <line x1="50" y1="190" x2="850" y2="190" stroke="#dc2626" stroke-width="1" stroke-dasharray="14,4,4,4"/>
+
+  <!-- Specimen Contour (Standard ASTM E8 round tensile dogbone) -->
+  <path d="
+    M 80 155
+    L 240 155
+    Q 280 155 300 170
+    L 600 170
+    Q 620 155 660 155
+    L 820 155
+    L 820 225
+    L 660 225
+    Q 620 225 600 210
+    L 300 210
+    Q 280 225 240 225
+    L 80 225
+    Z"
+    fill="url(#specimenBody)" stroke="#1e293b" stroke-width="2"/>
+
+  <!-- Grip end threads indication -->
+  <line x1="120" y1="155" x2="120" y2="225" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <line x1="200" y1="155" x2="200" y2="225" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <line x1="700" y1="155" x2="700" y2="225" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <line x1="780" y1="155" x2="780" y2="225" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+  <!-- Gauge Punch Marks (L0 = 50mm) at x=350 and x=550 -->
+  <circle cx="350" cy="190" r="3.5" fill="#dc2626"/>
+  <circle cx="550" cy="190" r="3.5" fill="#dc2626"/>
+
+  <!-- Extension lines for Gauge Length (L0) -->
+  <line x1="350" y1="185" x2="350" y2="70" class="ext-line"/>
+  <line x1="550" y1="185" x2="550" y2="70" class="ext-line"/>
+  <!-- Dimension line L0 -->
+  <line x1="350" y1="85" x2="550" y2="85" class="dim-line-red" marker-start="url(#arrowRed)" marker-end="url(#arrowRed)"/>
+  <text x="450" y="78" text-anchor="middle" class="dim-text-red">Gauge Length L₀ = 50 mm (ASTM Standard)</text>
+
+  <!-- Extension lines for Reduced Parallel Section (Lc) -->
+  <line x1="300" y1="170" x2="300" y2="110" class="ext-line"/>
+  <line x1="600" y1="170" x2="600" y2="110" class="ext-line"/>
+  <line x1="300" y1="120" x2="600" y2="120" class="dim-line" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="450" y="115" text-anchor="middle" class="dim-text">Parallel Length L_c ≈ 60 mm</text>
+
+  <!-- Total Length Dimension (Lt) -->
+  <line x1="80" y1="225" x2="80" y2="330" class="ext-line"/>
+  <line x1="820" y1="225" x2="820" y2="330" class="ext-line"/>
+  <line x1="80" y1="315" x2="820" y2="315" class="dim-line" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="450" y="335" text-anchor="middle" class="dim-text">Total Length L_t ≈ 150 – 200 mm</text>
+
+  <!-- Diameter d0 Dimension -->
+  <line x1="450" y1="170" x2="450" y2="210" class="dim-line" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="460" y="195" text-anchor="start" class="dim-text">d₀ = 10.0 mm (A₀ = 78.54 mm²)</text>
+
+  <!-- Grip Section Diameter D Dimension -->
+  <line x1="160" y1="155" x2="160" y2="225" class="dim-line" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="170" y="185" text-anchor="start" class="dim-text">D = 16 mm</text>
+
+  <!-- Shoulder Radius Callout -->
+  <path d="M 285 160 Q 275 130 250 120" fill="none" stroke="#475569" stroke-width="1.2"/>
+  <text x="245" y="115" text-anchor="end" class="label-text">Fillet Radius R ≥ 10 mm</text>
+
+  <!-- Labels -->
+  <text x="160" y="250" text-anchor="middle" class="label-text">Grip End (Shouldered / Threaded)</text>
+  <text x="740" y="250" text-anchor="middle" class="label-text">Grip End</text>
+  <text x="450" y="245" text-anchor="middle" font-family="'Poppins', system-ui" font-size="12" font-weight="700" fill="#0f2b48">Reduced Gauge Section</text>
+</svg>

@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block title %}Experiment Results &amp; Analysis — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4">
+  <!-- Dynamic Mode Banner -->
+  <div id="results-mode-banner" class="alert-lab-info mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <i class="fas fa-microscope fs-4 text-primary"></i>
+      <div>
+        <strong id="banner-mode-title" class="text-uppercase fw-bold">EXPERIMENT ANALYSIS RESULTS</strong>
+        <div id="banner-mode-desc" class="small">
+          Evaluated in accordance with ASTM E8 / ISO 6892-1 Uniaxial Tensile Testing Standards.
+        </div>
+      </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button type="button" id="btn-save-db" class="btn btn-sm btn-lab-primary">
+        <i class="fas fa-save me-1"></i> Save Experiment
+      </button>
+      <button type="button" id="btn-download-pdf" class="btn btn-sm btn-lab-success">
+        <i class="fas fa-file-pdf me-1"></i> Generate PDF Report
+      </button>
+      <a href="{{ url_for('quizzes') }}" class="btn btn-sm btn-lab-secondary">
+        <i class="fas fa-graduation-cap me-1"></i> Test Knowledge (Quiz)
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Metrics Result Cards Row -->
+  <div class="row g-3 mb-4">
+    <!-- Young's Modulus -->
+    <div class="col-xl-2 col-md-4 col-6">
+      <div class="lab-card p-3 h-100">
+        <div class="text-secondary small text-uppercase fw-bold">Young's Modulus (E)</div>
+        <div class="d-flex align-items-baseline my-1">
+          <span id="res-modulus" class="fs-3 fw-bold text-steel font-mono">—</span>
+          <span class="text-muted ms-1 small">GPa</span>
+        </div>
+        <div class="text-muted small" id="res-r2">Elastic fit R²: —</div>
+      </div>
+    </div>
+
+    <!-- Yield Strength -->
+    <div class="col-xl-2 col-md-4 col-6">
+      <div class="lab-card p-3 h-100">
+        <div class="text-secondary small text-uppercase fw-bold">Yield Strength (σ_y)</div>
+        <div class="d-flex align-items-baseline my-1">
+          <span id="res-yield" class="fs-3 fw-bold text-warning font-mono">—</span>
+          <span class="text-muted ms-1 small">MPa</span>
+        </div>
+        <div class="text-muted small" id="res-yield-type">0.2% Offset / Yield Drop</div>
+      </div>
+    </div>
+
+    <!-- Ultimate Tensile Strength -->
+    <div class="col-xl-2 col-md-4 col-6">
+      <div class="lab-card p-3 h-100">
+        <div class="text-secondary small text-uppercase fw-bold">Tensile Strength (UTS)</div>
+        <div class="d-flex align-items-baseline my-1">
+          <span id="res-uts" class="fs-3 fw-bold text-danger font-mono">—</span>
+          <span class="text-muted ms-1 small">MPa</span>
+        </div>
+        <div class="text-muted small" id="res-max-load">Max Load: — N</div>
+      </div>
+    </div>
+
+    <!-- Percentage Elongation -->
+    <div class="col-xl-2 col-md-4 col-6">
+      <div class="lab-card p-3 h-100">
+        <div class="text-secondary small text-uppercase fw-bold">% Elongation (%EL)</div>
+        <div class="d-flex align-items-baseline my-1">
+          <span id="res-elongation" class="fs-3 fw-bold text-success font-mono">—</span>
+          <span class="text-muted ms-1 small">%</span>
+        </div>
+        <div class="text-muted small">Fracture Ductility</div>
+      </div>
+    </div>
+
+    <!-- Tensile Toughness -->
+    <div class="col-xl-2 col-md-4 col-6">
+      <div class="lab-card p-3 h-100">
+        <div class="text-secondary small text-uppercase fw-bold">Tensile Toughness</div>
+        <div class="d-flex align-items-baseline my-1">
+          <span id="res-toughness" class="fs-3 fw-bold text-cyan font-mono">—</span>
+          <span class="text-muted ms-1 small">MJ/m³</span>
+        </div>
+        <div class="text-muted small">Total Strain Energy</div>
+      </div>
+    </div>
+
+    <!-- Resilience -->
+    <div class="col-xl-2 col-md-4 col-6">
+      <div class="lab-card p-3 h-100">
+        <div class="text-secondary small text-uppercase fw-bold">Resilience (U_r)</div>
+        <div class="d-flex align-items-baseline my-1">
+          <span id="res-resilience" class="fs-3 fw-bold text-purple font-mono" style="color: var(--color-purple);">—</span>
+          <span class="text-muted ms-1 small">MJ/m³</span>
+        </div>
+        <div class="text-muted small">Elastic Energy Storage</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Main Plotly Stress-Strain Interactive Graph -->
+    <div class="col-xl-8">
+      <div class="lab-card p-3 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2 px-2">
+          <h5 class="fw-bold mb-0">Engineering Stress-Strain Curve</h5>
+          <div class="d-flex gap-2">
+            <span id="graph-tag-badge" class="badge bg-primary text-white">DATA</span>
+          </div>
+        </div>
+        <div id="results-plot" style="height: 480px; width: 100%;"></div>
+      </div>
+    </div>
+
+    <!-- Specimen Info & Automated Engineering Conclusion -->
+    <div class="col-xl-4">
+      <div class="lab-card p-4 h-100 d-flex flex-column">
+        <h5 class="fw-bold mb-3">Specimen Information</h5>
+        <table class="table table-sm text-secondary small mb-4">
+          <tbody>
+            <tr>
+              <td class="fw-semibold text-muted">Material:</td>
+              <td id="info-material" class="text-main font-mono fw-bold">—</td>
+            </tr>
+            <tr>
+              <td class="fw-semibold text-muted">Original Diameter (d₀):</td>
+              <td id="info-diameter" class="text-main font-mono fw-semibold">— mm</td>
+            </tr>
+            <tr>
+              <td class="fw-semibold text-muted">Original Gauge Length (L₀):</td>
+              <td id="info-gauge-length" class="text-main font-mono fw-semibold">— mm</td>
+            </tr>
+            <tr>
+              <td class="fw-semibold text-muted">Original Area (A₀):</td>
+              <td id="info-area" class="text-main font-mono fw-semibold">— mm²</td>
+            </tr>
+            <tr>
+              <td class="fw-semibold text-muted">Total Readings Evaluated:</td>
+              <td id="info-readings-count" class="text-main font-mono fw-semibold">—</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h5 class="fw-bold mb-2">Automated Engineering Conclusion</h5>
+        <div class="p-3 rounded bg-light border border-secondary border-opacity-25 flex-grow-1">
+          <p id="res-conclusion" class="text-main small mb-0 fst-italic">
+            Evaluating dataset...
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Step-by-Step Mathematical Formulas Section -->
+  <div class="lab-card p-4 mb-4">
+    <h5 class="fw-bold mb-3"><i class="fas fa-square-root-variable text-steel me-2"></i> Mathematical Formulas &amp; Substitution</h5>
+    <div class="row g-4" id="formulas-container">
+      <!-- Populated via JS -->
+    </div>
+  </div>
+
+  <!-- Observation Data Table Accordion -->
+  <div class="lab-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0">Processed Observation Dataset</h5>
+      <span class="text-muted small">Showing stress and strain computed for each data point</span>
+    </div>
+    <div class="table-responsive" style="max-height: 400px;">
+      <table class="table table-lab mb-0" id="processed-table">
+        <thead>
+          <tr>
+            <th class="text-center">#</th>
+            <th>Load (N)</th>
+            <th>Extension (mm)</th>
+            <th>Engineering Stress (MPa)</th>
+            <th>Engineering Strain (ε)</th>
+            <th>Strain (%)</th>
+          </tr>
+        </thead>
+        <tbody id="processed-table-body">
+          <!-- Populated via JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const rawData = sessionStorage.getItem('matvlab_analysis_data');
+  if (!rawData) {
+    showToast('No active experiment data found. Redirecting to Tensile Hub...', 'warning');
+    setTimeout(() => window.location.href = '/experiments/tensile', 1500);
+    return;
+  }
+
+  const expData = JSON.parse(rawData);
+  renderResultsView(expData);
+});
+
+let savedExperimentId = null;
+
+function renderResultsView(data) {
+  const isSimulation = data.mode === 'VIRTUAL_SIMULATION';
+
+  // Update mode banners
+  const banner = document.getElementById('results-mode-banner');
+  const bannerTitle = document.getElementById('banner-mode-title');
+  const bannerDesc = document.getElementById('banner-mode-desc');
+  const graphBadge = document.getElementById('graph-tag-badge');
+
+  if (isSimulation) {
+    banner.className = 'alert-lab-warning mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2';
+    bannerTitle.textContent = 'MODE 1: VIRTUAL SIMULATION DATA';
+    bannerDesc.textContent = 'Generated via mathematical constitutive model (ASTM E8). Labeled as SIMULATION DATA.';
+    graphBadge.className = 'badge bg-warning text-dark';
+    graphBadge.textContent = 'SIMULATION DATA';
+  } else {
+    banner.className = 'alert-lab-info mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2';
+    bannerTitle.textContent = 'MODE 2: USER-ENTERED EXPERIMENTAL DATA';
+    bannerDesc.textContent = 'Calculated from user-supplied laboratory observations according to ASTM E8/ISO 6892-1.';
+    graphBadge.className = 'badge bg-primary text-white';
+    graphBadge.textContent = 'EXPERIMENTAL LAB DATA';
+  }
+
+  // Populate Summary Cards
+  const res = data.results || {};
+  document.getElementById('res-modulus').textContent = res.youngs_modulus_gpa !== null ? res.youngs_modulus_gpa : 'N/A';
+  if (res.r_squared) document.getElementById('res-r2').textContent = `Elastic fit R²: ${res.r_squared}`;
+
+  document.getElementById('res-yield').textContent = res.yield_strength_mpa !== null ? res.yield_strength_mpa : 'N/A';
+  if (res.yield_type) document.getElementById('res-yield-type').textContent = res.yield_type;
+
+  document.getElementById('res-uts').textContent = res.uts_mpa !== null ? res.uts_mpa : 'N/A';
+  if (res.max_load_n) document.getElementById('res-max-load').textContent = `Max Load: ${formatNumber(res.max_load_n, 1)} N`;
+
+  document.getElementById('res-elongation').textContent = res.elongation_pct !== null ? res.elongation_pct : 'N/A';
+  document.getElementById('res-toughness').textContent = res.toughness_mj_m3 !== null ? res.toughness_mj_m3 : 'N/A';
+  document.getElementById('res-resilience').textContent = res.modulus_of_resilience_mj_m3 !== null ? res.modulus_of_resilience_mj_m3 : 'N/A';
+
+  // Specimen Info
+  document.getElementById('info-material').textContent = data.material_name || 'Unspecified';
+  document.getElementById('info-diameter').textContent = data.original_diameter;
+  document.getElementById('info-gauge-length').textContent = data.original_gauge_length;
+  document.getElementById('info-area').textContent = res.cross_sectional_area_mm2 || (Math.PI * Math.pow(data.original_diameter, 2) / 4).toFixed(3);
+  document.getElementById('info-readings-count').textContent = data.readings ? data.readings.length : 0;
+
+  // Conclusion
+  document.getElementById('res-conclusion').textContent = data.conclusion || 'Tensile calculations complete.';
+
+  // Plotly Graph
+  renderPlotlyGraph(data, isSimulation);
+
+  // Formulas
+  renderFormulas(data.formulas);
+
+  // Observation Table
+  renderObservationTable(data.readings);
+
+  // Save Button
+  document.getElementById('btn-save-db').addEventListener('click', () => saveExperimentToDatabase(data));
+
+  // PDF Button
+  document.getElementById('btn-download-pdf').addEventListener('click', () => downloadPdfReport(data));
+}
+
+function renderPlotlyGraph(data, isSimulation) {
+  const readings = data.readings || [];
+  const strains = readings.map(r => r.strain);
+  const stresses = readings.map(r => r.stress_mpa);
+
+  const traceCurve = {
+    x: strains,
+    y: stresses,
+    mode: 'lines+markers',
+    name: 'Stress-Strain',
+    line: { color: '#0f2b48', width: 2.5 },
+    marker: { color: '#2b6cb0', size: 5 },
+    hovertemplate: '<b>Strain:</b> %{x:.4f}<br><b>Stress:</b> %{y:.1f} MPa<extra></extra>'
+  };
+
+  const layout = {
+    title: {
+      text: `${data.material_name || 'Tensile Specimen'} [${isSimulation ? 'SIMULATION DATA' : 'EXPERIMENTAL DATA'}]`,
+      font: { color: '#0f2b48', size: 14, family: 'Poppins', weight: 700 }
+    },
+    paper_bgcolor: '#ffffff',
+    plot_bgcolor: '#f8fafc',
+    xaxis: {
+      title: { text: 'Engineering Strain, ε (mm/mm)', font: { color: '#334155', size: 12, family: 'Inter' } },
+      tickfont: { color: '#475569', family: 'Inter' },
+      gridcolor: '#e2e8f0',
+      zerolinecolor: '#cbd5e1'
+    },
+    yaxis: {
+      title: { text: 'Engineering Stress, σ (MPa)', font: { color: '#334155', size: 12, family: 'Inter' } },
+      tickfont: { color: '#475569', family: 'Inter' },
+      gridcolor: '#e2e8f0',
+      zerolinecolor: '#cbd5e1'
+    },
+    margin: {
+      l: window.innerWidth < 576 ? 45 : 60,
+      r: window.innerWidth < 576 ? 15 : 30,
+      t: window.innerWidth < 576 ? 40 : 50,
+      b: window.innerWidth < 576 ? 40 : 50
+    },
+    showlegend: false
+  };
+
+  const config = {
+    responsive: true,
+    displayModeBar: true,
+    toImageButtonOptions: {
+      format: 'png',
+      filename: `matvlab_stress_strain_${(data.material_name || 'test').replace(/[^a-zA-Z0-9]/g, '_')}`,
+      height: 600,
+      width: 900,
+      scale: 2
+    }
+  };
+
+  Plotly.newPlot('results-plot', [traceCurve], layout, config);
+}
+
+function renderFormulas(formulas) {
+  const container = document.getElementById('formulas-container');
+  if (!container || !formulas) return;
+
+  container.innerHTML = '';
+  Object.keys(formulas).forEach(k => {
+    const f = formulas[k];
+    const col = document.createElement('div');
+    col.className = 'col-md-4 col-sm-6';
+    col.innerHTML = `
+      <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+        <div class="text-steel fw-bold small text-uppercase mb-1">${k.replace('_', ' ')}</div>
+        <div class="font-mono text-navy small mb-1 fw-bold">${f.formula}</div>
+        <div class="font-mono text-secondary small mb-2">↳ ${f.values}</div>
+        <div class="text-muted small">${f.description}</div>
+      </div>
+    `;
+    container.appendChild(col);
+  });
+}
+
+function renderObservationTable(readings) {
+  const tbody = document.getElementById('processed-table-body');
+  if (!tbody || !readings) return;
+
+  tbody.innerHTML = '';
+  readings.forEach((r, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="text-center font-mono text-muted">${r.reading_number || idx + 1}</td>
+      <td class="font-mono">${formatNumber(r.load_n, 1)}</td>
+      <td class="font-mono">${formatNumber(r.extension_mm, 4)}</td>
+      <td class="font-mono text-steel fw-semibold">${r.stress_mpa !== undefined ? formatNumber(r.stress_mpa, 2) : '—'}</td>
+      <td class="font-mono">${r.strain !== undefined ? Number(r.strain).toFixed(6) : '—'}</td>
+      <td class="font-mono text-success fw-semibold">${r.strain !== undefined ? (r.strain * 100).toFixed(3) + '%' : '—'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function saveExperimentToDatabase(data) {
+  const btn = document.getElementById('btn-save-db');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+
+  fetch('/api/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(res => res.json())
+  .then(resp => {
+    btn.disabled = false;
+    if (resp.success) {
+      savedExperimentId = resp.experiment_id;
+      btn.innerHTML = '<i class="fas fa-check me-1"></i> Saved!';
+      btn.classList.replace('btn-lab-primary', 'btn-outline-success');
+      showToast('Experiment successfully saved to My Experiments database!', 'success');
+    } else {
+      btn.innerHTML = '<i class="fas fa-save me-1"></i> Save Experiment';
+      showToast('Failed to save experiment: ' + (resp.error || 'Unknown error'), 'danger');
+    }
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-save me-1"></i> Save Experiment';
+    showToast('Database error', 'danger');
+  });
+}
+
+function downloadPdfReport(data) {
+  const btn = document.getElementById('btn-download-pdf');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Generating PDF...';
+
+  fetch('/api/generate-pdf', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('PDF Generation Failed');
+    return res.blob();
+  })
+  .then(blob => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-file-pdf me-1"></i> Generate PDF Report';
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `MAT_VLAB_Report_${(data.material_name || 'tensile').replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast('PDF Report generated and downloaded!', 'success');
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-file-pdf me-1"></i> Generate PDF Report';
+    showToast('Failed to generate PDF report: ' + err.message, 'danger');
+  });
+}
+</script>
+{% endblock %}

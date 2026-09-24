@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Material Database — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+      <span class="badge-lab mb-2">Reference Repository</span>
+      <h1 class="fw-bold text-navy fs-2 mb-0">Materials Property Database</h1>
+      <p class="text-secondary small mb-0">
+        Standard mechanical and physical properties compiled from <strong>ASTM, ISO, and ASM International Handbooks</strong>.
+      </p>
+    </div>
+
+    <!-- Category filter buttons -->
+    <div class="d-flex gap-2 flex-wrap" id="category-filter-buttons">
+      <button type="button" class="btn btn-sm btn-lab-primary active-filter" onclick="filterCategory('All')">All Alloys</button>
+      <button type="button" class="btn btn-sm btn-lab-secondary" onclick="filterCategory('Ferrous')">Ferrous</button>
+      <button type="button" class="btn btn-sm btn-lab-secondary" onclick="filterCategory('Non-Ferrous')">Non-Ferrous</button>
+      <button type="button" class="btn btn-sm btn-lab-secondary" onclick="filterCategory('Titanium')">Titanium</button>
+    </div>
+  </div>
+
+  <!-- Academic Integrity Notice -->
+  <div class="alert-lab-info p-3 mb-4">
+    <div class="d-flex align-items-center gap-2">
+      <i class="fas fa-info-circle fs-5 text-primary"></i>
+      <div>
+        <strong class="text-primary text-uppercase">Reference / Typical Values Notice:</strong>
+        <span class="small" style="color: #0c4a6e;">
+          The values presented in this database are recognized standard handbook reference benchmarks. They serve for metallurgical comparison and baseline validation, and must <strong>never</strong> be reported as a substitute for real experimental observations.
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Material Cards Grid -->
+  <div class="row g-4" id="materials-grid">
+    {% for m in materials %}
+    <div class="col-lg-4 col-md-6 material-card-item" data-category="{{ m.category }}">
+      <div class="lab-card h-100 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="mode-badge mode-badge-ref">REFERENCE STANDARD</span>
+          <span class="badge bg-light text-primary border">{{ m.standard_ref or 'ASTM' }}</span>
+        </div>
+
+        <h4 class="text-navy fw-bold mb-1">{{ m.name }}</h4>
+        <div class="text-steel small fw-semibold mb-3">{{ m.category }}</div>
+
+        <!-- Property Grid -->
+        <div class="row g-2 mb-3 font-mono small">
+          <div class="col-6">
+            <div class="p-2 rounded bg-light border border-secondary border-opacity-25">
+              <div class="text-secondary" style="font-size: 0.72rem;">YOUNG'S MODULUS</div>
+              <div class="text-steel fw-bold fs-6">{{ m.youngs_modulus_gpa }} GPa</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2 rounded bg-light border border-secondary border-opacity-25">
+              <div class="text-secondary" style="font-size: 0.72rem;">YIELD STRENGTH</div>
+              <div class="text-warning fw-bold fs-6">{{ m.yield_strength_mpa }} MPa</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2 rounded bg-light border border-secondary border-opacity-25">
+              <div class="text-secondary" style="font-size: 0.72rem;">TENSILE STRENGTH (UTS)</div>
+              <div class="text-danger fw-bold fs-6">{{ m.uts_mpa }} MPa</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2 rounded bg-light border border-secondary border-opacity-25">
+              <div class="text-secondary" style="font-size: 0.72rem;">% ELONGATION</div>
+              <div class="text-success fw-bold fs-6">{{ m.elongation_pct }}%</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2 rounded bg-light border border-secondary border-opacity-25">
+              <div class="text-secondary" style="font-size: 0.72rem;">DENSITY</div>
+              <div class="text-navy fw-bold fs-6">{{ m.density_g_cm3 }} g/cm³</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-2 rounded bg-light border border-secondary border-opacity-25">
+              <div class="text-secondary" style="font-size: 0.72rem;">POISSON'S RATIO</div>
+              <div class="text-navy fw-bold fs-6">{{ m.poisson_ratio or '0.30' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-secondary small mb-3 flex-grow-1">
+          {{ m.description }}
+        </p>
+
+        <div class="pt-3 border-top border-secondary border-opacity-25 d-flex gap-2">
+          <a href="{{ url_for('simulation') }}?material={{ m.slug }}" class="btn btn-sm btn-lab-primary flex-fill">
+            <i class="fas fa-play me-1"></i> Simulate Test
+          </a>
+          <a href="{{ url_for('compare') }}?m1={{ m.slug }}" class="btn btn-sm btn-lab-secondary flex-fill">
+            <i class="fas fa-balance-scale me-1"></i> Compare
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function filterCategory(cat) {
+  const cards = document.querySelectorAll('.material-card-item');
+  cards.forEach(card => {
+    const cardCat = card.getAttribute('data-category') || '';
+    if (cat === 'All' || cardCat.toLowerCase().includes(cat.toLowerCase())) {
+      card.style.display = 'block';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  // Update active button state
+  document.querySelectorAll('#category-filter-buttons button').forEach(btn => {
+    if (btn.textContent.includes(cat)) {
+      btn.classList.replace('btn-lab-secondary', 'btn-lab-primary');
+    } else {
+      btn.classList.replace('btn-lab-primary', 'btn-lab-secondary');
+    }
+  });
+}
+</script>
+{% endblock %}

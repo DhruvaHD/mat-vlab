@@ -1,0 +1,24 @@
+services:
+  mat-vlab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mat-vlab:latest
+    container_name: mat-vlab-app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY:-mat-vlab-materials-testing-laboratory-key-2026}
+      - DATABASE_PATH=/app/data/materials.db
+      - UPLOAD_FOLDER=/app/data/uploads
+      - ENABLE_PROXY_FIX=true
+      - WEB_CONCURRENCY=2
+      - TIMEOUT=60
+    volumes:
+      - matvlab_data:/app/data
+
+volumes:
+  matvlab_data:
+    driver: local

@@ -1,0 +1,1048 @@
+/* ==========================================================================
+   MAT-VLAB — Virtual Materials Testing Laboratory Stylesheet
+   Design Philosophy: Modern Engineering Laboratory Light Aesthetic
+   Primary: Deep Navy Blue (#0f2b48)
+   Secondary: Steel Blue (#2b6cb0)
+   Accent: Cyan / Teal (#0d9488 / #0284c7)
+   Background: Very light grey / off-white (#f8fafc)
+   Cards: Crisp White (#ffffff)
+   Main Text: Dark Charcoal (#1e293b)
+   Secondary Text: Muted Charcoal/Grey (#475569 / #64748b)
+   Typography: Poppins (Headings) + Inter (Body) + JetBrains Mono (Code/Numbers)
+   ========================================================================== */
+
+:root {
+  /* Surface & Backgrounds */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fcfdfe;
+  --bg-input: #ffffff;
+  --border-color: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  /* Brand Colors */
+  --primary-navy: #0f2b48;
+  --primary-navy-hover: #091a2c;
+  --steel-blue: #2b6cb0;
+  --steel-blue-hover: #1e4e82;
+  --steel-blue-light: #ebf4ff;
+  --accent-teal: #0d9488;
+  --accent-cyan: #0284c7;
+
+  /* State & Feedback Colors */
+  --color-success: #059669;
+  --color-success-bg: #ecfdf5;
+  --color-success-border: #a7f3d0;
+  --color-warning: #d97706;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-danger: #dc2626;
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-info: #0284c7;
+  --color-info-bg: #f0f9ff;
+  --color-info-border: #bae6fd;
+  --color-purple: #7c3aed;
+
+  /* Typography Colors */
+  --text-main: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --text-white: #ffffff;
+
+  /* Fonts */
+  --font-heading: 'Poppins', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+
+  /* Shadows & Radii */
+  --shadow-sm: 0 1px 3px rgba(15, 43, 72, 0.05);
+  --shadow-md: 0 4px 12px rgba(15, 43, 72, 0.07);
+  --shadow-lg: 0 10px 25px rgba(15, 43, 72, 0.10);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+/* ==========================================================================
+   Base Resets & Typography
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.65;
+  font-size: 0.95rem;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: var(--font-heading);
+  color: var(--primary-navy);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+}
+
+p {
+  margin-bottom: 1rem;
+  color: var(--text-main);
+}
+
+.text-navy { color: var(--primary-navy) !important; }
+.text-steel { color: var(--steel-blue) !important; }
+.text-teal { color: var(--accent-teal) !important; }
+.text-cyan { color: var(--accent-cyan) !important; }
+.text-muted { color: var(--text-muted) !important; }
+.text-secondary { color: var(--text-secondary) !important; }
+
+a {
+  color: var(--steel-blue);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--steel-blue-hover);
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Responsive Image Rule */
+img, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ==========================================================================
+   Navigation Bar (Deep Navy Blue Header)
+   ========================================================================== */
+.navbar-matvlab {
+  background-color: var(--primary-navy);
+  border-bottom: 2px solid rgba(2, 132, 199, 0.4);
+  padding: 0.75rem 0;
+  box-shadow: 0 2px 10px rgba(15, 43, 72, 0.15);
+  z-index: 1030;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--text-white) !important;
+  letter-spacing: 0.5px;
+}
+
+.brand-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, #0284c7, #0d9488);
+  color: #ffffff;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.navbar-nav .nav-link {
+  font-family: var(--font-body);
+  color: rgba(255, 255, 255, 0.82) !important;
+  font-weight: 500;
+  font-size: 0.92rem;
+  padding: 0.55rem 0.85rem !important;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.navbar-nav .nav-link.active {
+  color: #ffffff !important;
+  background-color: rgba(2, 132, 199, 0.25);
+  border-bottom: 2px solid #38bdf8;
+  font-weight: 600;
+}
+
+.btn-nav-cta {
+  background-color: #0284c7;
+  color: #ffffff !important;
+  border: 1px solid #38bdf8;
+  font-weight: 600;
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  min-height: 38px;
+}
+
+.btn-nav-cta:hover {
+  background-color: #0369a1;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+  transform: translateY(-1px);
+}
+
+/* Dropdown Menu (White Card Style) */
+.dropdown-menu-matvlab {
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  box-shadow: var(--shadow-md);
+}
+
+.dropdown-menu-matvlab .dropdown-item {
+  color: var(--text-main);
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.85rem;
+  transition: background-color 0.15s ease;
+}
+
+.dropdown-menu-matvlab .dropdown-item:hover {
+  background-color: var(--steel-blue-light);
+  color: var(--steel-blue);
+}
+
+/* ==========================================================================
+   Hero Section
+   ========================================================================== */
+.hero-section {
+  position: relative;
+  padding: 3.5rem 0 3rem 0;
+  background: linear-gradient(180deg, #edf4fa 0%, #f8fafc 100%);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.badge-lab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #e0f2fe;
+  color: var(--accent-cyan);
+  border: 1px solid #bae6fd;
+  padding: 0.35rem 0.9rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.badge-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-success);
+  box-shadow: 0 0 6px var(--color-success);
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.6); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+}
+
+.hero-title {
+  font-size: clamp(2rem, 4vw, 2.85rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--primary-navy);
+  margin-top: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.hero-gradient-text {
+  color: var(--primary-navy);
+  display: block;
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+}
+
+.hero-subtitle {
+  font-size: clamp(1.15rem, 2.5vw, 1.4rem);
+  color: var(--steel-blue);
+  font-weight: 600;
+  margin-bottom: 1.15rem;
+}
+
+.hero-desc {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  max-width: 620px;
+  margin-bottom: 1.75rem;
+  line-height: 1.7;
+}
+
+/* ==========================================================================
+   Cards (Crisp White with Soft Shadow)
+   ========================================================================== */
+.lab-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.lab-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+}
+
+.lab-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.lab-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  background-color: var(--steel-blue-light);
+  color: var(--steel-blue);
+  border: 1px solid #dbeafe;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+.btn-lab-primary {
+  background-color: var(--primary-navy);
+  border: 1px solid var(--primary-navy);
+  color: #ffffff !important;
+  font-family: var(--font-body);
+  font-weight: 600;
+  padding: 0.65rem 1.4rem;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(15, 43, 72, 0.12);
+  min-height: 42px;
+}
+
+.btn-lab-primary:hover {
+  background-color: var(--steel-blue);
+  border-color: var(--steel-blue);
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(43, 108, 176, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-lab-secondary {
+  background-color: #ffffff;
+  border: 1.5px solid var(--steel-blue);
+  color: var(--steel-blue) !important;
+  font-family: var(--font-body);
+  font-weight: 600;
+  padding: 0.65rem 1.4rem;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  min-height: 42px;
+}
+
+.btn-lab-secondary:hover {
+  background-color: var(--steel-blue-light);
+  color: var(--steel-blue-hover) !important;
+  border-color: var(--steel-blue-hover);
+}
+
+.btn-lab-success {
+  background-color: var(--color-success);
+  border: 1px solid var(--color-success);
+  color: #ffffff !important;
+  font-family: var(--font-body);
+  font-weight: 600;
+  padding: 0.65rem 1.4rem;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(5, 150, 105, 0.15);
+  min-height: 42px;
+}
+
+.btn-lab-success:hover {
+  background-color: #047857;
+  border-color: #047857;
+  box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Mode Selection Cards (Virtual Simulation vs Manual Data Entry)
+   ========================================================================== */
+.mode-card {
+  background-color: #ffffff;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.25s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+}
+
+.mode-card:hover {
+  border-color: var(--steel-blue);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+
+.mode-card-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  margin: 0 auto 1.25rem auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.85rem;
+  background-color: #e0f2fe;
+  color: var(--accent-cyan);
+  border: 2px solid #bae6fd;
+}
+
+.mode-badge {
+  display: inline-block;
+  padding: 0.3rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.85rem;
+}
+
+.mode-badge-sim {
+  background-color: var(--color-warning-bg);
+  color: var(--color-warning);
+  border: 1px solid var(--color-warning-border);
+}
+
+.mode-badge-manual {
+  background-color: #eff6ff;
+  color: var(--steel-blue);
+  border: 1px solid #bfdbfe;
+}
+
+.mode-badge-ref {
+  background-color: #f5f3ff;
+  color: var(--color-purple);
+  border: 1px solid #ddd6fe;
+}
+
+/* ==========================================================================
+   Digital Telemetry Readout Box (Light Laboratory Theme)
+   ========================================================================== */
+.telemetry-readout {
+  background-color: #f8fafc;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  text-align: left;
+}
+
+.telemetry-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+.telemetry-value {
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--primary-navy);
+  line-height: 1.2;
+}
+
+.telemetry-unit {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-left: 0.25rem;
+}
+
+/* ==========================================================================
+   Data Tables (Deep Navy Header + Subtle Alternating Rows)
+   ========================================================================== */
+.table-responsive {
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background-color: #ffffff;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-lab {
+  color: var(--text-main);
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.table-lab th {
+  background-color: var(--primary-navy);
+  color: #ffffff;
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.85rem 1rem;
+  font-weight: 600;
+  border: none;
+}
+
+.table-lab td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  background-color: #ffffff;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.table-lab tbody tr:nth-of-type(even) td {
+  background-color: #f8fafc;
+}
+
+.table-lab tbody tr:hover td {
+  background-color: #f1f5f9;
+}
+
+/* ==========================================================================
+   Forms & Inputs
+   ========================================================================== */
+.form-lab-control {
+  background-color: #ffffff;
+  border: 1px solid var(--border-strong);
+  color: var(--text-main);
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  min-height: 42px;
+}
+
+.form-lab-control:focus {
+  background-color: #ffffff;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+  color: var(--text-main);
+  outline: none;
+}
+
+select.form-lab-control option {
+  background-color: #ffffff;
+  color: var(--text-main);
+  padding: 0.4rem;
+}
+
+.form-lab-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary-navy);
+  margin-bottom: 0.35rem;
+  display: block;
+}
+
+/* ==========================================================================
+   Tabs
+   ========================================================================== */
+.nav-tabs-lab {
+  border-bottom: 2px solid var(--border-color);
+  gap: 0.4rem;
+}
+
+.nav-tabs-lab .nav-link {
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  border-bottom: 3px solid transparent;
+  padding: 0.65rem 1.15rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.92rem;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background-color: transparent;
+  transition: all 0.2s ease;
+  min-height: 42px;
+}
+
+.nav-tabs-lab .nav-link:hover {
+  color: var(--primary-navy);
+  background-color: #f1f5f9;
+}
+
+.nav-tabs-lab .nav-link.active {
+  color: var(--primary-navy);
+  background-color: #ffffff;
+  border-color: var(--border-color) var(--border-color) transparent;
+  border-bottom: 3px solid var(--steel-blue);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.02);
+}
+
+/* ==========================================================================
+   Callout Alerts (Accessible Contrast)
+   ========================================================================== */
+.alert-lab-info {
+  background-color: var(--color-info-bg);
+  border: 1px solid var(--color-info-border);
+  color: #0369a1;
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+}
+
+.alert-lab-info .text-light,
+.alert-lab-info .text-white {
+  color: #0c4a6e !important;
+}
+
+.alert-lab-warning {
+  background-color: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  color: #92400e;
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+}
+
+.alert-lab-warning .text-light,
+.alert-lab-warning .text-white {
+  color: #78350f !important;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.footer-matvlab {
+  margin-top: auto;
+  background-color: #edf2f7;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.footer-heading {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--primary-navy);
+  font-size: 0.95rem;
+  margin-bottom: 0.85rem;
+}
+
+.footer-link {
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
+}
+
+.footer-link:hover {
+  color: var(--steel-blue);
+}
+
+/* ==========================================================================
+   UTM Container & Canvas Styling
+   ========================================================================== */
+.utm-container {
+  background-color: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* ==========================================================================
+   Section Visual Distinctions (Subtle Section Badges & Icons)
+   ========================================================================== */
+.section-icon-theory { color: #0284c7; }
+.section-icon-apparatus { color: #2b6cb0; }
+.section-icon-procedure { color: #4f46e5; }
+.section-icon-simulation { color: #0d9488; }
+.section-icon-manual { color: #2563eb; }
+.section-icon-calc { color: #7c3aed; }
+.section-icon-result { color: #059669; }
+.section-icon-quiz { color: #0891b2; }
+
+/* ==========================================================================
+   Quiz Component Styling
+   ========================================================================== */
+.quiz-option-btn {
+  background-color: #ffffff;
+  border: 1.5px solid var(--border-strong);
+  color: var(--text-main);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  transition: all 0.2s ease;
+  min-height: 48px;
+  cursor: pointer;
+}
+
+.quiz-option-btn:hover {
+  background-color: var(--steel-blue-light);
+  border-color: var(--steel-blue);
+  color: var(--steel-blue-hover);
+}
+
+.quiz-option-btn.selected-option {
+  background-color: #eff6ff;
+  border-color: var(--steel-blue);
+  color: var(--steel-blue);
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.15);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Contrast Safety Overrides & Global Enhancements
+   ========================================================================== */
+.lab-card .text-white:not(.btn):not(.badge),
+.modal-content .text-white:not(.btn):not(.badge),
+.table-lab .text-white:not(.btn):not(.badge) {
+  color: var(--primary-navy) !important;
+}
+
+.lab-card .bg-dark,
+.modal-content .bg-dark {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-main) !important;
+}
+
+/* Touch-friendly inputs and form controls (minimum 44px touch height) */
+.form-lab-control,
+.form-select,
+.form-control,
+.input-group-text {
+  min-height: 44px;
+}
+
+.btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-sm {
+  min-height: 38px;
+}
+
+/* Range Slider Mobile Touch Thumb */
+.form-range {
+  height: 2.2rem;
+  padding: 0;
+  cursor: pointer;
+}
+
+.form-range::-webkit-slider-thumb {
+  width: 26px;
+  height: 26px;
+  margin-top: -9px;
+  background-color: var(--primary-navy);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 43, 72, 0.35);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.form-range::-webkit-slider-thumb:active {
+  transform: scale(1.15);
+  background-color: var(--steel-blue);
+}
+
+.form-range::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  background-color: var(--primary-navy);
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 43, 72, 0.35);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Responsive Equipment Container */
+.utm-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.utm-container svg {
+  max-width: 100%;
+  height: auto;
+  max-height: clamp(300px, 52vh, 560px);
+}
+
+/* ==========================================================================
+   Mobile Responsiveness & Media Queries
+   ========================================================================== */
+
+/* Avoid automatic zoom on iOS Safari when focusing form inputs */
+@media (max-width: 767.98px) {
+  input, select, textarea, .form-control, .form-select, .form-lab-control {
+    font-size: 16px !important;
+  }
+}
+
+/* Large Tablets & Small Laptops (max-width: 991.98px) */
+@media (max-width: 991.98px) {
+  .hero-section {
+    padding: 2.5rem 0 2rem 0;
+  }
+  .navbar-collapse {
+    background-color: var(--primary-navy);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    margin-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .navbar-nav .nav-link {
+    padding: 0.65rem 0.85rem !important;
+    font-size: 1rem;
+  }
+  .dropdown-menu-matvlab {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  .dropdown-menu-matvlab .dropdown-item {
+    color: #ffffff;
+    padding: 0.65rem 1rem;
+  }
+  .dropdown-menu-matvlab .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+  }
+
+  /* Tensile Hub Mobile Flow: Convert tabs to single-column pedagogical flow */
+  .tensile-mobile-flow {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .tensile-mobile-flow .nav-tabs-lab {
+    display: none !important;
+  }
+  .tensile-mobile-flow .tab-content {
+    display: contents !important;
+  }
+  .tensile-mobile-flow .tab-content > .tab-pane {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    margin-bottom: 2rem;
+  }
+  .tensile-mobile-flow .tab-content > .tab-pane .lab-card {
+    border-left: 4px solid var(--steel-blue);
+  }
+  .tensile-order-title { order: 1 !important; }
+  .tensile-order-objective { order: 2 !important; }
+  .tensile-order-theory { order: 3 !important; }
+  .tensile-order-apparatus { order: 4 !important; }
+  .tensile-order-specimen { order: 5 !important; }
+  .tensile-order-procedure { order: 6 !important; }
+  .tensile-order-modes { order: 7 !important; }
+  .tensile-order-calculations { order: 8 !important; }
+  .tensile-order-quicklinks { order: 9 !important; }
+}
+
+/* Tablets (max-width: 767.98px) */
+@media (max-width: 767.98px) {
+  .hero-title {
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
+  }
+  .hero-gradient-text {
+    font-size: clamp(2.1rem, 5vw, 2.6rem);
+  }
+  .hero-desc {
+    font-size: 0.98rem;
+  }
+  .lab-card {
+    padding: 1.15rem;
+  }
+  .telemetry-value {
+    font-size: 1.2rem;
+  }
+  .mode-card {
+    padding: 1.5rem;
+  }
+  .table-responsive {
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  #utm-component-select {
+    width: 100% !important;
+    margin-top: 0.5rem;
+  }
+}
+
+/* Mobile Phones (max-width: 575.98px) */
+@media (max-width: 575.98px) {
+  .container, .container-fluid {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  .hero-section {
+    padding: 2rem 0 1.5rem 0;
+  }
+  .hero-title {
+    font-size: 1.6rem;
+    line-height: 1.25;
+  }
+  .hero-gradient-text {
+    font-size: 1.9rem;
+  }
+  .hero-subtitle {
+    font-size: 1.05rem;
+  }
+  .btn-lab-primary, .btn-lab-secondary, .btn-lab-success {
+    width: 100%;
+    margin-bottom: 0.45rem;
+  }
+  .telemetry-readout {
+    padding: 0.65rem 0.75rem;
+  }
+  .telemetry-value {
+    font-size: 1.1rem;
+  }
+  .table-lab th, .table-lab td {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.88rem;
+  }
+
+  /* Transform observation table into clean mobile cards */
+  .table-mobile-cards thead {
+    display: none;
+  }
+  .table-mobile-cards,
+  .table-mobile-cards tbody,
+  .table-mobile-cards tr,
+  .table-mobile-cards td {
+    display: block;
+    width: 100%;
+  }
+  .table-mobile-cards tr {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.85rem;
+    padding: 0.85rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .table-mobile-cards td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 0;
+    border: none;
+    border-bottom: 1px dashed var(--border-color);
+  }
+  .table-mobile-cards td:last-child {
+    border-bottom: none;
+    padding-top: 0.65rem;
+  }
+  .table-mobile-cards td::before {
+    content: attr(data-label);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary-navy);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+  }
+  .table-mobile-cards td .form-control {
+    max-width: 60%;
+  }
+  .table-mobile-cards td:last-child button {
+    width: 100%;
+    min-height: 42px;
+  }
+}
+
+/* Extra Small Phones (320px - 360px) */
+@media (max-width: 360px) {
+  .hero-title {
+    font-size: 1.45rem;
+  }
+  .hero-gradient-text {
+    font-size: 1.7rem;
+  }
+  .hero-subtitle {
+    font-size: 0.95rem;
+  }
+  .navbar-brand {
+    font-size: 1.05rem;
+  }
+  .brand-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 0.85rem;
+  }
+  .lab-card {
+    padding: 0.9rem;
+  }
+  .mode-card {
+    padding: 1.15rem;
+  }
+  #res-modulus, #res-yield, #res-uts, #res-elongation, #res-toughness, #res-resilience {
+    font-size: 1.35rem !important;
+  }
+}
+

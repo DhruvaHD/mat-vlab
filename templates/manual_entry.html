@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Manual Laboratory Data Entry — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Mode Banner -->
+  <div class="alert-lab-info d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div class="d-flex align-items-center gap-2">
+      <i class="fas fa-keyboard fs-4 text-info"></i>
+      <div>
+        <strong class="text-info text-uppercase">Mode 2: Real Laboratory Manual Data Entry</strong>
+        <div class="small" style="color: #0c4a6e;">
+          Enter experimental observations collected from a physical Universal Testing Machine (UTM) or upload a CSV dataset.
+        </div>
+      </div>
+    </div>
+    <div>
+      <a href="{{ url_for('simulation') }}" class="btn btn-sm btn-outline-warning">
+        <i class="fas fa-desktop me-1"></i> Switch to Virtual Simulation Mode
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Specimen Setup & CSV Import -->
+    <div class="col-lg-4">
+      <div class="lab-card p-4 mb-4">
+        <h5 class="text-navy fw-bold mb-3"><i class="fas fa-ruler-combined text-steel me-2"></i> Specimen Dimensions</h5>
+
+        <div class="mb-3">
+          <label class="form-lab-label">Experiment Title</label>
+          <input type="text" id="experiment-title" class="form-control form-lab-control" value="UTM Tensile Laboratory Session #1" placeholder="e.g. Mild Steel Batch A Tensile Test">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-lab-label">Material Name / Specification</label>
+          <select id="specimen-material" class="form-select form-lab-control">
+            <option value="Mild Steel (AISI 1018 / IS 2062)" selected>Mild Steel (AISI 1018 / IS 2062)</option>
+            <option value="Aluminium Alloy (6061-T6)">Aluminium Alloy (6061-T6)</option>
+            <option value="Electrolytic Copper (C11000)">Electrolytic Copper (C11000)</option>
+            <option value="Cartridge Brass (C26000)">Cartridge Brass (C26000)</option>
+            <option value="Stainless Steel (AISI 304)">Stainless Steel (AISI 304)</option>
+            <option value="Titanium Alloy (Ti-6Al-4V)">Titanium Alloy (Ti-6Al-4V)</option>
+            <option value="Custom Specimen">Custom Engineering Alloy</option>
+          </select>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-lab-label">Original Diameter d₀</label>
+            <div class="input-group">
+              <input type="number" id="specimen-diameter" class="form-control form-lab-control font-mono" value="10.0" min="0.1" step="0.1" inputmode="decimal" required>
+              <span class="input-group-text bg-light border-secondary text-secondary">mm</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-lab-label">Original Gauge L₀</label>
+            <div class="input-group">
+              <input type="number" id="specimen-gauge-length" class="form-control form-lab-control font-mono" value="50.0" min="1.0" step="0.5" inputmode="decimal" required>
+              <span class="input-group-text bg-light border-secondary text-secondary">mm</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-lab-label">Cross-Sectional Area (A₀)</label>
+          <input type="text" id="calculated-area" class="form-control form-lab-control font-mono text-steel fw-bold" value="78.540 mm²" readonly>
+          <small class="text-secondary">Calculated automatically as $A_0 = \frac{\pi d_0^2}{4}$</small>
+        </div>
+
+        <hr class="border-secondary border-opacity-25 my-3">
+
+        <h6 class="text-navy fw-bold mb-2 small text-uppercase">Post-Fracture Dimensions (Optional for %EL &amp; %RA)</h6>
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="form-lab-label small">Final Gauge L_f</label>
+            <div class="input-group input-group-sm">
+              <input type="number" id="specimen-final-length" class="form-control form-lab-control font-mono" placeholder="e.g. 64.0" step="0.1" inputmode="decimal">
+              <span class="input-group-text bg-light border-secondary text-secondary">mm</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-lab-label small">Final Neck d_f</label>
+            <div class="input-group input-group-sm">
+              <input type="number" id="specimen-final-diameter" class="form-control form-lab-control font-mono" placeholder="e.g. 6.8" step="0.1" inputmode="decimal">
+              <span class="input-group-text bg-light border-secondary text-secondary">mm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CSV Import Card -->
+      <div class="lab-card p-4">
+        <h5 class="text-navy fw-bold mb-2"><i class="fas fa-file-csv text-success me-2"></i> CSV Data Import</h5>
+        <p class="text-secondary small mb-3">
+          Import readings directly from your lab machine log. The CSV should contain columns: <code>Load (N)</code> and <code>Extension (mm)</code>.
+        </p>
+
+        <div class="mb-3">
+          <input type="file" id="csv-file-input" class="form-control form-lab-control" accept=".csv, .txt">
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-outline-info flex-fill" onclick="downloadSampleCSV()">
+            <i class="fas fa-download me-1"></i> Sample CSV
+          </button>
+          <button type="button" id="btn-load-sample" class="btn btn-sm btn-outline-warning flex-fill">
+            <i class="fas fa-magic me-1"></i> Preload Sample Data
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Observation Table & Action Bar -->
+    <div class="col-lg-8">
+      <div class="lab-card p-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <div>
+            <h5 class="text-navy fw-bold mb-0">Tensile Observation Table</h5>
+            <small class="text-secondary">Enter instantaneous Load and Extension recorded during the test.</small>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span id="row-count-badge" class="badge bg-light text-primary border">4 readings</span>
+            <button type="button" id="btn-add-reading" class="btn btn-sm btn-lab-primary">
+              <i class="fas fa-plus me-1"></i> Add Reading
+            </button>
+            <button type="button" id="btn-clear-readings" class="btn btn-sm btn-outline-danger">
+              <i class="fas fa-trash-alt me-1"></i> Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable Table -->
+        <div class="table-responsive rounded border border-secondary border-opacity-25 mb-4" style="max-height: 480px;">
+          <table class="table table-lab table-mobile-cards mb-0" id="readings-table">
+            <thead>
+              <tr>
+                <th style="width: 70px;" class="text-center">#</th>
+                <th>Applied Load, P (N)</th>
+                <th>Gauge Extension, ΔL (mm)</th>
+                <th style="width: 70px;" class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="readings-table-body">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Big Analyze Data Action Button -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 p-3 rounded" style="background: var(--bg-secondary); border: 1px solid var(--border-color);">
+          <div class="text-secondary small">
+            <i class="fas fa-info-circle text-primary me-1"></i> Calculations conform to <strong>ASTM E8 / ISO 6892-1</strong> standards.
+          </div>
+          <button type="button" id="btn-analyze-data" class="btn btn-lg btn-lab-success">
+            <i class="fas fa-calculator me-2"></i> Analyze Data
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/tensile.js') }}"></script>
+{% endblock %}

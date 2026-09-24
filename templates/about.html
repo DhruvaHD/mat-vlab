@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}About MAT-VLAB — Project Architecture &amp; Academic Scope{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="text-center mb-5">
+    <span class="badge-lab mb-2">Academic &amp; Architectural Documentation</span>
+    <h1 class="fw-bold text-navy fs-2">About MAT-VLAB</h1>
+    <p class="text-secondary mx-auto" style="max-width: 680px;">
+      Interactive Virtual Materials Testing &amp; Analysis Laboratory designed as an educational engineering portfolio project for undergraduate Materials Science and Technology curricula.
+    </p>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <div class="col-lg-8">
+      <!-- Project Concept Card -->
+      <div class="lab-card p-4 mb-4">
+        <h4 class="text-navy fw-bold mb-3"><i class="fas fa-lightbulb text-warning me-2"></i> Project Concept</h4>
+        <p class="text-secondary mb-2">
+          MAT-VLAB was conceived as an idea by:
+        </p>
+        <h5 class="text-navy fw-bold mb-3">Dhruva H D</h5>
+        <p class="text-secondary mb-0">
+          The concept is to create an interactive, visual virtual laboratory for Materials Science and Technology students, combining virtual experiments with manual laboratory data entry, calculations, graphs, quizzes and reports.
+        </p>
+      </div>
+
+      <div class="lab-card p-4 mb-4">
+        <h4 class="text-navy fw-bold mb-3"><i class="fas fa-graduation-cap text-steel me-2"></i> Project Purpose &amp; Academic Context</h4>
+        <p class="text-secondary">
+          Materials testing laboratories form the practical backbone of Materials Science and Metallurgical Engineering education. However, equipment such as 50 kN Universal Testing Machines (UTM), precision extensometers, and high-temperature furnaces are often resource-constrained in academic settings.
+        </p>
+        <p class="text-secondary">
+          <strong>MAT-VLAB</strong> was designed to give students an authentic virtual laboratory environment where they can:
+        </p>
+        <ul class="text-secondary small ps-3 mb-4">
+          <li class="mb-1"><strong>Prepare for physical labs:</strong> Understand testing machine anatomy, sensor principles, and specimen geometry before stepping into a workshop.</li>
+          <li class="mb-1"><strong>Simulate mechanical behavior:</strong> Observe how different crystal lattices (ferrous vs FCC aluminium/copper) deform under stress.</li>
+          <li class="mb-1"><strong>Process real experimental data:</strong> Replace cumbersome spreadsheet calculations with standardized, automated calculations of Young's Modulus ($E$), 0.2% proof stress, and UTS.</li>
+          <li class="mb-1"><strong>Generate formal engineering lab reports:</strong> Produce downloadable PDF documentation complete with publication-grade curves and observations.</li>
+        </ul>
+
+        <div class="alert-lab-info p-3 mb-0">
+          <h6 class="fw-bold text-steel mb-1"><i class="fas fa-shield-alt me-1"></i> Pedagogical Disclaimer</h6>
+          <p class="small text-secondary mb-0">
+            MAT-VLAB is an educational simulator and analysis tool. <strong>It does not claim to replace hands-on physical testing laboratories.</strong> Real-world laboratory experience—including physical specimen machining, mechanical calibration, safety interlocks, and physical fracture examination—is indispensable to engineering education.
+          </p>
+        </div>
+      </div>
+
+      <div class="lab-card p-4">
+        <h4 class="text-navy fw-bold mb-3"><i class="fas fa-layer-group text-steel me-2"></i> System Architecture &amp; Modularity</h4>
+        <p class="text-secondary small mb-3">
+          MAT-VLAB enforces a strict separation of concerns across presentation, business logic, engineering calculations, and persistent data layers:
+        </p>
+
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h6 class="text-navy fw-bold small"><i class="fab fa-python text-warning me-1"></i> Backend &amp; Routing</h6>
+              <p class="text-secondary small mb-0">
+                Lightweight, secure <strong>Python 3 + Flask</strong> application handling modular endpoints, input validation, and RESTful JSON APIs.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h6 class="text-navy fw-bold small"><i class="fas fa-square-root-variable text-steel me-1"></i> Calculation Engine</h6>
+              <p class="text-secondary small mb-0">
+                Implemented in <code>calculations/tensile.py</code> using <strong>NumPy and Pandas</strong> to compute linear regression slopes, 0.2% offset proof stress, and trapezoidal energy integration.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h6 class="text-navy fw-bold small"><i class="fas fa-database text-success me-1"></i> Database Layer</h6>
+              <p class="text-secondary small mb-0">
+                <strong>SQLite3</strong> relational database with relational tables for materials, experiment metadata, observation readings, calculation results, and quiz scores.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
+              <h6 class="text-navy fw-bold small"><i class="fas fa-file-pdf text-danger me-1"></i> Report Generation</h6>
+              <p class="text-secondary small mb-0">
+                Programmatic PDF generation via <strong>ReportLab</strong>, dynamically rendering observation tables, metadata, and high-resolution matplotlib charts.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Standards, Tech Stack & Specs -->
+    <div class="col-lg-4">
+      <div class="lab-card p-4 mb-4">
+        <h5 class="text-navy fw-bold mb-3"><i class="fas fa-book text-warning me-2"></i> Reference Testing Standards</h5>
+        <ul class="list-unstyled small text-secondary mb-0">
+          <li class="mb-3">
+            <strong class="text-navy">ASTM E8 / E8M:</strong>
+            <div>Standard Test Methods for Tension Testing of Metallic Materials (Proportional Dogbone Specimen Standards).</div>
+          </li>
+          <li class="mb-3">
+            <strong class="text-navy">ISO 6892-1:</strong>
+            <div>Metallic materials — Tensile testing — Method of test at room temperature.</div>
+          </li>
+          <li class="mb-3">
+            <strong class="text-navy">ASTM E83:</strong>
+            <div>Standard Practice for Verification and Classification of Extensometer Systems.</div>
+          </li>
+          <li class="mb-0">
+            <strong class="text-navy">ASTM E9 / E18 / E23:</strong>
+            <div>Standards for compression, indentation hardness, and notched-bar impact testing.</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="lab-card p-4">
+        <h5 class="text-navy fw-bold mb-3"><i class="fas fa-code text-steel me-2"></i> Technology Stack</h5>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge bg-light border text-primary p-2">Python 3.12</span>
+          <span class="badge bg-light border text-primary p-2">Flask 3.1</span>
+          <span class="badge bg-light border text-primary p-2">NumPy 2.5</span>
+          <span class="badge bg-light border text-primary p-2">Pandas 3.0</span>
+          <span class="badge bg-light border text-primary p-2">ReportLab 5.0</span>
+          <span class="badge bg-light border text-primary p-2">Matplotlib 3.11</span>
+          <span class="badge bg-light border text-primary p-2">Plotly.js 2.30</span>
+          <span class="badge bg-light border text-primary p-2">Bootstrap 5.3</span>
+          <span class="badge bg-light border text-primary p-2">SQLite 3</span>
+          <span class="badge bg-light border text-primary p-2">HTML5 / SVG / CSS3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

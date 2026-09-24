@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.env
+
+# Local SQLite databases (containers initialize their own DB volume)
+*.db
+*.sqlite3
+
+# Git & Editor files
+.git/
+.gitignore
+.idea/
+.vscode/
+
+# Test caches & temporary
+.pytest_cache/
+tests/__pycache__/
+.DS_Store
+*.log

@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Material Comparison Tool — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="text-center mb-4">
+    <span class="badge-lab mb-2">Multivariate Mechanical Analysis</span>
+    <h1 class="fw-bold fs-2">Compare Materials &amp; Experimental Results</h1>
+    <p class="text-secondary mx-auto" style="max-width: 680px;">
+      Perform objective side-by-side engineering evaluation across standard reference alloys and your saved physical experiment sessions.
+    </p>
+  </div>
+
+  <!-- Selector Card -->
+  <div class="lab-card p-4 mb-4">
+    <h5 class="fw-bold mb-3"><i class="fas fa-check-square text-steel me-2"></i> Select Materials to Compare</h5>
+    <div class="row g-3">
+      {% for m in materials %}
+      <div class="col-md-4 col-sm-6">
+        <div class="form-check p-2 rounded bg-light border border-secondary border-opacity-25 h-100">
+          <input class="form-check-input material-compare-checkbox ms-1" type="checkbox" value="{{ m.slug }}" id="check-{{ m.slug }}" {% if loop.index <= 3 %}checked{% endif %}>
+          <label class="form-check-label text-main small fw-semibold ms-2" for="check-{{ m.slug }}">
+            {{ m.name }}
+            <div class="text-muted" style="font-size: 0.75rem;">{{ m.category }}</div>
+          </label>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if saved_experiments %}
+    <h6 class="text-navy fw-bold mt-4 mb-2 small text-uppercase"><i class="fas fa-flask me-1 text-steel"></i> Your Saved Laboratory Experiments</h6>
+    <div class="row g-3">
+      {% for exp in saved_experiments %}
+      <div class="col-md-4 col-sm-6">
+        <div class="form-check p-2 rounded bg-light border border-info border-opacity-50 h-100">
+          <input class="form-check-input experiment-compare-checkbox ms-1" type="checkbox" value="{{ exp.id }}" id="check-exp-{{ exp.id }}">
+          <label class="form-check-label text-main small fw-semibold ms-2" for="check-exp-{{ exp.id }}">
+            <span class="badge bg-primary text-white">Exp #{{ exp.id }}</span> {{ exp.title }}
+            <div class="text-muted" style="font-size: 0.75rem;">{{ exp.material_name }} ({{ exp.mode }})</div>
+          </label>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 pt-3 border-top border-secondary border-opacity-25">
+      <span class="text-muted small">Select at least 2 items to render comparison graphs.</span>
+      <button type="button" class="btn btn-sm btn-lab-primary" onclick="updateComparison()">
+        <i class="fas fa-sync-alt me-1"></i> Update Comparison
+      </button>
+    </div>
+  </div>
+
+  <!-- Comparative Charts Row -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="lab-card p-3 h-100">
+        <h6 class="fw-bold mb-2 text-navy">Young's Modulus, E (Stiffness) [GPa]</h6>
+        <div id="chart-modulus" style="height: 320px;"></div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="lab-card p-3 h-100">
+        <h6 class="fw-bold mb-2 text-navy">Yield &amp; Tensile Strength [MPa]</h6>
+        <div id="chart-strength" style="height: 320px;"></div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="lab-card p-3 h-100">
+        <h6 class="fw-bold mb-2 text-navy">Ductility: Fracture Elongation [%]</h6>
+        <div id="chart-elongation" style="height: 320px;"></div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="lab-card p-3 h-100">
+        <h6 class="fw-bold mb-2 text-navy">Specific Strength Index (UTS / Density) [MPa / (g/cm³)]</h6>
+        <div id="chart-specific-strength" style="height: 320px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Data Table -->
+  <div class="lab-card p-4 mb-4">
+    <h5 class="fw-bold mb-3">Mechanical Property Comparison Table</h5>
+    <div class="table-responsive">
+      <table class="table table-lab mb-0" id="compare-table">
+        <thead>
+          <tr>
+            <th>Material / Specimen</th>
+            <th>Type</th>
+            <th>Density (g/cm³)</th>
+            <th>Young's Modulus (GPa)</th>
+            <th>Yield Strength (MPa)</th>
+            <th>UTS (MPa)</th>
+            <th>Elongation (%)</th>
+            <th>Specific Strength</th>
+          </tr>
+        </thead>
+        <tbody id="compare-table-body">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Academic Engineering Note -->
+  <div class="alert-lab-info p-3">
+    <h6 class="fw-bold mb-1"><i class="fas fa-balance-scale me-1"></i> Engineering Evaluation Note:</h6>
+    <p class="small mb-0">
+      Materials cannot be generically classified as universally "best". Material selection is strictly contingent on specific engineering performance indices (Ashby charts), such as maximizing specific stiffness ($E/\rho$), energy absorption ($U_t$), corrosion resistance, or economic feasibility.
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const allMaterials = {{ materials|tojson }};
+const savedExperiments = {{ saved_experiments|tojson }};
+
+function getSelectedData() {
+  const selected = [];
+
+  // Checkboxes for materials
+  document.querySelectorAll('.material-compare-checkbox:checked').forEach(cb => {
+    const m = allMaterials.find(x => x.slug === cb.value);
+    if (m) {
+      selected.push({
+        name: m.name,
+        type: 'Standard Reference',
+        density: m.density_g_cm3,
+        modulus: m.youngs_modulus_gpa,
+        yield: m.yield_strength_mpa,
+        uts: m.uts_mpa,
+        elongation: m.elongation_pct,
+        specific_strength: Math.round(m.uts_mpa / m.density_g_cm3)
+      });
+    }
+  });
+
+  // Checkboxes for user experiments
+  document.querySelectorAll('.experiment-compare-checkbox:checked').forEach(cb => {
+    const exp = savedExperiments.find(x => x.id == cb.value);
+    if (exp) {
+      const density = 7.85; // approximate if not recorded
+      selected.push({
+        name: `[Exp #${exp.id}] ${exp.title}`,
+        type: `User ${exp.mode}`,
+        density: density,
+        modulus: exp.youngs_modulus_gpa || 0,
+        yield: 250.0,
+        uts: exp.uts_mpa || 0,
+        elongation: exp.elongation_pct || 0,
+        specific_strength: exp.uts_mpa ? Math.round(exp.uts_mpa / density) : 0
+      });
+    }
+  });
+
+  return selected;
+}
+
+function updateComparison() {
+  const data = getSelectedData();
+  if (data.length === 0) {
+    showToast('Please select at least one material to compare.', 'warning');
+    return;
+  }
+
+  const names = data.map(d => d.name);
+
+  // Chart theme layout base (Clean White Engineering Theme)
+  const baseLayout = {
+    paper_bgcolor: '#ffffff',
+    plot_bgcolor: '#f8fafc',
+    font: { color: '#334155', family: 'Inter' },
+    margin: { l: 50, r: 20, t: 30, b: 80 },
+    xaxis: { tickangle: -20, tickfont: { size: 10, color: '#475569', family: 'Inter' }, gridcolor: '#e2e8f0' },
+    yaxis: { gridcolor: '#e2e8f0', zerolinecolor: '#cbd5e1' }
+  };
+
+  // 1. Modulus Chart
+  Plotly.newPlot('chart-modulus', [{
+    x: names,
+    y: data.map(d => d.modulus),
+    type: 'bar',
+    marker: { color: '#0f2b48' }
+  }], { ...baseLayout, yaxis: { title: 'GPa', gridcolor: '#e2e8f0' } }, { responsive: true, displayModeBar: false });
+
+  // 2. Strength Chart (Yield vs UTS)
+  Plotly.newPlot('chart-strength', [
+    { x: names, y: data.map(d => d.yield), type: 'bar', name: 'Yield Strength', marker: { color: '#d97706' } },
+    { x: names, y: data.map(d => d.uts), type: 'bar', name: 'UTS', marker: { color: '#dc2626' } }
+  ], { ...baseLayout, barmode: 'group', yaxis: { title: 'MPa', gridcolor: '#e2e8f0' } }, { responsive: true, displayModeBar: false });
+
+  // 3. Elongation Chart
+  Plotly.newPlot('chart-elongation', [{
+    x: names,
+    y: data.map(d => d.elongation),
+    type: 'bar',
+    marker: { color: '#059669' }
+  }], { ...baseLayout, yaxis: { title: '%', gridcolor: '#e2e8f0' } }, { responsive: true, displayModeBar: false });
+
+  // 4. Specific Strength Chart
+  Plotly.newPlot('chart-specific-strength', [{
+    x: names,
+    y: data.map(d => d.specific_strength),
+    type: 'bar',
+    marker: { color: '#7c3aed' }
+  }], { ...baseLayout, yaxis: { title: 'MPa / (g/cm³)', gridcolor: '#e2e8f0' } }, { responsive: true, displayModeBar: false });
+
+  // Update Table
+  const tbody = document.getElementById('compare-table-body');
+  tbody.innerHTML = '';
+  data.forEach(d => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="fw-bold text-main">${d.name}</td>
+      <td><span class="badge ${d.type.includes('Reference') ? 'bg-secondary' : 'bg-primary'}">${d.type}</span></td>
+      <td class="font-mono">${d.density}</td>
+      <td class="font-mono text-steel fw-bold">${d.modulus}</td>
+      <td class="font-mono text-warning fw-bold">${d.yield}</td>
+      <td class="font-mono text-danger fw-bold">${d.uts}</td>
+      <td class="font-mono text-success fw-bold">${d.elongation}%</td>
+      <td class="font-mono fw-bold" style="color: #7c3aed;">${d.specific_strength}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateComparison();
+});
+</script>
+{% endblock %}

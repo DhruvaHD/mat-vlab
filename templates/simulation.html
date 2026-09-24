@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Virtual Simulation Mode — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4">
+  <!-- Mode Banner -->
+  <div class="alert-lab-warning d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div class="d-flex align-items-center gap-2">
+      <i class="fas fa-exclamation-triangle fs-4 text-warning"></i>
+      <div>
+        <strong class="text-warning text-uppercase">Mode 1: Virtual Simulation Mode</strong>
+        <div class="small" style="color: #78350f;">
+          Simulated demonstration data generated via constitutive equations (ASTM E8 model). Clearly labeled as <strong>SIMULATION DATA</strong>.
+        </div>
+      </div>
+    </div>
+    <div>
+      <a href="{{ url_for('manual_entry') }}" class="btn btn-sm btn-outline-info">
+        <i class="fas fa-keyboard me-1"></i> Switch to Manual Lab Data Mode
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Virtual UTM Machine & Specimen Animation -->
+    <div class="col-xl-5 col-lg-6">
+      <div class="lab-card p-3 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="text-navy fw-bold mb-0"><i class="fas fa-desktop text-steel me-2"></i> UTM Station Simulation</h5>
+          <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50">
+            <span class="badge-pulse me-1"></span> Crosshead Synced
+          </span>
+        </div>
+
+        <div class="utm-container mb-3" style="min-height: clamp(280px, 46vh, 500px); display: flex; justify-content: center; align-items: center;">
+          <div style="width: 100%; max-width: 480px; height: clamp(280px, 46vh, 500px);">
+            {% include "static/images/utm_diagram.svg" ignore missing %}
+          </div>
+        </div>
+
+        <!-- Telemetry Cards -->
+        <div class="row g-2">
+          <div class="col-6">
+            <div class="telemetry-readout">
+              <div class="telemetry-label">Applied Tensile Load</div>
+              <div class="d-flex align-items-baseline">
+                <span id="telemetry-load-n" class="telemetry-value">0.0</span>
+                <span class="telemetry-unit">N</span>
+                <span class="text-muted ms-2 small">(<span id="telemetry-load-kn">0.00</span> kN)</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="telemetry-readout">
+              <div class="telemetry-label">Gauge Extension (ΔL)</div>
+              <div class="d-flex align-items-baseline">
+                <span id="telemetry-ext" class="telemetry-value text-cyan">0.000</span>
+                <span class="telemetry-unit">mm</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="telemetry-readout">
+              <div class="telemetry-label">Engineering Stress (σ)</div>
+              <div class="d-flex align-items-baseline">
+                <span id="telemetry-stress" class="telemetry-value text-warning">0.0</span>
+                <span class="telemetry-unit">MPa</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="telemetry-readout">
+              <div class="telemetry-label">Engineering Strain (ε)</div>
+              <div class="d-flex align-items-baseline">
+                <span id="telemetry-strain" class="telemetry-value text-success">0.00%</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="telemetry-readout">
+              <div class="telemetry-label">Deformation Regime Status</div>
+              <div id="telemetry-status" class="telemetry-value text-info fs-6">
+                Elastic Region (Hookean)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Control Console & Real-time Plotly Curve -->
+    <div class="col-xl-7 col-lg-6">
+      <div class="lab-card p-4 mb-4">
+        <h5 class="text-navy fw-bold mb-3"><i class="fas fa-sliders-h text-steel me-2"></i> Machine Setup &amp; Controls</h5>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-5">
+            <label class="form-lab-label">Select Test Material</label>
+            <select id="sim-material" class="form-select form-lab-control">
+              <option value="mild-steel" selected>Mild Steel (AISI 1018 / IS 2062)</option>
+              <option value="aluminium-6061-t6">Aluminium Alloy (6061-T6)</option>
+              <option value="copper-c11000">Electrolytic Copper (C11000)</option>
+              <option value="brass-c26000">Cartridge Brass (C26000)</option>
+              <option value="stainless-steel-304">Stainless Steel (AISI 304)</option>
+            </select>
+          </div>
+
+          <div class="col-md-3 col-6">
+            <label class="form-lab-label">Diameter d₀ (mm)</label>
+            <input type="number" id="sim-diameter" class="form-control form-lab-control font-mono" value="10.0" min="4" max="25" step="0.5">
+          </div>
+
+          <div class="col-md-4 col-6">
+            <label class="form-lab-label">Gauge Length L₀ (mm)</label>
+            <input type="number" id="sim-gauge-length" class="form-control form-lab-control font-mono" value="50.0" min="20" max="150" step="5">
+          </div>
+        </div>
+
+        <!-- Progress bar & Load Slider -->
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-lab-label mb-0">Tensile Test Loading Progress</label>
+            <span class="text-muted small font-mono">0 N → Fracture Load</span>
+          </div>
+          <div class="progress mb-2" style="height: 6px; background-color: var(--bg-input);">
+            <div id="sim-progress-bar" class="progress-bar bg-info progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;"></div>
+          </div>
+          <input type="range" id="sim-load-slider" class="form-range" min="0" max="30" value="0">
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-flex flex-wrap gap-2">
+          <button type="button" id="btn-sim-play" class="btn btn-lab-primary">
+            <i class="fas fa-play"></i> Start Test
+          </button>
+          <button type="button" id="btn-sim-step-fwd" class="btn btn-lab-secondary">
+            <i class="fas fa-step-forward"></i> Step (+1)
+          </button>
+          <button type="button" id="btn-sim-step-back" class="btn btn-lab-secondary">
+            <i class="fas fa-step-backward"></i> Step (-1)
+          </button>
+          <button type="button" id="btn-sim-reset" class="btn btn-outline-danger btn-sm ms-auto">
+            <i class="fas fa-redo"></i> Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Progressive Plotly Chart -->
+      <div class="lab-card p-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 small">
+            <i class="fas fa-chart-line me-1"></i> Real-time Telemetry Trace [SIMULATION DATA]
+          </div>
+          <div class="text-muted small">
+            <span class="badge bg-danger text-white me-1">●</span> Active Datapoint
+          </div>
+        </div>
+        <div id="sim-plot" style="height: 380px; width: 100%;"></div>
+      </div>
+
+      <!-- Completion Action Card (Reveals upon reaching fracture) -->
+      <div id="sim-completion-card" class="lab-card p-4 border-success d-none">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+          <div>
+            <h5 class="text-success fw-bold mb-1"><i class="fas fa-check-circle me-2"></i> Tensile Fracture Reached!</h5>
+            <p class="text-muted small mb-0">
+              The virtual test has concluded. You can now transfer this dataset to the full analysis engine to view step-by-step formulas, calculate mechanical properties, save to your database, or generate a formal PDF report.
+            </p>
+          </div>
+          <button type="button" id="btn-sim-analyze" class="btn btn-lab-success">
+            <i class="fas fa-calculator me-2"></i> View Full Analysis &amp; Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/simulation.js') }}"></script>
+{% endblock %}
