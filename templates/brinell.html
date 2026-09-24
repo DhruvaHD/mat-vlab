@@ -1,0 +1,1189 @@
+{% extends "base.html" %}
+
+{% block title %}Brinell Hardness Test (ASTM E10) — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Breadcrumb & Top Bar -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('experiments') }}" class="text-decoration-none">Experiments</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('hardness_hub') }}" class="text-decoration-none">Hardness Test</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Brinell Hardness Test</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Banner -->
+  <div class="lab-card p-4 p-md-5 mb-4 border border-secondary border-opacity-25 shadow-sm position-relative overflow-hidden">
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+      <span class="badge bg-warning bg-opacity-25 text-dark fw-bold border border-warning border-opacity-50 px-2 py-1">
+        <i class="fas fa-bullseye me-1 text-warning"></i> Ball Indentation Method
+      </span>
+      <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1">
+        <i class="fas fa-certificate me-1"></i> ASTM E10 / ISO 6506-1 / IS 1500
+      </span>
+      <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+        <i class="fas fa-check-circle me-1"></i> Active Virtual Laboratory
+      </span>
+    </div>
+
+    <h1 class="fw-bold text-navy fs-1 mb-2">Brinell Hardness Test (HBW)</h1>
+    <p class="text-secondary fs-6 mb-3" style="max-width: 840px;">
+      Determine the surface indentation hardness of metallic materials by forcing a hardened tungsten carbide ball into the test specimen 
+      under a heavy static normal load ($P$), and measuring the resulting spherical impression diameter ($d$) using an optical measuring microscope.
+    </p>
+
+    <div class="d-flex flex-wrap gap-2">
+      <a href="#virtual-lab" class="btn btn-sm btn-lab-primary">
+        <i class="fas fa-play me-1"></i> Start Virtual Simulation
+      </a>
+      <a href="#manual-lab" class="btn btn-sm btn-lab-secondary">
+        <i class="fas fa-keyboard me-1"></i> Manual Data Entry
+      </a>
+      <a href="#apparatus" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-eye me-1"></i> Interactive Machine Diagram
+      </a>
+      <a href="#quiz-section" class="btn btn-sm btn-outline-warning text-dark">
+        <i class="fas fa-graduation-cap me-1 text-warning"></i> Take Quiz
+      </a>
+    </div>
+  </div>
+
+  <!-- Quick Anchor Navigation Tabs -->
+  <div class="lab-card p-2 mb-4 border border-secondary border-opacity-25 bg-light d-flex flex-wrap gap-2 justify-content-between align-items-center shadow-sm">
+    <div class="d-flex flex-wrap gap-1">
+      <a href="#objective" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">1. Objective</a>
+      <a href="#theory" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">2. Theory &amp; Principle</a>
+      <a href="#apparatus" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">3. Apparatus</a>
+      <a href="#specimen" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">4. Specimen</a>
+      <a href="#procedure" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">5. Procedure</a>
+      <a href="#virtual-lab" class="btn btn-sm btn-link text-decoration-none text-primary fw-bold px-2 py-1">6. Virtual Lab</a>
+      <a href="#manual-lab" class="btn btn-sm btn-link text-decoration-none text-success fw-bold px-2 py-1">7. Manual Data Entry</a>
+      <a href="#calculations" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">8. Calculations</a>
+      <a href="#quiz-section" class="btn btn-sm btn-link text-decoration-none text-warning text-dark fw-semibold px-2 py-1">9. Quiz</a>
+    </div>
+    <span class="badge bg-secondary bg-opacity-25 text-secondary font-mono small d-none d-md-inline">ASTM E10</span>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 1. OBJECTIVE -->
+  <!-- ========================================== -->
+  <section id="objective" class="mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-mono">01</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Experiment Objective</h3>
+      </div>
+      <p class="text-secondary mb-0">
+        To determine the <strong>Brinell Hardness Number (HBW)</strong> of various ferrous and non-ferrous engineering alloys 
+        (Mild Steel, Medium Carbon Steel, Grey Cast Iron, Aluminium 6061-T6, Cartridge Brass, and Copper) using a standard 
+        tungsten carbide spherical indenter under specified normal loads, verify indentation geometric validity ($0.24 \le d/D \le 0.60$), 
+        and correlate measured hardness with empirical tensile strength ($\sigma_{uts} \approx 3.45 \cdot HBW$).
+      </p>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 2. THEORY & PRINCIPLE -->
+  <!-- ========================================== -->
+  <section id="theory" class="mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-mono">02</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Theory &amp; Principle of Brinell Testing</h3>
+      </div>
+
+      <div class="row g-4 align-items-center mb-3">
+        <div class="col-lg-7">
+          <p class="text-secondary small leading-relaxed">
+            In the Brinell hardness test (invented by Swedish engineer Johan August Brinell in 1900), a precision ground, hardened 
+            spherical ball indenter of diameter $D$ is pressed into the flat, polished surface of a test metal by an applied normal load $P$. 
+            The load is maintained for a designated dwell period (typically <strong>10 to 15 seconds</strong> for ferrous metals and 
+            <strong>30 seconds</strong> for soft non-ferrous metals).
+          </p>
+          <p class="text-secondary small leading-relaxed">
+            After the load is released, a spherical cap indentation remains. The curved contact surface area ($A$) of this impression is:
+          </p>
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 font-mono text-center fs-5 text-navy mb-3">
+            $$HBW = \frac{2P}{\pi D \left(D - \sqrt{D^2 - d^2}\right)}$$
+          </div>
+          <div class="small text-muted mb-2">
+            Where:
+            <ul>
+              <li><strong>$P$</strong> = Applied normal test force in kilogram-force ($\text{kgf}$) [or $1\text{ kgf} = 9.80665\text{ N}$]</li>
+              <li><strong>$D$</strong> = Diameter of the tungsten carbide indenter ball in millimeters ($\text{mm}$) [Standard: 10 mm, 5 mm, 2.5 mm]</li>
+              <li><strong>$d$</strong> = Arithmetic mean diameter of the impression in millimeters: $d = \frac{d_1 + d_2}{2}$</li>
+              <li><strong>$HBW$</strong> = Hardness Brinell Wolfram-Carbide (ASTM E10 designation)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-5 text-center">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25">
+            <img src="{{ url_for('static', filename='images/brinell_indentation.svg') }}" alt="Brinell Spherical Cap Indentation Geometry" class="w-100 object-fit-contain" style="max-height: 220px;">
+            <div class="small text-muted mt-2 fw-semibold">Figure 1: Spherical Cap Indentation Geometry ($D, d, h$)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- P/D^2 Ratio Table -->
+      <h5 class="fw-bold text-navy fs-6 mb-2 mt-3">Load-to-Ball Diameter Ratio ($P / D^2$) Criteria</h5>
+      <p class="text-secondary small mb-2">
+        To maintain geometric similarity of spherical indentations across different ball sizes, standard ASTM E10 and ISO 6506-1 specify standardized $P/D^2$ ratios:
+      </p>
+      <div class="table-responsive rounded border border-secondary border-opacity-25">
+        <table class="table table-sm table-hover align-middle mb-0 small font-mono">
+          <thead class="bg-light">
+            <tr>
+              <th>Material Classification</th>
+              <th>$P / D^2$ Ratio</th>
+              <th>Ball $D = 10\text{ mm}$</th>
+              <th>Ball $D = 5\text{ mm}$</th>
+              <th>Ball $D = 2.5\text{ mm}$</th>
+              <th>Dwell Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="fw-bold text-navy">Steels, Alloy Steels, Cast Irons, Nickel Alloys</td>
+              <td class="text-primary fw-bold">30</td>
+              <td>3000 kgf (29.42 kN)</td>
+              <td>750 kgf</td>
+              <td>187.5 kgf</td>
+              <td>10 – 15 s</td>
+            </tr>
+            <tr>
+              <td class="fw-bold text-navy">Copper Alloys, Brasses, Bronzes, Aluminium Alloys</td>
+              <td class="text-primary fw-bold">10</td>
+              <td>1000 kgf (9.81 kN)</td>
+              <td>250 kgf</td>
+              <td>62.5 kgf</td>
+              <td>15 – 30 s</td>
+            </tr>
+            <tr>
+              <td class="fw-bold text-navy">Pure Aluminium, Magnesium, Bearing Alloys</td>
+              <td class="text-primary fw-bold">5</td>
+              <td>500 kgf (4.90 kN)</td>
+              <td>125 kgf</td>
+              <td>31.25 kgf</td>
+              <td>30 s</td>
+            </tr>
+            <tr>
+              <td class="fw-bold text-navy">Lead, Tin, Soft Solder, White Metals</td>
+              <td class="text-primary fw-bold">2.5 or 1</td>
+              <td>250 kgf or 100 kgf</td>
+              <td>62.5 kgf</td>
+              <td>15.6 kgf</td>
+              <td>30 s</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 3. APPARATUS & INTERACTIVE MACHINE VISUALIZER -->
+  <!-- ========================================== -->
+  <section id="apparatus" class="mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-mono">03</span>
+          <h3 class="fw-bold text-navy fs-4 mb-0">Apparatus &amp; Machine Visualizer</h3>
+        </div>
+        <span class="badge bg-info bg-opacity-10 text-primary border border-info border-opacity-25 px-2 py-1 small">
+          <i class="fas fa-hand-pointer me-1"></i> Interactive Component Explorer
+        </span>
+      </div>
+
+      <p class="text-secondary small mb-3">
+        Explore the primary mechanical and measuring components of the Brinell Hardness Tester. 
+        <strong>Click or tap any component</strong> on the schematic below to view its technical specifications and educational role.
+      </p>
+
+      <div class="row g-4 align-items-start">
+        <!-- SVG Graphic -->
+        <div class="col-lg-7 text-center">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 position-relative shadow-sm" style="min-height: 480px;">
+            <div id="brinell-svg-container" style="max-width: 600px; margin: 0 auto;">
+              <!-- Embedded Interactive SVG -->
+              {% include "static/images/brinell_tester.svg" ignore missing %}
+              {% if not brinell_svg_included %}
+              <img src="{{ url_for('static', filename='images/brinell_tester.svg') }}" alt="Brinell Hardness Machine Schematic" class="w-100 object-fit-contain" id="brinell-tester-img" style="cursor: pointer;">
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Component Detail Inspector Card -->
+        <div class="col-lg-5">
+          <div class="lab-card p-4 border border-primary border-opacity-50 h-100 shadow-sm" id="component-card">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge bg-primary px-2 py-1 font-mono small" id="comp-badge">MACHINE COMPONENT</span>
+              <span class="badge bg-light text-muted border font-mono small" id="comp-id">frame</span>
+            </div>
+            <h4 class="fw-bold text-navy mb-2" id="comp-title">Heavy Cast Iron C-Frame</h4>
+            <div class="p-3 bg-light rounded border border-secondary border-opacity-25 mb-3 small">
+              <div class="text-secondary fw-semibold mb-1">Technical Specification:</div>
+              <div class="text-dark font-mono" id="comp-specs">Grade 35 Cast Iron, 1200 kg heavy structural column designed to withstand 3000 kgf load with &lt; 0.01 mm deflection.</div>
+            </div>
+            <div class="text-secondary small leading-relaxed mb-3" id="comp-desc">
+              The main rigid structural column supports the elevating screw, test anvil, hydraulic loading ram, and optical measuring microscope. High torsional and axial stiffness prevents frame flexing that could induce non-perpendicular load vectors.
+            </div>
+            <div class="alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-0">
+              <i class="fas fa-lightbulb text-primary"></i>
+              <div id="comp-tip">Click components on the diagram (Indenter, Specimen, Anvil, Handwheel, Dial Gauge, Microscope) to learn their function.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 4. SPECIMEN REQUIREMENTS & LIMITATIONS -->
+  <!-- ========================================== -->
+  <section id="specimen" class="mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-mono">04</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Specimen Requirements &amp; Testing Limitations</h3>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-3">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 h-100">
+            <div class="fw-bold text-navy mb-1"><i class="fas fa-layer-group text-primary me-2"></i>Thickness ($t \ge 8h$)</div>
+            <p class="text-secondary small mb-0">
+              Specimen thickness must be at least <strong>8 to 10 times</strong> the indentation depth $h = (D - \sqrt{D^2 - d^2})/2$ to prevent the "anvil effect" (where the support anvil distorts the bottom face).
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 h-100">
+            <div class="fw-bold text-navy mb-1"><i class="fas fa-arrows-alt-h text-warning me-2"></i>Edge Distance ($\ge 2.5d$)</div>
+            <p class="text-secondary small mb-0">
+              The distance from the center of any indentation to the edge of the specimen must be at least <strong>2.5 times</strong> the indentation diameter ($d$) to prevent unconstrained plastic edge bulging.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 h-100">
+            <div class="fw-bold text-navy mb-1"><i class="fas fa-compress-alt text-success me-2"></i>Indent Spacing ($\ge 3d$)</div>
+            <p class="text-secondary small mb-0">
+              The distance between centers of adjacent indentations must be at least <strong>3.0 times</strong> $d$ to avoid measuring work-hardened plastic deformation zones from prior tests.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 h-100">
+            <div class="fw-bold text-navy mb-1"><i class="fas fa-exclamation-triangle text-danger me-2"></i>Upper Limit ($&le; 650$ HBW)</div>
+            <p class="text-secondary small mb-0">
+              Brinell testing is limited to materials with hardness under <strong>650 HBW</strong>. Testing harder metals causes flattening and elastic spalling of the tungsten carbide ball indenter.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 5. PROCEDURE (STANDARD OPERATING PROCEDURE) -->
+  <!-- ========================================== -->
+  <section id="procedure" class="mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-mono">05</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Standard Operating Procedure (ASTM E10)</h3>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="p-3 border rounded h-100 bg-white shadow-xs">
+            <div class="badge bg-primary mb-2">Step 1: Surface Preparation</div>
+            <h6 class="fw-bold text-navy">Grinding &amp; Mounting</h6>
+            <p class="text-secondary small mb-0">
+              Grind and polish the specimen face with emery paper (up to 400 grit) to remove mill scale, oxide films, and decarburized layers. Ensure top and bottom surfaces are parallel. Place sample flat on the anvil.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="p-3 border rounded h-100 bg-white shadow-xs">
+            <div class="badge bg-primary mb-2">Step 2: Elevation &amp; Loading</div>
+            <h6 class="fw-bold text-navy">Load Dwell Cycle</h6>
+            <p class="text-secondary small mb-0">
+              Turn the handwheel clockwise to raise the anvil until the specimen contacts the ball indenter. Actuate the hydraulic/deadweight loading lever. Maintain the designated load (e.g. 3000 kgf) for 10–15 seconds dwell.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="p-3 border rounded h-100 bg-white shadow-xs">
+            <div class="badge bg-primary mb-2">Step 3: Optical Measurement</div>
+            <h6 class="fw-bold text-navy">Reticle Reading &amp; HBW</h6>
+            <p class="text-secondary small mb-0">
+              Release the load and lower the specimen. Position the 20x optical measuring microscope over the impression. Align reticle crosshairs to measure two perpendicular diameters $d_1$ and $d_2$. Calculate mean $d$ and compute HBW.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 6. VIRTUAL EXPERIMENT STUDIO -->
+  <!-- ========================================== -->
+  <section id="virtual-lab" class="mb-4">
+    <div class="lab-card p-4 border border-primary border-opacity-50 shadow-sm" style="background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary bg-opacity-25 text-primary fw-bold font-mono">06</span>
+          <h3 class="fw-bold text-navy fs-3 mb-0">Virtual Experiment Studio</h3>
+        </div>
+        <span class="badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-50 px-2 py-1 fw-bold">
+          <i class="fas fa-desktop me-1"></i> SIMULATION / DEMONSTRATION DATA
+        </span>
+      </div>
+
+      <p class="text-secondary small mb-4">
+        Conduct an interactive virtual Brinell test. Select an engineering material, configure indenter ball diameter and load, 
+        execute the automated loading dwell cycle, and inspect the optical microscope reticle impression to determine hardness.
+      </p>
+
+      <div class="row g-4">
+        <!-- Simulation Controls -->
+        <div class="col-lg-5">
+          <div class="lab-card p-3 border border-secondary border-opacity-25 bg-white shadow-sm">
+            <h5 class="fw-bold text-navy mb-3"><i class="fas fa-sliders-h text-primary me-2"></i>Testing Parameters</h5>
+
+            <!-- Material Dropdown -->
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-navy">Select Specimen Material:</label>
+              <select class="form-select form-select-sm" id="vMaterialSelect">
+                <option value="mild-steel" selected>Mild Steel (IS 2062 / AISI 1018) — P/D² = 30</option>
+                <option value="medium-carbon-steel">Medium Carbon Steel (AISI 1045) — P/D² = 30</option>
+                <option value="grey-cast-iron">Grey Cast Iron (FG 200) — P/D² = 30</option>
+                <option value="stainless-steel-304">Stainless Steel (AISI 304) — P/D² = 30</option>
+                <option value="aluminium-6061-t6">Aluminium Alloy 6061-T6 — P/D² = 5</option>
+                <option value="cartridge-brass">Cartridge Brass (70Cu-30Zn) — P/D² = 10</option>
+                <option value="pure-copper">Electrolytic Tough Pitch (ETP) Copper — P/D² = 5</option>
+              </select>
+            </div>
+
+            <!-- Ball Diameter Selector -->
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-navy">Indenter Ball Diameter ($D$):</label>
+              <select class="form-select form-select-sm" id="vBallDiaSelect">
+                <option value="10.0" selected>10.0 mm (Standard Tungsten Carbide Ball)</option>
+                <option value="5.0">5.0 mm (Sub-sized Tungsten Carbide Ball)</option>
+                <option value="2.5">2.5 mm (Thin Section Tungsten Carbide Ball)</option>
+              </select>
+            </div>
+
+            <!-- Applied Load Selector -->
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-navy">Applied Load ($P$):</label>
+              <select class="form-select form-select-sm" id="vLoadSelect">
+                <option value="3000.0" selected>3000 kgf (29.42 kN) — Steels &amp; Cast Iron</option>
+                <option value="1500.0">1500 kgf (14.71 kN)</option>
+                <option value="1000.0">1000 kgf (9.81 kN) — Brass &amp; Copper Alloys</option>
+                <option value="500.0">500 kgf (4.90 kN) — Aluminium Alloys</option>
+                <option value="250.0">250 kgf (2.45 kN) — Soft Metals</option>
+              </select>
+            </div>
+
+            <!-- Dwell Time -->
+            <div class="mb-4">
+              <div class="d-flex justify-content-between small fw-bold text-navy mb-1">
+                <span>Dwell Time:</span>
+                <span id="dwellTimeVal">12 seconds</span>
+              </div>
+              <div class="progress" style="height: 8px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" id="dwellProgressBar" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <button type="button" class="btn btn-lab-primary w-100 fw-bold py-2 mb-2" id="vStartTestBtn">
+              <i class="fas fa-play me-2"></i> Apply Load &amp; Run Test
+            </button>
+            <button type="button" class="btn btn-outline-secondary w-100 btn-sm" id="vResetTestBtn">
+              <i class="fas fa-redo me-1"></i> Reset Simulation
+            </button>
+          </div>
+        </div>
+
+        <!-- Simulation Viewport & Optical Microscope -->
+        <div class="col-lg-7">
+          <div class="lab-card p-3 border border-secondary border-opacity-25 bg-white shadow-sm h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="fw-bold text-navy mb-0"><i class="fas fa-microscope text-primary me-2"></i>Optical Reticle Measurement</h5>
+              <span class="badge bg-light text-secondary border font-mono small" id="simStatusBadge">Ready to Test</span>
+            </div>
+
+            <!-- Microscope Reticle Canvas Display -->
+            <div class="rounded border p-3 text-center my-auto position-relative bg-light" style="min-height: 260px; background: #0f172a !important;">
+              
+              <!-- Reticle SVG Graphic -->
+              <svg viewBox="0 0 300 300" width="220" height="220" id="reticle-svg" class="mx-auto d-block">
+                <!-- Outer Field -->
+                <circle cx="150" cy="150" r="140" fill="#0f172a" stroke="#334155" stroke-width="4"/>
+                <circle cx="150" cy="150" r="130" fill="#1e293b"/>
+                
+                <!-- Crosshairs -->
+                <line x1="20" y1="150" x2="280" y2="150" stroke="#64748b" stroke-width="1.5"/>
+                <line x1="150" y1="20" x2="150" y2="280" stroke="#64748b" stroke-width="1.5"/>
+
+                <!-- Micrometer Scale Divisions -->
+                <line x1="70" y1="145" x2="70" y2="155" stroke="#94a3b8" stroke-width="1"/>
+                <line x1="110" y1="142" x2="110" y2="158" stroke="#94a3b8" stroke-width="1.5"/>
+                <line x1="150" y1="138" x2="150" y2="162" stroke="#ffffff" stroke-width="2"/>
+                <line x1="190" y1="142" x2="190" y2="158" stroke="#94a3b8" stroke-width="1.5"/>
+                <line x1="230" y1="145" x2="230" y2="155" stroke="#94a3b8" stroke-width="1"/>
+
+                <!-- Simulated Indentation Circle (Animated) -->
+                <circle cx="150" cy="150" r="0" id="simIndentCircle" fill="#0284c7" opacity="0.35" stroke="#38bdf8" stroke-width="2.5" style="transition: r 0.8s ease-out;"/>
+
+                <!-- Measurement Dimension Calipers -->
+                <line x1="150" y1="150" x2="150" y2="150" id="simCalLineX" stroke="#dc2626" stroke-width="2" stroke-dasharray="2, 2"/>
+                <line x1="150" y1="150" x2="150" y2="150" id="simCalLineY" stroke="#10b981" stroke-width="2" stroke-dasharray="2, 2"/>
+              </svg>
+
+              <!-- Live Diameter Overlays -->
+              <div class="d-flex justify-content-center gap-4 mt-2 font-mono small">
+                <span class="text-danger fw-bold"><i class="fas fa-arrows-alt-h me-1"></i>d₁ = <span id="simD1Val">0.000</span> mm</span>
+                <span class="text-success fw-bold"><i class="fas fa-arrows-alt-v me-1"></i>d₂ = <span id="simD2Val">0.000</span> mm</span>
+                <span class="text-white fw-bold"><i class="fas fa-calculator me-1"></i>d_avg = <span id="simDavgVal">0.000</span> mm</span>
+              </div>
+            </div>
+
+            <!-- Virtual Test Results Panel -->
+            <div class="mt-3 p-3 bg-light rounded border border-secondary border-opacity-25" id="vResultPanel">
+              <div class="row g-2 text-center">
+                <div class="col-4">
+                  <div class="text-secondary small">Calculated HBW</div>
+                  <div class="fs-4 fw-bold text-primary font-mono" id="simHBWVal">—</div>
+                </div>
+                <div class="col-4">
+                  <div class="text-secondary small">Depth ($h$)</div>
+                  <div class="fs-5 fw-bold text-steel font-mono" id="simDepthVal">—</div>
+                </div>
+                <div class="col-4">
+                  <div class="text-secondary small">Est. UTS ($\sigma_u$)</div>
+                  <div class="fs-5 fw-bold text-success font-mono" id="simUTSVal">—</div>
+                </div>
+              </div>
+              <div class="text-center small mt-2 text-muted" id="simValidityMsg">Select a material and click "Run Test" to simulate indentation.</div>
+            </div>
+
+            <!-- Virtual Save & PDF Export Buttons -->
+            <div class="d-flex gap-2 mt-3">
+              <button type="button" class="btn btn-sm btn-lab-primary flex-fill" id="vSaveExpBtn" disabled>
+                <i class="fas fa-save me-1"></i> Save to My Experiments
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-success flex-fill" id="vDownloadPdfBtn" disabled>
+                <i class="fas fa-file-pdf me-1"></i> Generate PDF Report
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 7. MANUAL LABORATORY READING STUDIO -->
+  <!-- ========================================== -->
+  <section id="manual-lab" class="mb-4">
+    <div class="lab-card p-4 border border-success border-opacity-50 shadow-sm" style="background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-success bg-opacity-25 text-success fw-bold font-mono">07</span>
+          <h3 class="fw-bold text-navy fs-3 mb-0">Manual Laboratory Data Entry</h3>
+        </div>
+        <span class="badge bg-info bg-opacity-25 text-primary border border-info border-opacity-50 px-2 py-1 fw-bold">
+          <i class="fas fa-keyboard me-1"></i> USER-ENTERED LABORATORY DATA
+        </span>
+      </div>
+
+      <p class="text-secondary small mb-3">
+        For students entering actual laboratory readings obtained from a physical Brinell Testing Machine in your university or college laboratory.
+        Enter your specimen details, ball diameter, load, and indentation diameter readings for each trial.
+      </p>
+
+      <form id="manualBrinellForm">
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label small fw-bold text-navy">Material Tested <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="mMaterial" placeholder="Enter specimen material (e.g. Mild Steel)" required value="Mild Steel">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold text-navy">Ball Diameter ($D$ in mm) <span class="text-danger">*</span></label>
+            <input type="number" step="0.1" class="form-control form-control-sm font-mono" id="mBallD" value="10.0" min="1" max="20" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold text-navy">Applied Load ($P$ in kgf) <span class="text-danger">*</span></label>
+            <input type="number" step="1" class="form-control form-control-sm font-mono" id="mLoadP" value="3000" min="10" max="5000" required>
+          </div>
+        </div>
+
+        <!-- Dynamic Multi-Trial Observation Table -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold text-navy mb-0"><i class="fas fa-table text-primary me-2"></i>Trial Observation Readings</h6>
+          <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-outline-primary" id="mAddTrialBtn"><i class="fas fa-plus me-1"></i> Add Trial</button>
+            <button type="button" class="btn btn-outline-danger" id="mRemoveTrialBtn"><i class="fas fa-minus me-1"></i> Remove Trial</button>
+          </div>
+        </div>
+
+        <div class="table-responsive rounded border border-secondary border-opacity-25 mb-3 bg-white">
+          <table class="table table-sm table-bordered align-middle mb-0 font-mono small text-center" id="mTrialsTable">
+            <thead class="bg-light">
+              <tr>
+                <th style="width: 10%;">Trial #</th>
+                <th style="width: 25%;">Diameter $d_1$ (mm)</th>
+                <th style="width: 25%;">Diameter $d_2$ (mm)</th>
+                <th style="width: 20%;">Mean $d$ (mm)</th>
+                <th style="width: 20%;">Calculated HBW</th>
+              </tr>
+            </thead>
+            <tbody id="mTrialsTbody">
+              <tr>
+                <td class="fw-bold">1</td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm text-center font-mono m-d1" value="5.18" required></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm text-center font-mono m-d2" value="5.22" required></td>
+                <td class="m-dmean fw-bold text-dark">5.200</td>
+                <td class="m-hbw fw-bold text-primary">130.8</td>
+              </tr>
+              <tr>
+                <td class="fw-bold">2</td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm text-center font-mono m-d1" value="5.15" required></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm text-center font-mono m-d2" value="5.19" required></td>
+                <td class="m-dmean fw-bold text-dark">5.170</td>
+                <td class="m-hbw fw-bold text-primary">132.5</td>
+              </tr>
+              <tr>
+                <td class="fw-bold">3</td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm text-center font-mono m-d1" value="5.20" required></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm text-center font-mono m-d2" value="5.24" required></td>
+                <td class="m-dmean fw-bold text-dark">5.220</td>
+                <td class="m-hbw fw-bold text-primary">129.7</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Manual Summary Card -->
+        <div class="p-3 bg-light rounded border border-secondary border-opacity-25 mb-3" id="mSummaryPanel">
+          <div class="row g-3 text-center">
+            <div class="col-sm-3">
+              <div class="text-secondary small">Mean Hardness:</div>
+              <div class="fs-4 fw-bold text-primary font-mono" id="mMeanHBW">131.0 HBW</div>
+            </div>
+            <div class="col-sm-3">
+              <div class="text-secondary small">Standard Deviation:</div>
+              <div class="fs-5 fw-bold text-steel font-mono" id="mStdDev">± 1.4 HBW</div>
+            </div>
+            <div class="col-sm-3">
+              <div class="text-secondary small">Range (Max - Min):</div>
+              <div class="fs-5 fw-bold text-dark font-mono" id="mRange">2.8 HBW</div>
+            </div>
+            <div class="col-sm-3">
+              <div class="text-secondary small">Approx. Tensile Strength:</div>
+              <div class="fs-5 fw-bold text-success font-mono" id="mUTS">~ 452 MPa</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+          <button type="button" class="btn btn-sm btn-lab-primary" id="mCalculateBtn">
+            <i class="fas fa-calculator me-1"></i> Calculate Results
+          </button>
+          <button type="button" class="btn btn-sm btn-success" id="mSaveBtn">
+            <i class="fas fa-save me-1"></i> Save User Laboratory Data
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-success" id="mPdfBtn" disabled>
+            <i class="fas fa-file-pdf me-1"></i> Generate PDF Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 8. CALCULATIONS STEP-BY-STEP BREAKDOWN -->
+  <!-- ========================================== -->
+  <section id="calculations" class="mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-mono">08</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Step-by-Step Mathematical Calculation</h3>
+      </div>
+
+      <div class="p-3 bg-light rounded border border-secondary border-opacity-25 font-mono small mb-3">
+        <div class="text-secondary mb-1">Example Evaluation for Mild Steel under 3000 kgf load ($D = 10\text{ mm}$, $d = 5.18\text{ mm}$):</div>
+        <div class="text-dark">1. Calculate term: $\sqrt{D^2 - d^2} = \sqrt{10.0^2 - 5.18^2} = \sqrt{100 - 26.8324} = \sqrt{73.1676} = 8.5538\text{ mm}$</div>
+        <div class="text-dark">2. Denominator: $\pi \cdot D \cdot (D - \sqrt{D^2 - d^2}) = 3.14159 \cdot 10.0 \cdot (10.0 - 8.5538) = 31.4159 \cdot 1.4462 = 45.4338\text{ mm}^2$</div>
+        <div class="text-dark">3. Brinell Hardness: $HBW = \frac{2 \cdot 3000}{45.4338} = \frac{6000}{45.4338} = \mathbf{132.1\text{ HBW}}$</div>
+        <div class="text-dark">4. Indentation Depth: $h = \frac{D - \sqrt{D^2 - d^2}}{2} = \frac{10.0 - 8.5538}{2} = \mathbf{0.7231\text{ mm}}$</div>
+        <div class="text-dark">5. Minimum Specimen Thickness: $t_{min} = 8 \cdot h = 8 \cdot 0.7231 = \mathbf{5.78\text{ mm}}$</div>
+        <div class="text-dark">6. Tensile Strength Estimation: $\sigma_{uts} \approx 3.45 \cdot 132.1 = \mathbf{455.7\text{ MPa}}$</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 9. QUIZ SECTION (BRINELL ASSESSMENT) -->
+  <!-- ========================================== -->
+  <section id="quiz-section" class="mb-4">
+    <div class="lab-card p-4 border border-warning border-opacity-50 shadow-sm" style="background: linear-gradient(180deg, #ffffff 0%, #fffbeb 100%);">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-warning text-dark fw-bold font-mono">09</span>
+          <h3 class="fw-bold text-navy fs-3 mb-0">Brinell Hardness Assessment &amp; Viva Quiz</h3>
+        </div>
+        <span class="badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-50 px-2 py-1 small">
+          6 Syllabus Questions
+        </span>
+      </div>
+
+      <p class="text-secondary small mb-3">
+        Test your understanding of the Brinell principle, ball indenters, $P/D^2$ load criteria, and metallurgical limitations.
+      </p>
+
+      <div id="quiz-container">
+        {% if quiz_questions and quiz_questions|length > 0 %}
+          {% for q in quiz_questions %}
+          <div class="lab-card p-3 mb-3 border border-secondary border-opacity-25 bg-white question-card" data-qid="{{ q.id }}" data-correct="{{ q.correct_option }}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge bg-primary bg-opacity-10 text-primary small font-mono">Question {{ loop.index }} of {{ quiz_questions|length }}</span>
+              <span class="badge bg-light text-secondary border small">{{ q.difficulty }}</span>
+            </div>
+            <h6 class="fw-bold text-navy mb-3">{{ q.question }}</h6>
+            <div class="options-container d-flex flex-column gap-2 mb-2">
+              <label class="p-2 rounded border option-label d-flex align-items-center gap-2" style="cursor: pointer;">
+                <input type="radio" name="q_{{ q.id }}" value="A" class="form-check-input mt-0">
+                <span class="small"><strong>A.</strong> {{ q.option_a }}</span>
+              </label>
+              <label class="p-2 rounded border option-label d-flex align-items-center gap-2" style="cursor: pointer;">
+                <input type="radio" name="q_{{ q.id }}" value="B" class="form-check-input mt-0">
+                <span class="small"><strong>B.</strong> {{ q.option_b }}</span>
+              </label>
+              <label class="p-2 rounded border option-label d-flex align-items-center gap-2" style="cursor: pointer;">
+                <input type="radio" name="q_{{ q.id }}" value="C" class="form-check-input mt-0">
+                <span class="small"><strong>C.</strong> {{ q.option_c }}</span>
+              </label>
+              <label class="p-2 rounded border option-label d-flex align-items-center gap-2" style="cursor: pointer;">
+                <input type="radio" name="q_{{ q.id }}" value="D" class="form-check-input mt-0">
+                <span class="small"><strong>D.</strong> {{ q.option_d }}</span>
+              </label>
+            </div>
+            <div class="explanation-box p-2 rounded bg-light border border-secondary border-opacity-25 small d-none mt-2">
+              <strong>Explanation:</strong> <span class="explanation-text">{{ q.explanation }}</span>
+            </div>
+          </div>
+          {% endfor %}
+
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2">
+            <button type="button" class="btn btn-sm btn-lab-primary" id="submitQuizBtn">
+              <i class="fas fa-check-circle me-1"></i> Submit Quiz Answers
+            </button>
+            <div id="quizResultScore" class="fw-bold fs-5 text-navy font-mono d-none"></div>
+          </div>
+        {% else %}
+          <div class="alert alert-info small">Quiz questions loaded directly via API.</div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // =========================================================================
+  // 1. APPARATUS COMPONENT INSPECTOR INTERACTIVITY
+  // =========================================================================
+  const componentData = {
+    'frame': {
+      title: 'Heavy Cast Iron C-Frame',
+      badge: 'MAIN STRUCTURAL COLUMN',
+      specs: 'Grade 35 Cast Iron, 1200 kg heavy structural column designed to withstand 3000 kgf load with < 0.01 mm deflection.',
+      desc: 'The main rigid structural column supports the elevating screw, test anvil, hydraulic loading ram, and optical measuring microscope. High torsional and axial stiffness prevents frame flexing that could induce non-perpendicular load vectors.',
+      tip: 'The C-frame throat depth determines the maximum specimen diameter that can be centered under the indenter.'
+    },
+    'indenter': {
+      title: 'Tungsten Carbide Ball Indenter (10 mm)',
+      badge: 'INDENTER SYSTEM',
+      specs: 'Sintered Tungsten Carbide (WC) ball (Hardness >= 1500 HV10), standard diameter D = 10.000 mm ± 0.005 mm.',
+      desc: 'Pressed into the surface to create a spherical impression. Tungsten carbide replaced older hardened steel balls in modern ASTM E10 / ISO 6506 standards (designated HBW) to prevent indenter flattening on metals up to 650 HBW.',
+      tip: 'Never test materials over 650 HBW with a Brinell ball; diamond indenters (Rockwell C / Vickers) must be used instead.'
+    },
+    'specimen': {
+      title: 'Metallic Test Specimen',
+      badge: 'TEST SPECIMEN',
+      specs: 'Ground flat metallographic sample (Ra <= 0.8 µm), minimum thickness t >= 8h (typically >= 6 mm).',
+      desc: 'The test specimen must have parallel top and bottom faces, free of oxide scale, grease, and surface decarb. Flat seating on the anvil prevents specimen rocking during 3000 kgf load application.',
+      tip: 'Inspect the underside of the specimen after testing. If an indentation bulge appears on the bottom, the sample was too thin.'
+    },
+    'anvil': {
+      title: 'Precision Hardened Support Anvil',
+      badge: 'SPECIMEN SUPPORT',
+      specs: 'Case-hardened tool steel platen (>= 60 HRC), ground flat within 0.005 mm.',
+      desc: 'Provides rigid perpendicular reaction support under the specimen. Standard flat platens are used for plate stock, while interchangeable 90° V-groove anvils support round bars along their center axis.',
+      tip: 'Always ensure the anvil seating taper is free of grit or metal chips before testing.'
+    },
+    'elevating-screw': {
+      title: 'Elevating Lead Screw & Handwheel',
+      badge: 'SPECIMEN ELEVATION',
+      specs: 'Precision Acme trapezoidal lead screw with heavy cast iron handwheel.',
+      desc: 'Rotated clockwise by the operator to lift the anvil and specimen into light initial contact with the ball indenter before hydraulic loading is initiated.',
+      tip: 'A telescoping shroud protects the lead screw threads from abrasive grinding swarf.'
+    },
+    'loading-mechanism': {
+      title: 'Hydraulic & Deadweight Loading System',
+      badge: 'LOAD APPLICATION',
+      specs: 'Multi-ratio lever mechanism linked to precision hydraulic cylinder (0 to 3000 kgf capacity).',
+      desc: 'Applies smooth, shock-free normal force to the indenter ram. The load is maintained automatically by a pressure-compensating hydraulic valve for the prescribed dwell countdown (10 to 15 seconds).',
+      tip: 'Smooth hydraulic loading prevents inertia shock that could cause deeper impressions than static load dictates.'
+    },
+    'dial-gauge': {
+      title: 'Hydraulic Pressure & Load Dial Gauge',
+      badge: 'PRESSURE MONITOR',
+      specs: 'Bourdon tube pressure gauge graduated in test force (kgf and kN).',
+      desc: 'Indicates the instantaneous hydraulic line pressure and confirms when full test force (e.g. 3000 kgf / 29.42 kN) has been reached and sustained across the dwell cycle.',
+      tip: 'Calibrated annually according to ASTM E10 Annex A1 using certified proving rings or load cells.'
+    },
+    'microscope': {
+      title: 'Brinell Optical Measuring Microscope',
+      badge: 'OPTICAL METROLOGY',
+      specs: '20x magnification optical microscope with graduated reticle (0.05 mm scale divisions).',
+      desc: 'Used to measure the indentation impression across two perpendicular diameters (d1 and d2). The internal reticle allows rapid reading of indentation boundaries with ± 0.02 mm resolution.',
+      tip: 'Good surface lighting and high optical contrast are essential for identifying the true rim edge of the impression.'
+    }
+  };
+
+  function updateComponentCard(partKey) {
+    const data = componentData[partKey];
+    if (!data) return;
+
+    document.getElementById('comp-badge').textContent = data.badge;
+    document.getElementById('comp-id').textContent = partKey;
+    document.getElementById('comp-title').textContent = data.title;
+    document.getElementById('comp-specs').textContent = data.specs;
+    document.getElementById('comp-desc').textContent = data.desc;
+    document.getElementById('comp-tip').textContent = data.tip;
+
+    // Highlight active element in SVG
+    document.querySelectorAll('.interactive-part').forEach(el => el.classList.remove('active-part'));
+    const activeEl = document.querySelector(`[data-part="${partKey}"]`);
+    if (activeEl) activeEl.classList.add('active-part');
+  }
+
+  // Bind click/tap on SVG elements
+  document.querySelectorAll('.interactive-part').forEach(el => {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const part = this.getAttribute('data-part');
+      if (part) updateComponentCard(part);
+    });
+  });
+
+  // =========================================================================
+  // 2. VIRTUAL EXPERIMENT SIMULATION STUDIO
+  // =========================================================================
+  const vMaterial = document.getElementById('vMaterialSelect');
+  const vBallD = document.getElementById('vBallDiaSelect');
+  const vLoad = document.getElementById('vLoadSelect');
+  const vStartBtn = document.getElementById('vStartTestBtn');
+  const vResetBtn = document.getElementById('vResetTestBtn');
+  const vProgressBar = document.getElementById('dwellProgressBar');
+  const vStatusBadge = document.getElementById('simStatusBadge');
+  const vSaveBtn = document.getElementById('vSaveExpBtn');
+  const vPdfBtn = document.getElementById('vDownloadPdfBtn');
+
+  let currentSimData = null;
+  let savedExpId = null;
+
+  // Preset load recommendations when material changes
+  vMaterial.addEventListener('change', function() {
+    const val = this.value;
+    if (val === 'aluminium-6061-t6' || val === 'pure-copper') {
+      vLoad.value = '500.0';
+    } else if (val === 'cartridge-brass') {
+      vLoad.value = '1000.0';
+    } else {
+      vLoad.value = '3000.0';
+    }
+  });
+
+  vStartBtn.addEventListener('click', function() {
+    vStartBtn.disabled = true;
+    vStatusBadge.className = 'badge bg-warning text-dark font-mono small';
+    vStatusBadge.textContent = 'Applying Test Force...';
+    
+    // Animate dwell countdown (3 seconds visual countdown)
+    let progress = 0;
+    vProgressBar.style.width = '0%';
+    const interval = setInterval(() => {
+      progress += 5;
+      vProgressBar.style.width = `${progress}%`;
+      if (progress >= 100) {
+        clearInterval(interval);
+        finishVirtualTest();
+      }
+    }, 150);
+  });
+
+  function finishVirtualTest() {
+    const slug = vMaterial.value;
+    const D = parseFloat(vBallD.value);
+    const P = parseFloat(vLoad.value);
+
+    fetch(`/api/hardness/simulation-data?method=brinell&material=${slug}&ball_diameter=${D}&load=${P}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success) {
+          showToast(data.error || 'Simulation error', 'danger');
+          vStartBtn.disabled = false;
+          return;
+        }
+
+        currentSimData = data;
+        const meanD = data.mean_d_mm;
+        const meanHBW = data.mean_hbw;
+        const uts = data.uts_approx_mpa;
+        const depth = data.trials[0] ? data.trials[0].depth_mm : 0.72;
+
+        // Animate Reticle Indentation Circle
+        const reticleCircle = document.getElementById('simIndentCircle');
+        // Visual radius scaled: 10mm ball corresponds to ~50px radius
+        const visualR = Math.min(100, Math.max(15, meanD * 12));
+        reticleCircle.setAttribute('r', visualR);
+
+        // Update Text
+        document.getElementById('simD1Val').textContent = data.trials[0].d1_mm.toFixed(3);
+        document.getElementById('simD2Val').textContent = data.trials[0].d2_mm.toFixed(3);
+        document.getElementById('simDavgVal').textContent = meanD.toFixed(3);
+        document.getElementById('simHBWVal').textContent = `${meanHBW.toFixed(1)} HBW`;
+        document.getElementById('simDepthVal').textContent = `${depth.toFixed(4)} mm`;
+        document.getElementById('simUTSVal').textContent = `${uts} MPa`;
+        document.getElementById('simValidityMsg').textContent = `Standard Notation: ${data.standard_notation} (Geometric similarity d/D = ${(meanD/D).toFixed(2)})`;
+
+        vStatusBadge.className = 'badge bg-success text-white font-mono small';
+        vStatusBadge.textContent = 'Test Completed';
+        vStartBtn.disabled = false;
+        vSaveBtn.disabled = false;
+        showToast('Brinell simulation completed successfully!', 'success');
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('Failed to fetch simulation data', 'danger');
+        vStartBtn.disabled = false;
+      });
+  }
+
+  vResetBtn.addEventListener('click', function() {
+    document.getElementById('simIndentCircle').setAttribute('r', '0');
+    document.getElementById('simD1Val').textContent = '0.000';
+    document.getElementById('simD2Val').textContent = '0.000';
+    document.getElementById('simDavgVal').textContent = '0.000';
+    document.getElementById('simHBWVal').textContent = '—';
+    document.getElementById('simDepthVal').textContent = '—';
+    document.getElementById('simUTSVal').textContent = '—';
+    vProgressBar.style.width = '0%';
+    vStatusBadge.className = 'badge bg-light text-secondary border font-mono small';
+    vStatusBadge.textContent = 'Ready to Test';
+    vSaveBtn.disabled = true;
+    vPdfBtn.disabled = true;
+    currentSimData = null;
+  });
+
+  vSaveBtn.addEventListener('click', function() {
+    if (!currentSimData) return;
+    vSaveBtn.disabled = true;
+
+    const payload = {
+      method: 'BRINELL',
+      mode: 'VIRTUAL_SIMULATION',
+      data_origin: 'SIMULATION / DEMONSTRATION DATA',
+      material_name: currentSimData.material_name,
+      mean_hardness: currentSimData.mean_hbw,
+      hardness_unit: 'HBW',
+      parameters: {
+        ball_diameter_mm: parseFloat(vBallD.value),
+        load_kgf: parseFloat(vLoad.value),
+        dwell_sec: currentSimData.dwell_sec || 12
+      },
+      readings: currentSimData.trials,
+      notes: `Virtual simulation on ${currentSimData.material_name}`
+    };
+
+    fetch('/api/hardness/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        savedExpId = res.experiment_id;
+        vPdfBtn.disabled = false;
+        showToast(`Experiment saved successfully (Run #${savedExpId})!`, 'success');
+      } else {
+        showToast(res.error || 'Failed to save experiment', 'danger');
+        vSaveBtn.disabled = false;
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showToast('Error saving experiment', 'danger');
+      vSaveBtn.disabled = false;
+    });
+  });
+
+  vPdfBtn.addEventListener('click', function() {
+    if (savedExpId) {
+      window.location.href = `/hardness/report/${savedExpId}`;
+    }
+  });
+
+  // =========================================================================
+  // 3. MANUAL LABORATORY READING STUDIO INTERACTIVITY
+  // =========================================================================
+  const mAddTrialBtn = document.getElementById('mAddTrialBtn');
+  const mRemoveTrialBtn = document.getElementById('mRemoveTrialBtn');
+  const mTrialsTbody = document.getElementById('mTrialsTbody');
+  const mCalcBtn = document.getElementById('mCalculateBtn');
+  const mSaveBtn = document.getElementById('mSaveBtn');
+  const mPdfBtn = document.getElementById('mPdfBtn');
+
+  let manualSavedId = null;
+
+  mAddTrialBtn.addEventListener('click', function() {
+    const rowCount = mTrialsTbody.querySelectorAll('tr').length;
+    if (rowCount >= 8) {
+      showToast('Maximum 8 trials allowed.', 'warning');
+      return;
+    }
+    const nextIdx = rowCount + 1;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="fw-bold">${nextIdx}</td>
+      <td><input type="number" step="0.01" class="form-control form-control-sm text-center font-mono m-d1" value="5.18" required></td>
+      <td><input type="number" step="0.01" class="form-control form-control-sm text-center font-mono m-d2" value="5.22" required></td>
+      <td class="m-dmean fw-bold text-dark">5.200</td>
+      <td class="m-hbw fw-bold text-primary">130.8</td>
+    `;
+    mTrialsTbody.appendChild(tr);
+    bindManualInputs();
+    recalculateManual();
+  });
+
+  mRemoveTrialBtn.addEventListener('click', function() {
+    const rows = mTrialsTbody.querySelectorAll('tr');
+    if (rows.length <= 1) {
+      showToast('At least 1 trial reading is required.', 'warning');
+      return;
+    }
+    rows[rows.length - 1].remove();
+    recalculateManual();
+  });
+
+  function bindManualInputs() {
+    mTrialsTbody.querySelectorAll('input').forEach(input => {
+      input.removeEventListener('input', recalculateManual);
+      input.addEventListener('input', recalculateManual);
+    });
+  }
+  bindManualInputs();
+
+  function recalculateManual() {
+    const D = parseFloat(document.getElementById('mBallD').value) || 10.0;
+    const P = parseFloat(document.getElementById('mLoadP').value) || 3000.0;
+    const rows = mTrialsTbody.querySelectorAll('tr');
+    let hbwList = [];
+
+    rows.forEach(tr => {
+      const d1 = parseFloat(tr.querySelector('.m-d1').value) || 0.0;
+      const d2 = parseFloat(tr.querySelector('.m-d2').value) || d1;
+      const dMean = (d1 + d2) / 2.0;
+
+      tr.querySelector('.m-dmean').textContent = dMean > 0 ? dMean.toFixed(3) : '—';
+
+      if (dMean > 0 && dMean < D) {
+        const root = Math.sqrt(Math.max(0, D*D - dMean*dMean));
+        const hbw = (2.0 * P) / (Math.PI * D * (D - root));
+        tr.querySelector('.m-hbw').textContent = hbw.toFixed(1);
+        hbwList.push(hbw);
+      } else {
+        tr.querySelector('.m-hbw').textContent = 'Invalid';
+      }
+    });
+
+    if (hbwList.length > 0) {
+      const mean = hbwList.reduce((a,b) => a+b, 0) / hbwList.length;
+      document.getElementById('mMeanHBW').textContent = `${mean.toFixed(1)} HBW`;
+      
+      const minV = Math.min(...hbwList);
+      const maxV = Math.max(...hbwList);
+      document.getElementById('mRange').textContent = `${(maxV - minV).toFixed(1)} HBW`;
+
+      if (hbwList.length > 1) {
+        const variance = hbwList.map(x => Math.pow(x - mean, 2)).reduce((a,b) => a+b, 0) / (hbwList.length - 1);
+        document.getElementById('mStdDev').textContent = `± ${Math.sqrt(variance).toFixed(2)} HBW`;
+      } else {
+        document.getElementById('mStdDev').textContent = '± 0.00 HBW';
+      }
+
+      document.getElementById('mUTS').textContent = `~ ${(3.45 * mean).toFixed(0)} MPa`;
+    }
+  }
+
+  mCalcBtn.addEventListener('click', recalculateManual);
+
+  mSaveBtn.addEventListener('click', function() {
+    const mat = document.getElementById('mMaterial').value.trim();
+    if (!mat) {
+      showToast('Please enter a specimen material name.', 'warning');
+      return;
+    }
+    const D = parseFloat(document.getElementById('mBallD').value) || 10.0;
+    const P = parseFloat(document.getElementById('mLoadP').value) || 3000.0;
+
+    const rows = mTrialsTbody.querySelectorAll('tr');
+    let trials = [];
+    rows.forEach((tr, idx) => {
+      const d1 = parseFloat(tr.querySelector('.m-d1').value) || 0.0;
+      const d2 = parseFloat(tr.querySelector('.m-d2').value) || d1;
+      const dMean = (d1 + d2) / 2.0;
+      const hbw = parseFloat(tr.querySelector('.m-hbw').textContent) || 0.0;
+      trials.push({
+        trial_number: idx + 1,
+        d1_mm: d1,
+        d2_mm: d2,
+        mean_d_mm: dMean,
+        hardness_value: hbw
+      });
+    });
+
+    const meanHBW = parseFloat(document.getElementById('mMeanHBW').textContent) || 0.0;
+
+    const payload = {
+      method: 'BRINELL',
+      mode: 'MANUAL_ENTRY',
+      data_origin: 'USER-ENTERED LABORATORY DATA',
+      material_name: mat,
+      mean_hardness: meanHBW,
+      hardness_unit: 'HBW',
+      parameters: {
+        ball_diameter_mm: D,
+        load_kgf: P,
+        dwell_sec: 15
+      },
+      readings: trials,
+      notes: `Physical laboratory observations entered by student for ${mat}`
+    };
+
+    mSaveBtn.disabled = true;
+    fetch('/api/hardness/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        manualSavedId = res.experiment_id;
+        mPdfBtn.disabled = false;
+        showToast(`User laboratory data saved successfully (Run #${manualSavedId})!`, 'success');
+      } else {
+        showToast(res.error || 'Failed to save', 'danger');
+        mSaveBtn.disabled = false;
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showToast('Error saving laboratory data', 'danger');
+      mSaveBtn.disabled = false;
+    });
+  });
+
+  mPdfBtn.addEventListener('click', function() {
+    if (manualSavedId) {
+      window.location.href = `/hardness/report/${manualSavedId}`;
+    }
+  });
+
+  // =========================================================================
+  // 4. QUIZ SUBMISSION & SCORING INTERACTIVITY
+  // =========================================================================
+  const submitQuizBtn = document.getElementById('submitQuizBtn');
+  if (submitQuizBtn) {
+    submitQuizBtn.addEventListener('click', function() {
+      const qCards = document.querySelectorAll('.question-card');
+      let score = 0;
+      let total = qCards.length;
+      let allAnswered = true;
+
+      qCards.forEach(card => {
+        const correct = card.getAttribute('data-correct');
+        const selected = card.querySelector('input[type="radio"]:checked');
+        const expBox = card.querySelector('.explanation-box');
+
+        if (!selected) {
+          allAnswered = false;
+        } else {
+          if (selected.value === correct) {
+            score++;
+            selected.parentElement.classList.add('bg-success', 'bg-opacity-25', 'border-success');
+          } else {
+            selected.parentElement.classList.add('bg-danger', 'bg-opacity-25', 'border-danger');
+            // Highlight correct one
+            card.querySelectorAll('input[type="radio"]').forEach(r => {
+              if (r.value === correct) {
+                r.parentElement.classList.add('bg-success', 'bg-opacity-10', 'border-success');
+              }
+            });
+          }
+        }
+        if (expBox) expBox.classList.remove('d-none');
+      });
+
+      const pct = Math.round((score / total) * 100);
+      const scoreEl = document.getElementById('quizResultScore');
+      scoreEl.className = 'fw-bold fs-5 text-navy font-mono';
+      scoreEl.innerHTML = `Score: <span class="${pct >= 70 ? 'text-success' : 'text-danger'}">${score} / ${total} (${pct}%)</span>`;
+      scoreEl.classList.remove('d-none');
+
+      // Submit score to backend
+      fetch('/api/hardness/quiz/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          experiment_type: 'brinell',
+          score: score,
+          total_questions: total
+        })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          showToast(`Quiz submitted! Your score: ${score}/${total}`, 'success');
+        }
+      });
+    });
+  }
+
+});
+</script>
+{% endblock %}

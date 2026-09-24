@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+
+{% block title %}Hardness Comparison & ASTM E140 Conversion — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="text-center mb-4">
+    <span class="badge-lab mb-2">Metallurgical Hardness Benchmarking</span>
+    <h1 class="fw-bold fs-2">Compare Hardness &amp; ASTM E140 Equivalence</h1>
+    <p class="text-secondary mx-auto" style="max-width: 720px;">
+      Perform comparative multi-alloy evaluations between Brinell (HBW) and Rockwell (HRC, HRB, HRA) methodologies, cross-referencing ASTM E140 conversion standards and your saved laboratory trials.
+    </p>
+  </div>
+
+  <!-- Selector Card -->
+  <div class="lab-card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0"><i class="fas fa-check-square text-steel me-2"></i> Select Materials for Comparative Analysis</h5>
+      <span class="badge bg-light text-navy border">ASTM E140 Reference Alloys</span>
+    </div>
+    
+    <div class="row g-3" id="standard-materials-row">
+      <div class="col-md-4 col-sm-6">
+        <div class="form-check p-2 rounded bg-light border border-secondary border-opacity-25 h-100">
+          <input class="form-check-input material-compare-checkbox ms-1" type="checkbox" value="mild_steel" id="check-mild-steel" checked>
+          <label class="form-check-label text-main small fw-semibold ms-2" for="check-mild-steel">
+            AISI 1020 Mild Steel
+            <div class="text-muted" style="font-size: 0.75rem;">Normalized Low-Carbon Steel &bull; HBW ~130 &bull; HRB ~75</div>
+          </label>
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-6">
+        <div class="form-check p-2 rounded bg-light border border-secondary border-opacity-25 h-100">
+          <input class="form-check-input material-compare-checkbox ms-1" type="checkbox" value="medium_carbon" id="check-medium-carbon" checked>
+          <label class="form-check-label text-main small fw-semibold ms-2" for="check-medium-carbon">
+            AISI 1045 Carbon Steel
+            <div class="text-muted" style="font-size: 0.75rem;">Medium Carbon (Normalized) &bull; HBW ~180 &bull; HRB ~89</div>
+          </label>
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-6">
+        <div class="form-check p-2 rounded bg-light border border-secondary border-opacity-25 h-100">
+          <input class="form-check-input material-compare-checkbox ms-1" type="checkbox" value="tool_steel" id="check-tool-steel" checked>
+          <label class="form-check-label text-main small fw-semibold ms-2" for="check-tool-steel">
+            AISI O1 Tool Steel (Quenched &amp; Tempered)
+            <div class="text-muted" style="font-size: 0.75rem;">Martensitic Alloy &bull; HBW ~580 &bull; HRC ~56</div>
+          </label>
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-6">
+        <div class="form-check p-2 rounded bg-light border border-secondary border-opacity-25 h-100">
+          <input class="form-check-input material-compare-checkbox ms-1" type="checkbox" value="stainless_304" id="check-ss304">
+          <label class="form-check-label text-main small fw-semibold ms-2" for="check-ss304">
+            AISI 304 Stainless Steel
+            <div class="text-muted" style="font-size: 0.75rem;">Austenitic Stainless &bull; HBW ~160 &bull; HRB ~83</div>
+          </label>
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-6">
+        <div class="form-check p-2 rounded bg-light border border-secondary border-opacity-25 h-100">
+          <input class="form-check-input material-compare-checkbox ms-1" type="checkbox" value="aluminum_6061" id="check-aa6061">
+          <label class="form-check-label text-main small fw-semibold ms-2" for="check-aa6061">
+            Aluminum 6061-T6
+            <div class="text-muted" style="font-size: 0.75rem;">Precipitation Hardened &bull; HBW ~95 &bull; HRB ~60</div>
+          </label>
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-6">
+        <div class="form-check p-2 rounded bg-light border border-secondary border-opacity-25 h-100">
+          <input class="form-check-input material-compare-checkbox ms-1" type="checkbox" value="brass_c360" id="check-brass">
+          <label class="form-check-label text-main small fw-semibold ms-2" for="check-brass">
+            Cartridge Brass (70/30)
+            <div class="text-muted" style="font-size: 0.75rem;">Copper-Zinc Alloy &bull; HBW ~70 &bull; HRB ~45</div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    {% if saved_experiments %}
+    <h6 class="text-navy fw-bold mt-4 mb-2 small text-uppercase"><i class="fas fa-microscope me-1 text-steel"></i> Your Saved Laboratory Experiments</h6>
+    <div class="row g-3">
+      {% for exp in saved_experiments %}
+      <div class="col-md-4 col-sm-6">
+        <div class="form-check p-2 rounded bg-light border border-info border-opacity-50 h-100">
+          <input class="form-check-input experiment-compare-checkbox ms-1" type="checkbox" value="{{ exp.id }}" id="check-exp-{{ exp.id }}">
+          <label class="form-check-label text-main small fw-semibold ms-2" for="check-exp-{{ exp.id }}">
+            <span class="badge {% if exp.method == 'BRINELL' %}bg-primary{% else %}bg-danger{% endif %} text-white">#{{ exp.id }} {{ exp.method }}</span>
+            <div class="fw-bold">{{ exp.title }}</div>
+            <div class="text-muted" style="font-size: 0.75rem;">{{ exp.material_name }} &bull; {{ exp.mean_hardness|round(1) }} {{ exp.hardness_unit }}</div>
+          </label>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3 pt-3 border-top border-secondary border-opacity-25">
+      <span class="text-muted small">Select at least 2 items to render comparison graphs.</span>
+      <button type="button" class="btn btn-sm btn-lab-primary" onclick="updateComparison()">
+        <i class="fas fa-sync-alt me-1"></i> Recalculate Benchmarks
+      </button>
+    </div>
+  </div>
+
+  <!-- Comparative Charts Row -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="lab-card p-3 h-100">
+        <h6 class="fw-bold mb-2 text-navy"><i class="fas fa-circle me-1 text-primary"></i> Equivalent Brinell Hardness (HBW 10/3000)</h6>
+        <div id="chart-hbw" style="height: 320px;"></div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="lab-card p-3 h-100">
+        <h6 class="fw-bold mb-2 text-navy"><i class="fas fa-bullseye me-1 text-danger"></i> Equivalent Rockwell Hardness (HRC / HRB)</h6>
+        <div id="chart-rockwell" style="height: 320px;"></div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="lab-card p-3 h-100">
+        <h6 class="fw-bold mb-2 text-navy"><i class="fas fa-arrows-alt-v me-1 text-warning"></i> Relative Indentation Depth (Inverse Hardness) [&mu;m]</h6>
+        <div id="chart-depth" style="height: 320px;"></div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="lab-card p-3 h-100">
+        <h6 class="fw-bold mb-2 text-navy"><i class="fas fa-dumbbell me-1 text-success"></i> Estimated Ultimate Tensile Strength (&sigma;<sub>uts</sub>) [MPa]</h6>
+        <div id="chart-uts" style="height: 320px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Data Table -->
+  <div class="lab-card p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0">Hardness &amp; Mechanical Property Benchmarks</h5>
+      <span class="badge bg-secondary text-white">ASTM E140 / ISO 18265</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-lab mb-0" id="compare-table">
+        <thead>
+          <tr>
+            <th>Material / Specimen</th>
+            <th>Data Origin</th>
+            <th>Brinell (HBW)</th>
+            <th>Rockwell (HRC)</th>
+            <th>Rockwell (HRB)</th>
+            <th>Est. Depth (&mu;m)</th>
+            <th>Est. UTS (MPa)</th>
+            <th>Metallurgical Regime</th>
+          </tr>
+        </thead>
+        <tbody id="compare-table-body">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Engineering Note -->
+  <div class="alert-lab-info p-3">
+    <h6 class="fw-bold mb-1"><i class="fas fa-balance-scale me-1"></i> Metallurgical Conversion Notice (ASTM E140 / ISO 18265):</h6>
+    <p class="small mb-0">
+      Hardness conversions are empirical relationships established for specific alloy families under standardized thermo-mechanical conditions. The approximation $\sigma_{uts} \approx 3.45 \times \text{HBW}$ is valid primarily for carbon and low-alloy steels. High work-hardening non-ferrous metals and austenitic stainless steels exhibit deviating relationships due to plastic strain hardening ahead of the indenter tip.
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const standardHardnessMaterials = [
+  { slug: 'mild_steel', name: 'AISI 1020 Mild Steel', origin: 'ASTM Reference', hbw: 130, hrc: 0, hrb: 75, depth_um: 185, uts: 450, regime: 'Ductile Ferritic' },
+  { slug: 'medium_carbon', name: 'AISI 1045 Carbon Steel', origin: 'ASTM Reference', hbw: 180, hrc: 0, hrb: 89, depth_um: 132, uts: 620, regime: 'Pearlitic/Ferritic' },
+  { slug: 'tool_steel', name: 'AISI O1 Tool Steel (Q&T)', origin: 'ASTM Reference', hbw: 580, hrc: 56.5, hrb: 120, depth_um: 41, uts: 2000, regime: 'Martensitic (Hardened)' },
+  { slug: 'stainless_304', name: 'AISI 304 Stainless Steel', origin: 'ASTM Reference', hbw: 160, hrc: 0, hrb: 83, depth_um: 150, uts: 580, regime: 'Austenitic Alloy' },
+  { slug: 'aluminum_6061', name: 'Aluminum 6061-T6', origin: 'ASTM Reference', hbw: 95, hrc: 0, hrb: 60, depth_um: 254, uts: 310, regime: 'Precipitation Hardened' },
+  { slug: 'brass_c360', name: 'Cartridge Brass (70/30)', origin: 'ASTM Reference', hbw: 70, hrc: 0, hrb: 45, depth_um: 345, uts: 260, regime: 'Alpha Solid Solution' }
+];
+
+const savedHardnessExperiments = {{ saved_experiments|tojson if saved_experiments else '[]' }};
+
+function getSelectedHardnessData() {
+  const selected = [];
+
+  // Checkboxes for standard reference materials
+  document.querySelectorAll('.material-compare-checkbox:checked').forEach(cb => {
+    const m = standardHardnessMaterials.find(x => x.slug === cb.value);
+    if (m) selected.push({ ...m });
+  });
+
+  // Checkboxes for saved user experiments
+  document.querySelectorAll('.experiment-compare-checkbox:checked').forEach(cb => {
+    const exp = savedHardnessExperiments.find(x => x.id == cb.value);
+    if (exp) {
+      let hbw = 0;
+      let hrc = 0;
+      let hrb = 0;
+      let val = exp.mean_hardness || 0;
+
+      if (exp.method === 'BRINELL') {
+        hbw = val;
+        // Estimate Rockwell
+        if (hbw >= 240) {
+          hrc = Math.max(0, Math.round((hbw - 100) / 8.5));
+          hrb = 100;
+        } else {
+          hrc = 0;
+          hrb = Math.min(100, Math.max(30, Math.round(val * 0.45 + 18)));
+        }
+      } else {
+        // Rockwell
+        if (exp.hardness_unit === 'HRC') {
+          hrc = val;
+          hbw = Math.round(100 + val * 8.5);
+          hrb = 100;
+        } else {
+          hrb = val;
+          hrc = 0;
+          hbw = Math.round(Math.max(50, (val - 18) / 0.45));
+        }
+      }
+
+      const uts = Math.round(hbw * 3.45);
+      const depth_um = Math.round(25000 / (hbw + 10));
+
+      selected.push({
+        name: `[Exp #${exp.id}] ${exp.title}`,
+        origin: `User ${exp.mode === 'VIRTUAL_SIMULATION' ? 'Simulation' : 'Manual'}`,
+        hbw: Math.round(hbw),
+        hrc: hrc > 0 ? hrc.toFixed(1) : '-',
+        hrb: hrb > 0 ? hrb.toFixed(1) : '-',
+        depth_um: depth_um,
+        uts: uts,
+        regime: exp.material_name
+      });
+    }
+  });
+
+  return selected;
+}
+
+function updateComparison() {
+  const data = getSelectedHardnessData();
+  if (data.length === 0) {
+    if (window.showToast) showToast('Please select at least one material.', 'warning');
+    return;
+  }
+
+  const names = data.map(d => d.name);
+
+  const baseLayout = {
+    paper_bgcolor: '#ffffff',
+    plot_bgcolor: '#f8fafc',
+    font: { color: '#334155', family: 'Inter' },
+    margin: { l: 50, r: 20, t: 30, b: 80 },
+    xaxis: { tickangle: -20, tickfont: { size: 10, color: '#475569', family: 'Inter' }, gridcolor: '#e2e8f0' },
+    yaxis: { gridcolor: '#e2e8f0', zerolinecolor: '#cbd5e1' }
+  };
+
+  // 1. Brinell Chart
+  Plotly.newPlot('chart-hbw', [{
+    x: names,
+    y: data.map(d => d.hbw),
+    type: 'bar',
+    marker: { color: '#0f2b48' }
+  }], { ...baseLayout, yaxis: { title: 'Hardness Number (HBW)', gridcolor: '#e2e8f0' } }, { responsive: true, displayModeBar: false });
+
+  // 2. Rockwell Chart (HRB vs HRC)
+  Plotly.newPlot('chart-rockwell', [
+    { x: names, y: data.map(d => d.hrb === '-' ? 0 : d.hrb), type: 'bar', name: 'HRB (1/16" Ball, 100 kgf)', marker: { color: '#2563eb' } },
+    { x: names, y: data.map(d => d.hrc === '-' ? 0 : d.hrc), type: 'bar', name: 'HRC (Brale Cone, 150 kgf)', marker: { color: '#dc2626' } }
+  ], { ...baseLayout, barmode: 'group', yaxis: { title: 'Rockwell Scale Value', gridcolor: '#e2e8f0' } }, { responsive: true, displayModeBar: false });
+
+  // 3. Depth Chart
+  Plotly.newPlot('chart-depth', [{
+    x: names,
+    y: data.map(d => d.depth_um),
+    type: 'bar',
+    marker: { color: '#d97706' }
+  }], { ...baseLayout, yaxis: { title: 'Indentation Depth (microns)', gridcolor: '#e2e8f0' } }, { responsive: true, displayModeBar: false });
+
+  // 4. Tensile Strength Estimation Chart
+  Plotly.newPlot('chart-uts', [{
+    x: names,
+    y: data.map(d => d.uts),
+    type: 'bar',
+    marker: { color: '#059669' }
+  }], { ...baseLayout, yaxis: { title: 'Est. UTS (MPa)', gridcolor: '#e2e8f0' } }, { responsive: true, displayModeBar: false });
+
+  // Update Table
+  const tbody = document.getElementById('compare-table-body');
+  tbody.innerHTML = '';
+  data.forEach(d => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="fw-bold text-main">${d.name}</td>
+      <td><span class="badge ${d.origin.includes('Reference') ? 'bg-secondary' : 'bg-primary'}">${d.origin}</span></td>
+      <td class="font-mono text-steel fw-bold">${d.hbw}</td>
+      <td class="font-mono text-danger fw-bold">${d.hrc}</td>
+      <td class="font-mono text-primary fw-bold">${d.hrb}</td>
+      <td class="font-mono text-warning fw-bold">${d.depth_um} &mu;m</td>
+      <td class="font-mono text-success fw-bold">${d.uts}</td>
+      <td><span class="badge bg-light text-navy border">${d.regime}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateComparison();
+});
+</script>
+{% endblock %}

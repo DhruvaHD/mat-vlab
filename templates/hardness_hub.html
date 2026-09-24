@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Hardness Testing Module — Brinell & Rockwell Methods — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Module Header Banner -->
+  <div class="lab-card p-4 p-md-5 mb-4 border border-secondary border-opacity-25 shadow-sm position-relative overflow-hidden">
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+      <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 fw-bold">
+        <i class="fas fa-microscope me-1"></i> Materials Testing Module 2
+      </span>
+      <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+        <i class="fas fa-check-circle me-1"></i> University Syllabus Aligned
+      </span>
+      <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1">
+        <i class="fas fa-certificate me-1"></i> ASTM E10 / ASTM E18
+      </span>
+    </div>
+    <h1 class="fw-bold text-navy fs-1 mb-2">Hardness Testing Laboratory</h1>
+    <p class="text-secondary fs-6 mb-3" style="max-width: 820px;">
+      Evaluate the resistance of metallic materials to localized permanent plastic penetration, indentation, and deformation. 
+      Select between two standardized industrial methods: the <strong>Brinell Hardness Test</strong> (optical diameter measurement) 
+      and the <strong>Rockwell Hardness Test</strong> (differential depth measurement).
+    </p>
+
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{{ url_for('hardness_brinell') }}" class="btn btn-sm btn-lab-primary">
+        <i class="fas fa-bullseye me-1"></i> Brinell Hardness Test
+      </a>
+      <a href="{{ url_for('hardness_rockwell') }}" class="btn btn-sm btn-lab-secondary">
+        <i class="fas fa-gem me-1"></i> Rockwell Hardness Test
+      </a>
+      <a href="{{ url_for('hardness_compare') }}" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-balance-scale me-1"></i> Compare Hardness Results
+      </a>
+    </div>
+  </div>
+
+  <!-- Method Selection Header -->
+  <div class="text-center mb-4">
+    <span class="badge-lab mb-1">Standardized Methodologies</span>
+    <h2 class="fw-bold text-navy fs-3">Select Hardness Testing Method</h2>
+    <p class="text-secondary small mx-auto" style="max-width: 600px;">
+      Choose the appropriate testing technique specified in your laboratory syllabus or material testing standard.
+    </p>
+  </div>
+
+  <!-- Two Method Cards: Brinell vs Rockwell -->
+  <div class="row g-4 mb-5">
+    
+    <!-- 1. BRINELL METHOD CARD -->
+    <div class="col-lg-6">
+      <div class="lab-card h-100 p-4 border border-primary border-opacity-25 shadow-sm d-flex flex-column" style="background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="badge bg-warning bg-opacity-25 text-dark fw-bold border border-warning border-opacity-50 px-2 py-1">
+            <i class="fas fa-circle me-1 text-warning"></i> Spherical Ball Indenter
+          </span>
+          <span class="badge bg-light text-primary border font-mono small">ASTM E10 / ISO 6506</span>
+        </div>
+
+        <div class="text-center py-3 mb-3 bg-light rounded border border-secondary border-opacity-25" style="height: 180px; overflow: hidden;">
+          <img src="{{ url_for('static', filename='images/brinell_indentation.svg') }}" alt="Brinell Indentation Geometry" class="w-100 h-100 object-fit-contain p-2">
+        </div>
+
+        <h3 class="fw-bold text-navy fs-4 mb-2">1. Brinell Hardness Test</h3>
+        <p class="text-secondary small mb-3 flex-grow-1">
+          Applies a static normal load (up to 3000 kgf) through a 10 mm tungsten carbide ball (HBW) into the specimen surface. 
+          The arithmetic mean of two perpendicular indentation diameters ($d_1, d_2$) is measured using an optical measuring microscope to compute surface contact pressure.
+        </p>
+
+        <div class="p-3 bg-light rounded border border-secondary border-opacity-25 mb-3 small font-mono">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-secondary">Indenter:</span>
+            <span class="fw-bold text-dark">10 mm, 5 mm, 2.5 mm WC Ball</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-secondary">Standard Load:</span>
+            <span class="fw-bold text-dark">500 to 3000 kgf (P/D² = 30, 10, 5)</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-secondary">Measurement:</span>
+            <span class="fw-bold text-dark">Optical Microscope (d₁, d₂)</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-secondary">Best Suited:</span>
+            <span class="fw-bold text-dark">Cast Iron, Steels, Forgings</span>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 pt-2 border-top border-secondary border-opacity-25">
+          <a href="{{ url_for('hardness_brinell') }}" class="btn btn-sm btn-lab-primary flex-fill">
+            <i class="fas fa-play me-1"></i> Launch Brinell Lab
+          </a>
+          <a href="{{ url_for('hardness_brinell') }}#theory" class="btn btn-sm btn-outline-secondary flex-fill">
+            <i class="fas fa-book-open me-1"></i> Theory &amp; Apparatus
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. ROCKWELL METHOD CARD -->
+    <div class="col-lg-6">
+      <div class="lab-card h-100 p-4 border border-primary border-opacity-25 shadow-sm d-flex flex-column" style="background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="badge bg-success bg-opacity-25 text-dark fw-bold border border-success border-opacity-50 px-2 py-1">
+            <i class="fas fa-gem me-1 text-primary"></i> Differential Depth Measurement
+          </span>
+          <span class="badge bg-light text-primary border font-mono small">ASTM E18 / ISO 6508</span>
+        </div>
+
+        <div class="text-center py-3 mb-3 bg-light rounded border border-secondary border-opacity-25" style="height: 180px; overflow: hidden;">
+          <img src="{{ url_for('static', filename='images/rockwell_stages.svg') }}" alt="Rockwell 3-Stage Penetration" class="w-100 h-100 object-fit-contain p-2">
+        </div>
+
+        <h3 class="fw-bold text-navy fs-4 mb-2">2. Rockwell Hardness Test</h3>
+        <p class="text-secondary small mb-3 flex-grow-1">
+          Measures the net permanent increase in penetration depth ($e$) between a preliminary minor load ($F_0 = 10\text{ kgf}$) 
+          and a total major load ($F_0 + F_1 = 60, 100, 150\text{ kgf}$). Eliminates optical operator bias and provides direct 
+          dial or digital indicator readout in seconds.
+        </p>
+
+        <div class="p-3 bg-light rounded border border-secondary border-opacity-25 mb-3 small font-mono">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-secondary">Indenters:</span>
+            <span class="fw-bold text-dark">120° Diamond Cone / 1/16" Ball</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-secondary">Primary Scales:</span>
+            <span class="fw-bold text-dark">Scale B (HRB) &amp; Scale C (HRC)</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-secondary">Measurement:</span>
+            <span class="fw-bold text-dark">Direct Depth Dial (1 div = 0.002 mm)</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-secondary">Best Suited:</span>
+            <span class="fw-bold text-dark">Hardened Steels, Brass, Finished Parts</span>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 pt-2 border-top border-secondary border-opacity-25">
+          <a href="{{ url_for('hardness_rockwell') }}" class="btn btn-sm btn-lab-secondary flex-fill">
+            <i class="fas fa-play me-1"></i> Launch Rockwell Lab
+          </a>
+          <a href="{{ url_for('hardness_rockwell') }}#theory" class="btn btn-sm btn-outline-secondary flex-fill">
+            <i class="fas fa-book-open me-1"></i> Theory &amp; Apparatus
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Engineering Method Comparison Table -->
+  <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm mb-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+      <div>
+        <h3 class="fw-bold text-navy fs-4 mb-0">
+          <i class="fas fa-balance-scale text-primary me-2"></i>Engineering Comparison: Brinell vs. Rockwell
+        </h3>
+        <p class="text-secondary small mb-0">Systematic comparison of operational parameters, mechanics, and selection criteria.</p>
+      </div>
+      <a href="{{ url_for('hardness_compare') }}" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-chart-bar me-1"></i> Data Comparison Studio
+      </a>
+    </div>
+
+    <div class="table-responsive rounded border border-secondary border-opacity-25">
+      <table class="table table-hover align-middle mb-0 small">
+        <thead class="bg-light">
+          <tr>
+            <th style="width: 22%;">Comparison Feature</th>
+            <th style="width: 39%;" class="text-primary"><i class="fas fa-circle me-1"></i> Brinell Hardness Test (HBW)</th>
+            <th style="width: 39%;" class="text-steel"><i class="fas fa-gem me-1"></i> Rockwell Hardness Test (HR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="fw-bold text-navy">Standard Specification</td>
+            <td class="font-mono">ASTM E10, ISO 6506-1, IS 1500</td>
+            <td class="font-mono">ASTM E18, ISO 6508-1, IS 1586</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-navy">Indenter Geometry</td>
+            <td>Tungsten Carbide (WC) Ball: 10 mm, 5 mm, or 2.5 mm diameter</td>
+            <td>Diamond Brale Cone (120° apex, 0.2 mm radius) or 1/16" (1.588 mm) WC Ball</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-navy">Loading Cycle</td>
+            <td>Single static major load (typically 3000, 1500, or 500 kgf) held for 10–15s dwell</td>
+            <td>Two-stage cycle: Preliminary minor load (10 kgf) + Total major load (60, 100, 150 kgf)</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-navy">Measurement Principle</td>
+            <td>Measures optical <strong>diameter (d)</strong> of spherical cap contact area ($A = \pi D h$)</td>
+            <td>Measures net permanent <strong>depth increase (e)</strong> after releasing major load</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-navy">Hardness Equation</td>
+            <td class="font-mono text-primary fw-bold">HBW = 2P / [ πD (D - √(D² - d²)) ]</td>
+            <td class="font-mono text-steel fw-bold">HR = N - (e / 0.002 mm)</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-navy">Indentation Impression</td>
+            <td>Large spherical impression (2.5 to 6.0 mm dia); averages structural heterogeneity</td>
+            <td>Very small mark (depth 0.05 to 0.2 mm); non-destructive to most finished parts</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-navy">Primary Advantages</td>
+            <td>Excellent for cast irons, coarse grain forgings; strong empirical correlation to UTS ($\sigma_{uts} \approx 3.45 \cdot HBW$)</td>
+            <td>Fast test cycle (&lt; 10s); direct digital/dial readout; no subjective optical reading errors; wide hardness range</td>
+          </tr>
+          <tr>
+            <td class="fw-bold text-navy">Limitations</td>
+            <td>Requires optical micrometer; leaves visible blemish; not suitable for very hard metals (&gt; 650 HBW)</td>
+            <td>Sensitive to surface roughness and indenter tip damage; not representative for coarse heterogeneous alloys</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Academic Navigation Notice -->
+  <div class="alert alert-info py-3 px-4 rounded border-info border-opacity-25 d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div class="d-flex align-items-center gap-3">
+      <i class="fas fa-graduation-cap text-primary fs-3"></i>
+      <div>
+        <h5 class="fw-bold text-navy mb-1">Academic Syllabus Compliance</h5>
+        <div class="small text-secondary">
+          Both Brinell and Rockwell experiments fulfill curriculum requirements for 
+          <strong>B.Tech / B.E., M.Tech, Diploma, and B.Sc.</strong> materials testing laboratories.
+        </div>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('quizzes') }}" class="btn btn-sm btn-primary">
+        <i class="fas fa-question-circle me-1"></i> Take Hardness Quizzes
+      </a>
+      <a href="{{ url_for('my_experiments') }}" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-folder me-1"></i> View Saved Runs
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

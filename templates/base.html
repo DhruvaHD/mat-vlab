@@ -49,16 +49,53 @@
               <i class="fas fa-home me-1"></i> Home
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link {% if active_page == 'experiments' or active_page == 'tensile' %}active{% endif %}" href="{{ url_for('experiments') }}">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle {% if active_page in ['experiments', 'tensile', 'hardness', 'brinell', 'rockwell', 'hardness_compare'] %}active{% endif %}" href="#" id="experimentsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="fas fa-flask me-1"></i> Experiments
             </a>
+            <ul class="dropdown-menu dropdown-menu-matvlab shadow-sm border" aria-labelledby="experimentsDropdown">
+              <li>
+                <a class="dropdown-item py-2 fw-semibold" href="{{ url_for('experiments') }}">
+                  <i class="fas fa-th-large text-primary me-2"></i> All Experiments
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li class="dropdown-header text-uppercase small fw-bold text-muted">Tensile Testing</li>
+              <li>
+                <a class="dropdown-item py-2" href="{{ url_for('tensile_hub') }}">
+                  <i class="fas fa-compress-arrows-alt text-steel me-2"></i> Tensile Test (UTM)
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li class="dropdown-header text-uppercase small fw-bold text-muted">Hardness Testing</li>
+              <li>
+                <a class="dropdown-item py-2" href="{{ url_for('hardness_hub') }}">
+                  <i class="fas fa-bullseye text-warning me-2"></i> Hardness Test Overview
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2 ps-4" href="{{ url_for('hardness_brinell') }}">
+                  <i class="fas fa-circle text-primary me-2"></i> Brinell Hardness Test
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2 ps-4" href="{{ url_for('hardness_rockwell') }}">
+                  <i class="fas fa-gem text-danger me-2"></i> Rockwell Hardness Test
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2 ps-4" href="{{ url_for('hardness_compare') }}">
+                  <i class="fas fa-balance-scale text-success me-2"></i> Compare &amp; ASTM E140
+                </a>
+              </li>
+            </ul>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle {% if active_page == 'simulation' or active_page == 'manual' %}active{% endif %}" href="#" id="vlabDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle {% if active_page in ['simulation', 'manual'] %}active{% endif %}" href="#" id="vlabDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="fas fa-microscope me-1"></i> Virtual Lab
             </a>
             <ul class="dropdown-menu dropdown-menu-matvlab shadow-sm border" aria-labelledby="vlabDropdown">
+              <li class="dropdown-header text-uppercase small fw-bold text-muted">Tensile Testing</li>
               <li>
                 <a class="dropdown-item py-2" href="{{ url_for('simulation') }}">
                   <i class="fas fa-desktop text-primary me-2"></i> Virtual Simulation Mode
@@ -67,6 +104,18 @@
               <li>
                 <a class="dropdown-item py-2" href="{{ url_for('manual_entry') }}">
                   <i class="fas fa-keyboard text-success me-2"></i> Manual Data Entry Mode
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li class="dropdown-header text-uppercase small fw-bold text-muted">Hardness Testing</li>
+              <li>
+                <a class="dropdown-item py-2" href="{{ url_for('hardness_brinell') }}#simulation">
+                  <i class="fas fa-circle text-primary me-2"></i> Brinell Virtual Machine
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2" href="{{ url_for('hardness_rockwell') }}#simulation">
+                  <i class="fas fa-gem text-danger me-2"></i> Rockwell Virtual Machine
                 </a>
               </li>
               <li><hr class="dropdown-divider"></li>

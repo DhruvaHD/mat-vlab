@@ -6,10 +6,37 @@
 <div class="container py-4">
   <div class="text-center mb-4">
     <span class="badge-lab mb-2">Conceptual Competency Verification</span>
-    <h1 class="fw-bold text-navy fs-2">Tensile Testing &amp; Mechanics Quiz</h1>
-    <p class="text-secondary mx-auto" style="max-width: 650px;">
-      Evaluate your understanding of uniaxial tensile mechanics, UTM apparatus sensors, Hooke's Law, 0.2% offset proof stress, necking, and ASTM E8 standards.
+    <h1 class="fw-bold text-navy fs-2">
+      {% if experiment_type == 'brinell' %}
+        Brinell Hardness Testing Quiz
+      {% elif experiment_type == 'rockwell' %}
+        Rockwell Hardness Testing Quiz
+      {% else %}
+        Tensile Testing &amp; Mechanics Quiz
+      {% endif %}
+    </h1>
+    <p class="text-secondary mx-auto" style="max-width: 680px;">
+      {% if experiment_type == 'brinell' %}
+        Verify your mastery of Brinell spherical indentation geometry, $P/D^2$ loading ratios, minimum specimen thickness ($t \ge 8h$), and validity limits ($0.24 \le d/D \le 0.60$).
+      {% elif experiment_type == 'rockwell' %}
+        Test your knowledge of Rockwell preliminary preload ($F_0=10$ kgf), minor vs total load, HRC diamond cone vs HRB ball indenter, and depth measurement formulas ($HR = N - e/0.002$).
+      {% else %}
+        Evaluate your understanding of uniaxial tensile mechanics, UTM apparatus sensors, Hooke's Law, 0.2% offset proof stress, necking, and ASTM E8 standards.
+      {% endif %}
     </p>
+
+    <!-- Quiz Topic Tabs -->
+    <div class="d-flex justify-content-center gap-2 mt-3 flex-wrap">
+      <a href="{{ url_for('quizzes', type='tensile') }}" class="btn btn-sm {% if experiment_type == 'tensile' or not experiment_type %}btn-primary{% else %}btn-outline-primary{% endif %}">
+        <i class="fas fa-compress-arrows-alt me-1"></i> Tensile Quiz
+      </a>
+      <a href="{{ url_for('quizzes', type='brinell') }}" class="btn btn-sm {% if experiment_type == 'brinell' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+        <i class="fas fa-circle me-1"></i> Brinell Quiz
+      </a>
+      <a href="{{ url_for('quizzes', type='rockwell') }}" class="btn btn-sm {% if experiment_type == 'rockwell' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+        <i class="fas fa-gem me-1"></i> Rockwell Quiz
+      </a>
+    </div>
   </div>
 
   <!-- Score Banner (Revealed upon Submission) -->

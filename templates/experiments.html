@@ -84,39 +84,51 @@
       </div>
     </div>
 
-    <!-- 3. HARDNESS TEST (COMING SOON) -->
+    <!-- 3. HARDNESS TEST (ACTIVE MODULE) -->
     <div class="col-lg-4 col-md-6">
-      <div class="lab-card h-100 d-flex flex-column opacity-75">
-        <div class="position-relative mb-3 rounded overflow-hidden d-flex align-items-center justify-content-center" style="height: 180px; background: var(--bg-secondary); border: 1px solid var(--border-color);">
+      <div class="lab-card h-100 d-flex flex-column border border-warning border-opacity-50 shadow-sm">
+        <div class="position-relative mb-3 rounded overflow-hidden d-flex align-items-center justify-content-center" style="height: 180px; background: linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, rgba(15, 43, 72, 0.05) 100%); border: 1px solid var(--border-color);">
           <div class="text-center p-3">
             <i class="fas fa-bullseye text-warning fs-1 mb-2"></i>
-            <div class="text-secondary small">Brinell, Rockwell &amp; Vickers Indentation</div>
+            <div class="text-secondary small fw-semibold">Brinell (HBW) &amp; Rockwell (HRC/HRB)</div>
           </div>
-          <span class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark fw-bold">
-            <i class="fas fa-clock me-1"></i> Coming Soon
+          <span class="position-absolute top-0 end-0 m-2 badge bg-success text-white fw-bold">
+            <i class="fas fa-check-circle me-1"></i> Active Lab
           </span>
-          <span class="position-absolute bottom-0 start-0 m-2 badge bg-light text-secondary border">
-            ASTM E10 / E18 / E384
+          <span class="position-absolute bottom-0 start-0 m-2 badge bg-light text-navy border">
+            ASTM E10 / ASTM E18
           </span>
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25">Surface Indentation</span>
-          <span class="text-secondary small"><i class="fas fa-signal text-primary me-1"></i> Basic</span>
+          <span class="badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-50">Surface Indentation</span>
+          <span class="text-secondary small"><i class="fas fa-signal text-success me-1"></i> 2 Standard Methods</span>
         </div>
 
         <h4 class="text-navy fw-bold mb-2">Hardness Test</h4>
-        <p class="text-secondary small mb-4 flex-grow-1">
-          Quantify macro and micro resistance to localized plastic penetration using steel/carbide spheres (Brinell HBW), diamond Brale cones (Rockwell HRC), and pyramid indenters (Vickers HV).
+        <p class="text-secondary small mb-3 flex-grow-1">
+          Measure localized plastic penetration resistance through optical diameter measurement (Brinell WC ball) and differential net penetration depth (Rockwell diamond Brale cone / hardened steel ball).
         </p>
 
-        <div class="d-flex gap-2 pt-3 border-top border-secondary border-opacity-25">
-          <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" data-bs-toggle="modal" data-bs-target="#modalHardness">
+        <div class="d-flex flex-wrap gap-1 mb-3">
+          <a href="{{ url_for('hardness_brinell') }}" class="btn btn-sm btn-outline-primary flex-fill text-nowrap" style="font-size: 0.78rem;">
+            <i class="fas fa-circle me-1"></i> Brinell
+          </a>
+          <a href="{{ url_for('hardness_rockwell') }}" class="btn btn-sm btn-outline-danger flex-fill text-nowrap" style="font-size: 0.78rem;">
+            <i class="fas fa-gem me-1"></i> Rockwell
+          </a>
+          <a href="{{ url_for('hardness_compare') }}" class="btn btn-sm btn-outline-success flex-fill text-nowrap" style="font-size: 0.78rem;">
+            <i class="fas fa-balance-scale me-1"></i> Compare
+          </a>
+        </div>
+
+        <div class="d-flex gap-2 pt-2 border-top border-secondary border-opacity-25">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalHardness">
             <i class="fas fa-info-circle me-1"></i> Overview
           </button>
-          <button type="button" class="btn btn-sm btn-secondary flex-fill" disabled>
-            Coming Soon
-          </button>
+          <a href="{{ url_for('hardness_hub') }}" class="btn btn-sm btn-lab-primary flex-fill">
+            <i class="fas fa-external-link-alt me-1"></i> Enter Hardness Lab
+          </a>
         </div>
       </div>
     </div>
@@ -274,20 +286,28 @@
       </div>
       <div class="modal-body">
         <p class="text-secondary">
-          Hardness measures local resistance to permanent surface indentation.
+          Hardness measures local resistance to permanent surface indentation and plastic deformation under controlled normal load.
         </p>
-        <h6 class="fw-bold text-navy">Planned Scales:</h6>
-        <ul class="text-secondary small mb-3">
-          <li><strong>Brinell (HBW):</strong> 10 mm tungsten carbide ball at 3000 kgf load</li>
-          <li><strong>Rockwell (HRC/HRB):</strong> 120° diamond spheroconical indenter or 1/16" ball</li>
-          <li><strong>Vickers (HV):</strong> 136° square-based diamond pyramid</li>
-        </ul>
-        <div class="alert alert-secondary border mb-0 small">
-          <i class="fas fa-info-circle text-warning me-1"></i> Indentation optical microscope measurement module scheduled for Phase 2.
+        <h6 class="fw-bold text-navy">Implemented Standard Methods:</h6>
+        <div class="list-group list-group-flush mb-3 small">
+          <div class="list-group-item px-0 py-2 border-secondary border-opacity-25 bg-transparent">
+            <div class="fw-bold text-primary"><i class="fas fa-circle me-1"></i> Brinell Hardness Test (ASTM E10 / ISO 6506)</div>
+            <div class="text-secondary">Tungsten carbide ball (10 mm, 5 mm, 2.5 mm) with loads from 500 to 3000 kgf. Arithmetic mean diameter from calibrated microscope.</div>
+          </div>
+          <div class="list-group-item px-0 py-2 border-secondary border-opacity-25 bg-transparent">
+            <div class="fw-bold text-danger"><i class="fas fa-gem me-1"></i> Rockwell Hardness Test (ASTM E18 / ISO 6508)</div>
+            <div class="text-secondary">Preliminary minor load (10 kgf) + major load (60, 100, 150 kgf). Scales HRC (120&deg; diamond cone) and HRB (1/16" ball). Direct differential depth readout.</div>
+          </div>
+        </div>
+        <div class="alert alert-success border mb-0 small">
+          <i class="fas fa-check-circle text-success me-1"></i> Interactive virtual testing and manual laboratory entry modes are both available.
         </div>
       </div>
-      <div class="modal-footer border-secondary border-opacity-25">
+      <div class="modal-footer border-secondary border-opacity-25 gap-2">
         <button type="button" class="btn btn-sm btn-lab-secondary" data-bs-dismiss="modal">Close</button>
+        <a href="{{ url_for('hardness_brinell') }}" class="btn btn-sm btn-outline-primary">Brinell Lab</a>
+        <a href="{{ url_for('hardness_rockwell') }}" class="btn btn-sm btn-outline-danger">Rockwell Lab</a>
+        <a href="{{ url_for('hardness_hub') }}" class="btn btn-sm btn-lab-primary">Hardness Module</a>
       </div>
     </div>
   </div>

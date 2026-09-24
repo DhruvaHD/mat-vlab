@@ -18,6 +18,8 @@ from config import Config
 from models.database import (
     init_db, get_all_materials, get_material_by_slug,
     save_experiment, get_experiment_by_id, get_all_experiments, delete_experiment,
+    save_hardness_experiment, get_hardness_experiment_by_id,
+    get_all_hardness_experiments, delete_hardness_experiment,
     get_quiz_questions, save_quiz_result,
     register_student, authenticate_student, is_student_id_available,
     validate_student_id, get_student_by_id, get_student_stats,
@@ -28,7 +30,14 @@ from models.database import (
 from calculations.tensile import (
     analyze_tensile_data, generate_simulation_data, calculate_cross_sectional_area
 )
+from calculations.hardness import (
+    calculate_brinell, calculate_brinell_multiple,
+    calculate_rockwell, calculate_rockwell_multiple,
+    generate_brinell_simulation_data, generate_rockwell_simulation_data,
+    astm_e140_convert, STANDARD_MATERIALS_HARDNESS
+)
 from reports.report_generator import generate_tensile_pdf
+from reports.hardness_report_generator import generate_hardness_pdf
 
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -377,6 +386,42 @@ def experiments():
 def tensile_hub():
     return render_template('tensile.html', active_page='tensile')
 
+@app.route('/experiments/hardness')
+@login_required
+def hardness_hub():
+    """Hardness Testing Hub & Method Selector (Brinell vs Rockwell)."""
+    return render_template('hardness_hub.html', active_page='hardness')
+
+@app.route('/experiments/hardness/brinell')
+@app.route('/experiments/brinell')
+@login_required
+def hardness_brinell():
+    """Brinell Hardness Testing Laboratory (13 structured pedagogical sections)."""
+    questions = get_quiz_questions(experiment_type='brinell', limit=10)
+    sid = session.get('student_id')
+    if sid:
+        log_activity(sid, 'EXPERIMENT_START', 'Brinell Hardness Lab')
+    return render_template('brinell.html', active_page='brinell', questions=questions)
+
+@app.route('/experiments/hardness/rockwell')
+@app.route('/experiments/rockwell')
+@login_required
+def hardness_rockwell():
+    """Rockwell Hardness Testing Laboratory (13 structured pedagogical sections)."""
+    questions = get_quiz_questions(experiment_type='rockwell', limit=10)
+    sid = session.get('student_id')
+    if sid:
+        log_activity(sid, 'EXPERIMENT_START', 'Rockwell Hardness Lab')
+    return render_template('rockwell.html', active_page='rockwell', questions=questions)
+
+@app.route('/experiments/hardness/compare')
+@login_required
+def hardness_compare():
+    """Comparative Hardness & ASTM E140 Equivalence Tool."""
+    sid = session.get('student_id')
+    saved_list = get_all_hardness_experiments(student_id=sid)
+    return render_template('hardness_compare.html', active_page='hardness_compare', saved_experiments=saved_list)
+
 @app.route('/simulation')
 @login_required
 def simulation():
@@ -417,7 +462,13 @@ def compare():
 def my_experiments():
     sid = session.get('student_id')
     exp_list = get_all_experiments(student_id=sid)
-    return render_template('my_experiments.html', active_page='my_experiments', experiments=exp_list)
+    hardness_list = get_all_hardness_experiments(student_id=sid)
+    return render_template(
+        'my_experiments.html',
+        active_page='my_experiments',
+        experiments=exp_list,
+        hardness_experiments=hardness_list
+    )
 
 @app.route('/experiments/<int:experiment_id>')
 @login_required
@@ -430,8 +481,11 @@ def view_experiment(experiment_id):
 @app.route('/quizzes')
 @login_required
 def quizzes():
-    q_list = get_quiz_questions(experiment_type='tensile', limit=10)
-    return render_template('quizzes.html', active_page='quizzes', questions=q_list)
+    exp_type = request.args.get('type', 'tensile').lower()
+    if exp_type not in ['tensile', 'brinell', 'rockwell']:
+        exp_type = 'tensile'
+    q_list = get_quiz_questions(experiment_type=exp_type, limit=10)
+    return render_template('quizzes.html', active_page='quizzes', questions=q_list, experiment_type=exp_type)
 
 @app.route('/about')
 @login_required
@@ -579,6 +633,7 @@ def api_experiment_detail(experiment_id):
         return jsonify({'error': 'Experiment not found'}), 404
     return jsonify(exp)
 
+@app.route('/api/hardness/quiz/submit', methods=['POST'])
 @app.route('/api/quiz/submit', methods=['POST'])
 def api_quiz_submit():
     try:
@@ -593,6 +648,159 @@ def api_quiz_submit():
         if sid:
             log_activity(sid, 'QUIZ_ATTEMPT', f"Quiz {exp_type}: Score {score}/{total}")
         return jsonify({'success': True, 'result_id': res_id})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ==========================================
+# HARDNESS TESTING REST API & PDF ROUTES
+# ==========================================
+
+@app.route('/api/hardness/simulation-data')
+def api_hardness_simulation_data():
+    """
+    Returns realistic physics-based simulation trials for Brinell or Rockwell.
+    Query parameters:
+      - method: 'brinell' or 'rockwell'
+      - material: material slug
+      - ball_diameter / ball_d_mm: for brinell (default 10.0)
+      - load / load_kgf: for brinell (default 3000.0)
+      - scale: for rockwell ('HRC', 'HRB', 'HRA', default 'HRC')
+      - num_trials: number of indentations (default 3)
+    """
+    try:
+        method = request.args.get('method', 'brinell').lower()
+        material = request.args.get('material', 'mild_steel')
+        num_trials = int(request.args.get('num_trials', 3))
+
+        if method == 'brinell':
+            ball_d = float(request.args.get('ball_diameter') or request.args.get('ball_d_mm') or 10.0)
+            load = float(request.args.get('load') or request.args.get('load_kgf') or 3000.0)
+            data = generate_brinell_simulation_data(material_slug=material, ball_d_mm=ball_d, load_kgf=load, num_trials=num_trials)
+            resp = dict(data)
+            resp['success'] = True
+            resp['data'] = data
+            return jsonify(resp)
+        elif method == 'rockwell':
+            scale = request.args.get('scale', 'HRC').upper()
+            data = generate_rockwell_simulation_data(material_slug=material, scale=scale, num_trials=num_trials)
+            resp = dict(data)
+            resp['success'] = True
+            resp['data'] = data
+            return jsonify(resp)
+        else:
+            return jsonify({'error': f'Unsupported hardness method: {method}', 'success': False}), 400
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False}), 500
+
+@app.route('/api/hardness/calculate', methods=['POST'])
+def api_hardness_calculate():
+    """Direct calculation engine for Brinell and Rockwell multi-trial readings."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Missing calculation payload'}), 400
+
+        method = data.get('method', 'BRINELL').upper()
+        readings = data.get('readings', [])
+
+        if method == 'BRINELL':
+            load = float(data.get('load_kgf', 3000.0))
+            ball_d = float(data.get('ball_d_mm', 10.0))
+            result = calculate_brinell_multiple(load, ball_d, readings)
+            return jsonify({'success': True, 'result': result})
+        elif method == 'ROCKWELL':
+            scale = data.get('scale', 'HRC').upper()
+            result = calculate_rockwell_multiple(scale, readings)
+            return jsonify({'success': True, 'result': result})
+        else:
+            return jsonify({'error': f'Unknown method {method}'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/hardness/save', methods=['POST'])
+def api_hardness_save():
+    """Persists a Brinell or Rockwell experiment to SQLite."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Missing payload to save.'}), 400
+
+        student_id = session.get('student_id') or data.get('student_id')
+        exp_id = save_hardness_experiment(data, student_id=student_id)
+        if student_id:
+            log_activity(student_id, 'EXPERIMENT_SAVE', f"Hardness Exp #{exp_id} ({data.get('method')}) - {data.get('material_name')}")
+        return jsonify({'success': True, 'experiment_id': exp_id})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/hardness/experiment/<int:experiment_id>', methods=['GET', 'DELETE'])
+def api_hardness_experiment_detail(experiment_id):
+    """Fetch or delete a saved hardness experiment."""
+    if request.method == 'DELETE':
+        student_id = session.get('student_id')
+        success = delete_hardness_experiment(experiment_id, student_id=student_id)
+        return jsonify({'success': success})
+
+    exp = get_hardness_experiment_by_id(experiment_id)
+    if not exp:
+        return jsonify({'error': 'Hardness experiment not found'}), 404
+    return jsonify(exp)
+
+@app.route('/hardness/report/<int:experiment_id>')
+@app.route('/api/hardness/download-report/<int:experiment_id>')
+def download_hardness_report_by_id(experiment_id):
+    """Generates and serves the certified PDF laboratory report for a hardness experiment."""
+    exp = get_hardness_experiment_by_id(experiment_id)
+    if not exp:
+        return "Hardness experiment not found", 404
+
+    sid = exp.get('student_id') or session.get('student_id')
+    if sid:
+        st = get_student_by_id(sid)
+        if st:
+            exp['student_name'] = st['name']
+            exp['student_id'] = st['student_id']
+            exp['student_course'] = st['course']
+            exp['student_university'] = st['university']
+        log_activity(sid, 'REPORT_DOWNLOAD', f"Downloaded PDF for Hardness Exp #{experiment_id}")
+
+    pdf_buffer = generate_hardness_pdf(exp)
+    clean_mat = (exp.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
+    filename = f"MAT_VLAB_{exp.get('method', 'HARDNESS')}_Exp{experiment_id}_{clean_mat}.pdf"
+    return send_file(
+        pdf_buffer,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=filename
+    )
+
+@app.route('/api/hardness/generate-pdf', methods=['POST'])
+def api_hardness_generate_pdf():
+    """Generates a certified Hardness PDF report on-the-fly from client data."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Missing data for PDF generation'}), 400
+
+        sid = data.get('student_id') or session.get('student_id')
+        if sid:
+            st = get_student_by_id(sid)
+            if st:
+                data['student_name'] = st['name']
+                data['student_id'] = st['student_id']
+                data['student_course'] = st['course']
+                data['student_university'] = st['university']
+            log_activity(sid, 'REPORT_DOWNLOAD', f"Generated Hardness PDF report for {data.get('material_name', 'Metal')}")
+
+        pdf_buffer = generate_hardness_pdf(data)
+        clean_mat = (data.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
+        filename = f"MAT_VLAB_{data.get('method', 'HARDNESS')}_{clean_mat}.pdf"
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=filename
+        )
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

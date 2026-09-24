@@ -203,6 +203,40 @@ def init_db():
         VALUES (?, ?)
         ''', (default_user, generate_password_hash(default_pass)))
 
+    # Hardness Experiments table (Brinell & Rockwell)
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS hardness_experiments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        method TEXT NOT NULL, -- 'BRINELL' or 'ROCKWELL'
+        mode TEXT NOT NULL, -- 'VIRTUAL_SIMULATION' or 'MANUAL_ENTRY'
+        material_name TEXT NOT NULL,
+        data_origin TEXT NOT NULL, -- 'SIMULATION / DEMONSTRATION DATA' or 'USER-ENTERED LABORATORY DATA'
+        parameters_json TEXT,
+        mean_hardness REAL NOT NULL,
+        hardness_unit TEXT NOT NULL, -- 'HBW', 'HRB', 'HRC', 'HRA'
+        num_readings INTEGER NOT NULL,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
+    # Hardness Readings table (Multiple trials)
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS hardness_readings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        experiment_id INTEGER NOT NULL,
+        trial_number INTEGER NOT NULL,
+        d1_mm REAL,
+        d2_mm REAL,
+        mean_d_mm REAL,
+        depth_mm REAL,
+        hardness_value REAL NOT NULL,
+        FOREIGN KEY (experiment_id) REFERENCES hardness_experiments (id) ON DELETE CASCADE
+    )
+    ''')
+
     conn.commit()
 
     # Seed data if tables are empty
@@ -351,6 +385,157 @@ def seed_quiz_questions(conn):
             }
         ]
         for q in questions:
+            cursor.execute('''
+            INSERT INTO quiz_questions (
+                experiment_type, question, option_a, option_b, option_c, option_d,
+                correct_option, explanation, difficulty
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                q['experiment_type'], q['question'], q['option_a'], q['option_b'],
+                q['option_c'], q['option_d'], q['correct_option'], q['explanation'], q['difficulty']
+            ))
+        conn.commit()
+
+    # Seed Brinell and Rockwell quiz questions if not already present
+    cursor.execute("SELECT COUNT(*) as count FROM quiz_questions WHERE experiment_type IN ('brinell', 'rockwell')")
+    if cursor.fetchone()['count'] == 0:
+        hardness_questions = [
+            # BRINELL QUESTIONS
+            {
+                "experiment_type": "brinell",
+                "question": "In the Brinell hardness test (ASTM E10 / ISO 6506), what physical parameter is measured to calculate the Brinell Hardness Number (HBW)?",
+                "option_a": "Net vertical penetration depth of the indenter under major load",
+                "option_b": "Arithmetic mean of two perpendicular indentation diameters (d1 and d2) measured using an optical microscope",
+                "option_c": "Time taken for the indenter ball to stop penetrating the specimen",
+                "option_d": "Rebound velocity of the tungsten carbide indenter",
+                "correct_option": "B",
+                "explanation": "Brinell hardness measures the spherical contact area of the impression. The indentation diameter is measured along two perpendicular axes (d1 and d2) using an optical measuring microscope, and the average d is used in the HBW formula.",
+                "difficulty": "Basic"
+            },
+            {
+                "experiment_type": "brinell",
+                "question": "What indenter is standard in modern Brinell hardness testing according to ASTM E10 and ISO 6506?",
+                "option_a": "Diamond square-based pyramid (136° apex angle)",
+                "option_b": "Spheroconical diamond cone with 120° included angle",
+                "option_c": "Tungsten carbide (WC) spherical ball (typically 10 mm, 5 mm, or 2.5 mm diameter)",
+                "option_d": "Hardened sapphire chisel",
+                "correct_option": "C",
+                "explanation": "Modern ASTM E10 and ISO 6506 designate the test as HBW ('W' standing for Wolfram Carbide / Tungsten Carbide), utilizing precision ground tungsten carbide balls to prevent indenter deformation at higher hardness levels.",
+                "difficulty": "Basic"
+            },
+            {
+                "experiment_type": "brinell",
+                "question": "Why must the load-to-diameter-squared ratio (P / D²) be maintained constant when testing a given class of alloy in Brinell testing?",
+                "option_a": "To maintain geometric similarity of spherical indentations (0.24 <= d/D <= 0.60) and ensure comparable hardness values",
+                "option_b": "To prevent electrical short-circuiting in the load cell",
+                "option_c": "To ensure the dwell time reaches exactly 60 seconds",
+                "option_d": "To convert compressive stress into tensile stress",
+                "correct_option": "A",
+                "explanation": "Because a spherical indenter is not geometrically self-similar at varying depths, Meyer's law dictates that the ratio P/D² (e.g., 30 for steels, 10 for copper/brass, 5 for aluminium) must be preserved so that the indentation angle and constraint factor remain constant.",
+                "difficulty": "Intermediate"
+            },
+            {
+                "experiment_type": "brinell",
+                "question": "Which mathematical formula correctly calculates the Brinell Hardness Number (HBW) for load P (kgf), ball diameter D (mm), and mean indentation diameter d (mm)?",
+                "option_a": "HBW = P / (pi * D * d)",
+                "option_b": "HBW = 2P / [pi * D * (D - sqrt(D² - d²))]",
+                "option_c": "HBW = 100 - (d / 0.002)",
+                "option_d": "HBW = P / (0.7854 * d²)",
+                "correct_option": "B",
+                "explanation": "The Brinell formula divides load P by the curved spherical surface area of the indentation cap A = pi*D*h = (pi*D/2)*(D - sqrt(D² - d²)), yielding HBW = 2P / [pi * D * (D - sqrt(D² - d²))].",
+                "difficulty": "Intermediate"
+            },
+            {
+                "experiment_type": "brinell",
+                "question": "To avoid the 'anvil effect' (where hard support anvil artificially elevates hardness reading), what is the minimum required specimen thickness in a Brinell test?",
+                "option_a": "Equal to the indentation diameter (t >= d)",
+                "option_b": "At least 8 to 10 times the indentation depth (t >= 8h)",
+                "option_c": "Exactly 1.0 mm regardless of load",
+                "option_d": "Twice the ball diameter (t >= 2D)",
+                "correct_option": "B",
+                "explanation": "ASTM E10 mandates that the test piece thickness must be at least 8 times (preferably 10 times) the indentation depth h = (D - sqrt(D² - d²))/2. If the specimen is too thin, the plastic zone reaches the support anvil, distorting the reading.",
+                "difficulty": "Advanced"
+            },
+            {
+                "experiment_type": "brinell",
+                "question": "Why is the Brinell test specifically preferred over micro-indentation tests when evaluating coarse-grained or heterogeneous metals like Grey Cast Iron?",
+                "option_a": "Brinell testing is faster and leaves no visible impression",
+                "option_b": "The large 10 mm indenter ball and heavy 3000 kgf load average over multiple grains and graphite flakes, providing a representative bulk hardness",
+                "option_c": "Brinell hardness can test materials up to 1000 HBW without indenter damage",
+                "option_d": "Brinell tests do not require surface preparation",
+                "correct_option": "B",
+                "explanation": "Because cast irons contain structural heterogeneities (such as graphite flakes in pearlite/ferrite matrix), a large 10 mm ball produces an impression across multiple constituent phases, yielding a reliable macroscopic average.",
+                "difficulty": "Intermediate"
+            },
+            # ROCKWELL QUESTIONS
+            {
+                "experiment_type": "rockwell",
+                "question": "Unlike the optical diameter measurement in Brinell, how does the Rockwell hardness test determine material hardness?",
+                "option_a": "By measuring electrical resistivity under acoustic vibration",
+                "option_b": "By measuring the net permanent increase in indentation depth (e) between preliminary minor load and total major load",
+                "option_c": "By calculating ultrasonic rebound frequency of an oscillating rod",
+                "option_d": "By measuring the mass of metal displaced into a pile-up ridge",
+                "correct_option": "B",
+                "explanation": "Rockwell testing is a differential-depth indentation method. It measures the net permanent depth increase e = h2 - h0 after removing the major load while maintaining the minor load, enabling direct dial/digital readout without optical imaging.",
+                "difficulty": "Basic"
+            },
+            {
+                "experiment_type": "rockwell",
+                "question": "In the Rockwell testing cycle, what is the primary purpose of applying the 10 kgf preliminary minor load (F0) prior to zeroing the gauge?",
+                "option_a": "To initiate rapid work hardening in the core of the specimen",
+                "option_b": "To break through slight surface roughness, mill scale, and seating clearances to establish a reliable depth datum",
+                "option_c": "To plastically fracture the surface layer",
+                "option_d": "To measure the elastic limit of the indenter",
+                "correct_option": "B",
+                "explanation": "The 10 kgf minor load seats the indenter firmly through minor surface irregularities, dust, and mechanical play. The depth gauge is zeroed at this datum (h0), drastically improving accuracy on ground industrial surfaces.",
+                "difficulty": "Intermediate"
+            },
+            {
+                "experiment_type": "rockwell",
+                "question": "Which combination of indenter and total test load defines the Rockwell C scale (HRC) for hardened steels?",
+                "option_a": "1/16\" steel ball with 100 kgf total load",
+                "option_b": "120° spheroconical diamond Brale cone with 150 kgf total load",
+                "option_c": "1/8\" steel ball with 60 kgf total load",
+                "option_d": "10 mm tungsten carbide ball with 3000 kgf total load",
+                "correct_option": "B",
+                "explanation": "Scale C (HRC) utilizes the 120° spheroconical diamond Brale indenter with a 0.2 mm spherical tip radius under a 10 kgf minor load + 140 kgf major load = 150 kgf total load, read on the black dial scale (useful range 20–70 HRC).",
+                "difficulty": "Basic"
+            },
+            {
+                "experiment_type": "rockwell",
+                "question": "Which indenter and dial scale are specified for Rockwell Scale B (HRB), typically used for brasses and soft steels?",
+                "option_a": "1/16\" (1.588 mm) diameter ball indenter, 100 kgf total load, read on the Red scale",
+                "option_b": "120° diamond cone, 150 kgf total load, read on the Black scale",
+                "option_c": "1/2\" ball indenter, 60 kgf total load, read on the Yellow scale",
+                "option_d": "Diamond pyramid indenter, 30 kgf total load",
+                "correct_option": "A",
+                "explanation": "Rockwell B uses a 1/16\" (1.588 mm) hardened ball indenter under 10 kgf minor + 90 kgf major = 100 kgf total load, evaluated against HRB = 130 - (e / 0.002) on the red scale (useful range 20–100 HRB).",
+                "difficulty": "Intermediate"
+            },
+            {
+                "experiment_type": "rockwell",
+                "question": "In standard Rockwell scales (A, B, C), each single division (1 unit) on the hardness dial gauge corresponds to what vertical indentation depth penetration?",
+                "option_a": "0.100 mm (100 µm)",
+                "option_b": "0.010 mm (10 µm)",
+                "option_c": "0.002 mm (2 µm)",
+                "option_d": "0.0005 mm (0.5 µm)",
+                "correct_option": "C",
+                "explanation": "According to ASTM E18 / ISO 6508, each scale unit on standard Rockwell testers corresponds precisely to 0.002 mm (2 µm) of vertical indentation depth.",
+                "difficulty": "Intermediate"
+            },
+            {
+                "experiment_type": "rockwell",
+                "question": "Which of the following is a key operational advantage of the Rockwell test over the Brinell test in industrial quality control?",
+                "option_a": "Rockwell testing requires high-power optical microscopes to read indents",
+                "option_b": "Rockwell testing produces direct numerical readouts in seconds with minimal surface blemish, suitable for finished parts",
+                "option_c": "Rockwell testing can accurately measure coarse grey cast iron",
+                "option_d": "Rockwell testing does not require any minor load",
+                "correct_option": "B",
+                "explanation": "Because Rockwell reads depth automatically via a dial indicator or LVDT sensor, testing takes under 10 seconds without subjective optical diameter measurement. Furthermore, the indentation is tiny compared to a 10 mm Brinell impression, preserving finished component integrity.",
+                "difficulty": "Basic"
+            }
+        ]
+        for q in hardness_questions:
             cursor.execute('''
             INSERT INTO quiz_questions (
                 experiment_type, question, option_a, option_b, option_c, option_d,
@@ -761,6 +946,17 @@ def get_student_dashboard_stats(student_id):
     row = cursor.fetchone()
 
     cursor.execute('''
+    SELECT 
+        COUNT(*) as total_experiments,
+        SUM(CASE WHEN mode = 'VIRTUAL_SIMULATION' THEN 1 ELSE 0 END) as simulation_count,
+        SUM(CASE WHEN mode = 'MANUAL_ENTRY' THEN 1 ELSE 0 END) as manual_count,
+        MAX(created_at) as last_experiment_at
+    FROM hardness_experiments
+    WHERE LOWER(student_id) = LOWER(?)
+    ''', (student_id.strip(),))
+    h_row = cursor.fetchone()
+
+    cursor.execute('''
     SELECT COUNT(*) as quiz_count
     FROM quiz_results
     WHERE LOWER(student_id) = LOWER(?)
@@ -769,14 +965,30 @@ def get_student_dashboard_stats(student_id):
     quiz_attempts = q_row['quiz_count'] if q_row else 0
 
     conn.close()
-    total_exp = row['total_experiments'] or 0
+    
+    t_total = (row['total_experiments'] or 0) if row else 0
+    t_sim = (row['simulation_count'] or 0) if row else 0
+    t_man = (row['manual_count'] or 0) if row else 0
+    t_last = row['last_experiment_at'] if row else None
+
+    h_total = (h_row['total_experiments'] or 0) if h_row else 0
+    h_sim = (h_row['simulation_count'] or 0) if h_row else 0
+    h_man = (h_row['manual_count'] or 0) if h_row else 0
+    h_last = h_row['last_experiment_at'] if h_row else None
+
+    total_exp = t_total + h_total
+    sim_count = t_sim + h_sim
+    man_count = t_man + h_man
+    last_dates = [d for d in [t_last, h_last] if d]
+    last_at = max(last_dates) if last_dates else None
+
     return {
         'total_experiments': total_exp,
-        'simulation_count': row['simulation_count'] or 0,
-        'manual_count': row['manual_count'] or 0,
+        'simulation_count': sim_count,
+        'manual_count': man_count,
         'quiz_attempts': quiz_attempts,
         'saved_experiments': total_exp,
-        'last_experiment_at': row['last_experiment_at']
+        'last_experiment_at': last_at
     }
 
 def get_student_stats(student_id):
@@ -795,7 +1007,8 @@ def get_all_students(search_query=None, university=None, course=None):
     conn = get_db_connection()
     query = '''
     SELECT s.id, s.student_id, s.name, s.course, s.university, s.created_at, s.last_login_at,
-           (SELECT COUNT(*) FROM experiments WHERE LOWER(student_id) = LOWER(s.student_id)) as experiment_count,
+           ((SELECT COUNT(*) FROM experiments WHERE LOWER(student_id) = LOWER(s.student_id)) +
+            (SELECT COUNT(*) FROM hardness_experiments WHERE LOWER(student_id) = LOWER(s.student_id))) as experiment_count,
            (SELECT COUNT(*) FROM quiz_results WHERE LOWER(student_id) = LOWER(s.student_id)) as quiz_count
     FROM students s
     WHERE 1=1
@@ -1001,5 +1214,157 @@ def update_admin_credentials(new_username, new_password, current_password=None):
     conn.commit()
     conn.close()
     return True, "Administrator credentials successfully updated."
+
+# ==========================================
+# HARDNESS EXPERIMENTS OPERATIONS (BRINELL & ROCKWELL)
+# ==========================================
+
+def save_hardness_experiment(data, student_id=None):
+    """
+    Saves a completed Brinell or Rockwell hardness experiment.
+    Parameters in data:
+    - title: str
+    - method: 'BRINELL' or 'ROCKWELL'
+    - mode: 'VIRTUAL_SIMULATION' or 'MANUAL_ENTRY'
+    - material_name: str
+    - data_origin: 'SIMULATION / DEMONSTRATION DATA' or 'USER-ENTERED LABORATORY DATA'
+    - parameters: dict (stored as JSON)
+    - mean_hardness: float
+    - hardness_unit: str ('HBW', 'HRB', 'HRC', 'HRA')
+    - num_readings: int
+    - readings: list of trial dicts
+    - notes: str
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    sid = student_id or data.get('student_id')
+    method = (data.get('method') or 'BRINELL').upper().strip()
+    mode = data.get('mode', 'MANUAL_ENTRY')
+    data_origin = data.get('data_origin')
+    if not data_origin:
+        data_origin = 'SIMULATION / DEMONSTRATION DATA' if mode == 'VIRTUAL_SIMULATION' else 'USER-ENTERED LABORATORY DATA'
+
+    params = data.get('parameters', {})
+    params_json = json.dumps(params) if isinstance(params, dict) else str(params)
+    readings = data.get('readings', [])
+    num_readings = len(readings) if readings else int(data.get('num_readings', 1))
+
+    mean_h = float(data.get('mean_hardness', 0.0))
+    h_unit = data.get('hardness_unit', 'HBW' if method == 'BRINELL' else 'HRB')
+    title = data.get('title') or f"{method.capitalize()} Hardness Test — {data.get('material_name', 'Specimen')}"
+
+    cursor.execute('''
+    INSERT INTO hardness_experiments (
+        student_id, title, method, mode, material_name, data_origin,
+        parameters_json, mean_hardness, hardness_unit, num_readings, notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        sid, title, method, mode, data.get('material_name', 'Unknown Material'),
+        data_origin, params_json, mean_h, h_unit, num_readings, data.get('notes', '')
+    ))
+
+    exp_id = cursor.lastrowid
+
+    # Insert individual trial readings
+    for idx, r in enumerate(readings, start=1):
+        t_num = r.get('trial_number', idx)
+        d1 = float(r['d1_mm']) if r.get('d1_mm') is not None else (float(r['d1']) if r.get('d1') is not None else None)
+        d2 = float(r['d2_mm']) if r.get('d2_mm') is not None else (float(r['d2']) if r.get('d2') is not None else None)
+        mean_d = float(r['mean_d_mm']) if r.get('mean_d_mm') is not None else (float(r['d_mm']) if r.get('d_mm') is not None else None)
+        depth = float(r['depth_mm']) if r.get('depth_mm') is not None else (float(r['depth_e_mm']) if r.get('depth_e_mm') is not None else None)
+        h_val = float(r.get('hardness_value', r.get('hbw', r.get('hardness_reading', mean_h))))
+
+        cursor.execute('''
+        INSERT INTO hardness_readings (
+            experiment_id, trial_number, d1_mm, d2_mm, mean_d_mm, depth_mm, hardness_value
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (exp_id, t_num, d1, d2, mean_d, depth, h_val))
+
+    conn.commit()
+    conn.close()
+
+    # Log activity
+    if sid:
+        log_activity(sid, 'EXPERIMENT_SAVE', f"Hardness {method} experiment #{exp_id} saved ({mode})")
+
+    return exp_id
+
+def get_hardness_experiment_by_id(exp_id):
+    """
+    Retrieves full details of a hardness experiment including parameters, trials, and associated quiz.
+    """
+    conn = get_db_connection()
+    row = conn.execute('SELECT * FROM hardness_experiments WHERE id = ?', (exp_id,)).fetchone()
+    if not row:
+        conn.close()
+        return None
+    exp = dict(row)
+    if exp.get('parameters_json'):
+        try:
+            exp['parameters'] = json.loads(exp['parameters_json'])
+        except Exception:
+            exp['parameters'] = {}
+    else:
+        exp['parameters'] = {}
+
+    readings = conn.execute('SELECT * FROM hardness_readings WHERE experiment_id = ? ORDER BY trial_number ASC', (exp_id,)).fetchall()
+    exp['readings'] = [dict(r) for r in readings]
+
+    quiz_res = conn.execute('''
+    SELECT * FROM quiz_results 
+    WHERE experiment_id = ? OR (experiment_type = LOWER(?) AND student_id = ?)
+    ORDER BY completed_at DESC LIMIT 1
+    ''', (exp_id, exp['method'], exp['student_id'])).fetchone()
+    exp['quiz'] = dict(quiz_res) if quiz_res else None
+
+    conn.close()
+    return exp
+
+def get_all_hardness_experiments(student_id=None, method=None):
+    """
+    Retrieves all hardness experiments, optionally filtered by student_id and/or method ('BRINELL' or 'ROCKWELL').
+    """
+    conn = get_db_connection()
+    query = 'SELECT * FROM hardness_experiments WHERE 1=1'
+    params = []
+    if student_id:
+        query += ' AND LOWER(student_id) = LOWER(?)'
+        params.append(student_id.strip())
+    if method:
+        query += ' AND UPPER(method) = UPPER(?)'
+        params.append(method.strip())
+    query += ' ORDER BY created_at DESC'
+    rows = conn.execute(query, tuple(params)).fetchall()
+    conn.close()
+    result = []
+    for r in rows:
+        d = dict(r)
+        if d.get('parameters_json'):
+            try:
+                d['parameters'] = json.loads(d['parameters_json'])
+            except Exception:
+                d['parameters'] = {}
+        else:
+            d['parameters'] = {}
+        result.append(d)
+    return result
+
+def delete_hardness_experiment(exp_id, student_id=None):
+    """
+    Deletes a hardness experiment by id, verifying student ownership if student_id is provided.
+    """
+    conn = get_db_connection()
+    if student_id:
+        row = conn.execute('SELECT student_id FROM hardness_experiments WHERE id = ?', (exp_id,)).fetchone()
+        if not row or (row['student_id'] and row['student_id'].lower() != student_id.lower()):
+            conn.close()
+            return False
+    conn.execute('DELETE FROM hardness_readings WHERE experiment_id = ?', (exp_id,))
+    conn.execute('DELETE FROM hardness_experiments WHERE id = ?', (exp_id,))
+    conn.commit()
+    conn.close()
+    return True
+
 
 

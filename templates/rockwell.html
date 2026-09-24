@@ -1,0 +1,1138 @@
+{% extends "base.html" %}
+
+{% block title %}Rockwell Hardness Test (ASTM E18) — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Breadcrumb & Top Bar -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('experiments') }}" class="text-decoration-none">Experiments</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('hardness_hub') }}" class="text-decoration-none">Hardness Test</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Rockwell Hardness Test</li>
+    </ol>
+  </nav>
+
+  <!-- Hero Banner -->
+  <div class="lab-card p-4 p-md-5 mb-4 border border-secondary border-opacity-25 shadow-sm position-relative overflow-hidden">
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+      <span class="badge bg-success bg-opacity-25 text-dark fw-bold border border-success border-opacity-50 px-2 py-1">
+        <i class="fas fa-gem me-1 text-primary"></i> Differential Depth Method
+      </span>
+      <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1">
+        <i class="fas fa-certificate me-1"></i> ASTM E18 / ISO 6508-1 / IS 1586
+      </span>
+      <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+        <i class="fas fa-check-circle me-1"></i> Active Virtual Laboratory
+      </span>
+    </div>
+
+    <h1 class="fw-bold text-navy fs-1 mb-2">Rockwell Hardness Test (HRB / HRC / HRA)</h1>
+    <p class="text-secondary fs-6 mb-3" style="max-width: 840px;">
+      Determine material hardness by measuring the net permanent increase in indentation depth ($e$) resulting from a heavy major load 
+      relative to a pre-applied preliminary minor load ($10\text{ kgf}$). Delivers immediate direct-reading measurements on standard 
+      Rockwell scales (Scale B, Scale C, Scale A) without optical operator error.
+    </p>
+
+    <div class="d-flex flex-wrap gap-2">
+      <a href="#virtual-lab" class="btn btn-sm btn-lab-primary">
+        <i class="fas fa-play me-1"></i> Start Virtual Simulation
+      </a>
+      <a href="#manual-lab" class="btn btn-sm btn-lab-secondary">
+        <i class="fas fa-keyboard me-1"></i> Manual Data Entry
+      </a>
+      <a href="#apparatus" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-eye me-1"></i> Interactive Machine Diagram
+      </a>
+      <a href="#quiz-section" class="btn btn-sm btn-outline-warning text-dark">
+        <i class="fas fa-graduation-cap me-1 text-warning"></i> Take Quiz
+      </a>
+    </div>
+  </div>
+
+  <!-- Quick Anchor Navigation Tabs -->
+  <div class="lab-card p-2 mb-4 border border-secondary border-opacity-25 bg-light d-flex flex-wrap gap-2 justify-content-between align-items-center shadow-sm">
+    <div class="d-flex flex-wrap gap-1">
+      <a href="#objective" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">1. Objective</a>
+      <a href="#theory" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">2. Theory &amp; Principle</a>
+      <a href="#apparatus" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">3. Apparatus</a>
+      <a href="#scales" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">4. Rockwell Scales</a>
+      <a href="#procedure" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">5. Procedure</a>
+      <a href="#virtual-lab" class="btn btn-sm btn-link text-decoration-none text-primary fw-bold px-2 py-1">6. Virtual Lab</a>
+      <a href="#manual-lab" class="btn btn-sm btn-link text-decoration-none text-success fw-bold px-2 py-1">7. Manual Data Entry</a>
+      <a href="#calculations" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">8. Calculations</a>
+      <a href="#quiz-section" class="btn btn-sm btn-link text-decoration-none text-warning text-dark fw-semibold px-2 py-1">9. Quiz</a>
+    </div>
+    <span class="badge bg-secondary bg-opacity-25 text-secondary font-mono small d-none d-md-inline">ASTM E18</span>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 1. OBJECTIVE -->
+  <!-- ========================================== -->
+  <section id="objective" class="mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-mono">01</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Experiment Objective</h3>
+      </div>
+      <p class="text-secondary mb-0">
+        To determine the <strong>Rockwell Hardness (HR)</strong> of various ferrous and non-ferrous alloys using the differential-depth 
+        penetration method on standardized Rockwell scales: <strong>Scale B (HRB)</strong> for softer engineering alloys (annealed mild steel, 
+        brass, aluminium) and <strong>Scale C (HRC)</strong> for hardened tool steels, verify specimen thickness limits ($t \ge 10e$), 
+        and interpret direct indicator readings.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 2. THEORY & PRINCIPLE (DIFFERENTIAL DEPTH) -->
+  <!-- ========================================== -->
+  <section id="theory" class="mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-mono">02</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Theory &amp; Principle of Rockwell Testing</h3>
+      </div>
+
+      <div class="row g-4 align-items-center mb-3">
+        <div class="col-lg-7">
+          <p class="text-secondary small leading-relaxed">
+            The Rockwell hardness test (developed by Hugh and Stanley Rockwell in 1919) determines hardness by measuring the 
+            <strong>permanent net depth of indentation ($e$)</strong> produced by an indenter under a major load relative to a pre-applied minor load. 
+            Because depth measurement eliminates optical diameter measuring steps, the test takes under <strong>10 seconds</strong> and leaves a tiny, 
+            virtually non-destructive indentation.
+          </p>
+          <p class="text-secondary small leading-relaxed">
+            The standard test cycle proceeds through three distinct stages:
+          </p>
+          <ol class="small text-secondary ps-3 mb-3">
+            <li class="mb-1"><strong>Preliminary Minor Load ($F_0 = 10\text{ kgf}$):</strong> Seats the indenter through surface oxide, roughness, and mechanical play to establish a zero depth datum ($h_0$). The dial indicator is zeroed (SET point).</li>
+            <li class="mb-1"><strong>Total Major Load ($F = F_0 + F_1$):</strong> Additional load ($F_1$) is applied smoothly via a hydraulic dashpot (e.g. 90 kgf for Scale B, 140 kgf for Scale C). The indenter penetrates to maximum depth ($h_1$).</li>
+            <li class="mb-1"><strong>Unloading to Minor Load ($F_0$):</strong> The major load is released while the minor load is maintained. Elastic deformation recovers, leaving permanent plastic depth ($h_2$). The net permanent increase is $e = h_2 - h_0$.</li>
+          </ol>
+
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 font-mono text-center fs-5 text-navy mb-2">
+            $$HR = N - \frac{e}{0.002\text{ mm}}$$
+          </div>
+          <div class="text-center small text-muted">
+            Where 1 dial unit = <strong>0.002 mm (2 µm)</strong>; $N = 100$ for Scale C and A; $N = 130$ for Scale B.
+          </div>
+        </div>
+
+        <div class="col-lg-5 text-center">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25">
+            <img src="{{ url_for('static', filename='images/rockwell_stages.svg') }}" alt="Rockwell 3-Stage Penetration Cycle" class="w-100 object-fit-contain" style="max-height: 220px;">
+            <div class="small text-muted mt-2 fw-semibold">Figure 1: Rockwell 3-Stage Indentation Penetration Cycle</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 3. APPARATUS & MACHINE VISUALIZER -->
+  <!-- ========================================== -->
+  <section id="apparatus" class="mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-mono">03</span>
+          <h3 class="fw-bold text-navy fs-4 mb-0">Apparatus &amp; Machine Visualizer</h3>
+        </div>
+        <span class="badge bg-info bg-opacity-10 text-primary border border-info border-opacity-25 px-2 py-1 small">
+          <i class="fas fa-hand-pointer me-1"></i> Interactive Component Explorer
+        </span>
+      </div>
+
+      <p class="text-secondary small mb-3">
+        Explore the primary mechanical components of the Rockwell Hardness Tester. 
+        <strong>Click or tap any component</strong> on the schematic below to view its technical specifications and educational role.
+      </p>
+
+      <div class="row g-4 align-items-start">
+        <!-- SVG Graphic -->
+        <div class="col-lg-7 text-center">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 position-relative shadow-sm" style="min-height: 480px;">
+            <div id="rockwell-svg-container" style="max-width: 600px; margin: 0 auto;">
+              <!-- Embedded Interactive SVG -->
+              {% include "static/images/rockwell_tester.svg" ignore missing %}
+              {% if not rockwell_svg_included %}
+              <img src="{{ url_for('static', filename='images/rockwell_tester.svg') }}" alt="Rockwell Hardness Machine Schematic" class="w-100 object-fit-contain" id="rockwell-tester-img" style="cursor: pointer;">
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Component Detail Inspector Card -->
+        <div class="col-lg-5">
+          <div class="lab-card p-4 border border-primary border-opacity-50 h-100 shadow-sm" id="r-component-card">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge bg-primary px-2 py-1 font-mono small" id="r-comp-badge">MACHINE COMPONENT</span>
+              <span class="badge bg-light text-muted border font-mono small" id="r-comp-id">dial-display</span>
+            </div>
+            <h4 class="fw-bold text-navy mb-2" id="r-comp-title">Dual Direct-Reading Hardness Dial</h4>
+            <div class="p-3 bg-light rounded border border-secondary border-opacity-25 mb-3 small">
+              <div class="text-secondary fw-semibold mb-1">Technical Specification:</div>
+              <div class="text-dark font-mono" id="r-comp-specs">Dual circular dial graduated into 100 divisions. Outer Black scale (HRC: 0–100), Inner Red scale (HRB: 0–130). 1 division = 0.002 mm (2 µm).</div>
+            </div>
+            <div class="text-secondary small leading-relaxed mb-3" id="r-comp-desc">
+              Directly translates vertical indenter spindle travel into hardness units. When the 10 kgf minor load is engaged, the large pointer aligns with the SET (0) mark. Following major load release, the pointer rests on the measured hardness value.
+            </div>
+            <div class="alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-0">
+              <i class="fas fa-lightbulb text-primary"></i>
+              <div id="r-comp-tip">Click components on the diagram (Indenter, Dial Gauge, Specimen, Anvil, Handwheel, Dashpot, Operating Lever) to learn their function.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 4. ROCKWELL SCALES REFERENCE -->
+  <!-- ========================================== -->
+  <section id="scales" class="mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-mono">04</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Standard Rockwell Scales (ASTM E18)</h3>
+      </div>
+
+      <p class="text-secondary small mb-3">
+        The Rockwell test provides multiple scales designated by letters. Each scale represents a unique pairing of indenter type, 
+        minor load, major load, and dial scale:
+      </p>
+
+      <div class="table-responsive rounded border border-secondary border-opacity-25">
+        <table class="table table-sm table-hover align-middle mb-0 small font-mono">
+          <thead class="bg-light">
+            <tr>
+              <th>Scale</th>
+              <th>Symbol</th>
+              <th>Indenter</th>
+              <th>Minor Load</th>
+              <th>Major Load</th>
+              <th>Total Load</th>
+              <th>Dial Scale</th>
+              <th>Typical Materials</th>
+              <th>Useful Range</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="table-danger bg-opacity-10">
+              <td class="fw-bold text-danger">Scale B</td>
+              <td class="fw-bold text-danger">HRB</td>
+              <td>1/16" (1.588 mm) Steel / WC Ball</td>
+              <td>10 kgf</td>
+              <td>90 kgf</td>
+              <td>100 kgf</td>
+              <td>Red Scale ($N=130$)</td>
+              <td>Aluminium alloys, brass, bronze, annealed mild steels</td>
+              <td>20 to 100 HRB</td>
+            </tr>
+            <tr class="table-primary bg-opacity-10">
+              <td class="fw-bold text-navy">Scale C</td>
+              <td class="fw-bold text-navy">HRC</td>
+              <td>120° Spheroconical Diamond Brale Cone</td>
+              <td>10 kgf</td>
+              <td>140 kgf</td>
+              <td>150 kgf</td>
+              <td>Black Scale ($N=100$)</td>
+              <td>Hardened tool steels, quenched &amp; tempered alloy steels</td>
+              <td>20 to 70 HRC</td>
+            </tr>
+            <tr>
+              <td class="fw-bold">Scale A</td>
+              <td class="fw-bold">HRA</td>
+              <td>120° Spheroconical Diamond Brale Cone</td>
+              <td>10 kgf</td>
+              <td>50 kgf</td>
+              <td>60 kgf</td>
+              <td>Black Scale ($N=100$)</td>
+              <td>Thin steel sheet, cemented carbides, shallow case layers</td>
+              <td>60 to 88 HRA</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 5. PROCEDURE -->
+  <!-- ========================================== -->
+  <section id="procedure" class="mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-mono">05</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Standard Operating Procedure (ASTM E18)</h3>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="p-3 border rounded h-100 bg-white">
+            <div class="badge bg-primary mb-2">Step 1: Mount Specimen</div>
+            <h6 class="fw-bold text-navy">Clean Seating</h6>
+            <p class="text-secondary small mb-0">
+              Ensure specimen is flat, clean, and deburred. Mount firmly on the anvil directly perpendicular to the indenter axis.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="p-3 border rounded h-100 bg-white">
+            <div class="badge bg-primary mb-2">Step 2: Minor Load (10 kgf)</div>
+            <h6 class="fw-bold text-navy">Zeroing to SET</h6>
+            <p class="text-secondary small mb-0">
+              Turn handwheel clockwise to raise the specimen until the dial indicator small pointer reaches the dot and large pointer aligns with SET (0).
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="p-3 border rounded h-100 bg-white">
+            <div class="badge bg-primary mb-2">Step 3: Apply Major Load</div>
+            <h6 class="fw-bold text-navy">Dashpot Tripping</h6>
+            <p class="text-secondary small mb-0">
+              Trip the operating lever to release the major load (e.g. 100 kgf or 150 kgf). The hydraulic dashpot smoothly regulates descent without impact. Dwell for 2–6s.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="p-3 border rounded h-100 bg-white">
+            <div class="badge bg-primary mb-2">Step 4: Unload &amp; Read</div>
+            <h6 class="fw-bold text-navy">Direct Readout</h6>
+            <p class="text-secondary small mb-0">
+              Pull the operating lever back to release the major load (retaining minor load). Read the indicated hardness number directly on the appropriate scale.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 6. VIRTUAL EXPERIMENT STUDIO -->
+  <!-- ========================================== -->
+  <section id="virtual-lab" class="mb-4">
+    <div class="lab-card p-4 border border-primary border-opacity-50 shadow-sm" style="background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary bg-opacity-25 text-primary fw-bold font-mono">06</span>
+          <h3 class="fw-bold text-navy fs-3 mb-0">Virtual Rockwell Studio</h3>
+        </div>
+        <span class="badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-50 px-2 py-1 fw-bold">
+          <i class="fas fa-desktop me-1"></i> SIMULATION / DEMONSTRATION DATA
+        </span>
+      </div>
+
+      <p class="text-secondary small mb-4">
+        Simulate the complete 3-stage Rockwell test cycle. Observe the minor load engagement, major load penetration, 
+        elastic recovery, and direct indicator needle motion on the calibrated dial.
+      </p>
+
+      <div class="row g-4">
+        <!-- Controls -->
+        <div class="col-lg-5">
+          <div class="lab-card p-3 border border-secondary border-opacity-25 bg-white shadow-sm">
+            <h5 class="fw-bold text-navy mb-3"><i class="fas fa-sliders-h text-primary me-2"></i>Test Configuration</h5>
+
+            <!-- Scale Selector -->
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-navy">Select Rockwell Scale:</label>
+              <select class="form-select form-select-sm" id="rScaleSelect">
+                <option value="B" selected>Scale B (HRB) — 1/16" Ball, 100 kgf, Red Dial</option>
+                <option value="C">Scale C (HRC) — 120° Diamond Cone, 150 kgf, Black Dial</option>
+                <option value="A">Scale A (HRA) — 120° Diamond Cone, 60 kgf, Black Dial</option>
+              </select>
+            </div>
+
+            <!-- Material Dropdown -->
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-navy">Select Specimen Material:</label>
+              <select class="form-select form-select-sm" id="rMaterialSelect">
+                <!-- Dynamically populated based on scale -->
+              </select>
+            </div>
+
+            <!-- Stage Stepper Indicator -->
+            <div class="p-3 bg-light rounded border border-secondary border-opacity-25 mb-3">
+              <div class="text-secondary small fw-bold mb-2">Test Cycle Phase:</div>
+              <div class="d-flex justify-content-between text-center font-mono small">
+                <div class="px-2 py-1 rounded border bg-white flex-fill me-1" id="step1-badge">1. Minor (10 kg)</div>
+                <div class="px-2 py-1 rounded border bg-white flex-fill me-1" id="step2-badge">2. Major Load</div>
+                <div class="px-2 py-1 rounded border bg-white flex-fill" id="step3-badge">3. Recovery &amp; Read</div>
+              </div>
+            </div>
+
+            <button type="button" class="btn btn-lab-primary w-100 fw-bold py-2 mb-2" id="rStartTestBtn">
+              <i class="fas fa-play me-2"></i> Run Rockwell Test Cycle
+            </button>
+            <button type="button" class="btn btn-outline-secondary w-100 btn-sm" id="rResetTestBtn">
+              <i class="fas fa-redo me-1"></i> Reset Machine Dial
+            </button>
+          </div>
+        </div>
+
+        <!-- Animated Dial Display & Virtual Results -->
+        <div class="col-lg-7">
+          <div class="lab-card p-3 border border-secondary border-opacity-25 bg-white shadow-sm h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="fw-bold text-navy mb-0"><i class="fas fa-tachometer-alt text-primary me-2"></i>Direct-Reading Dial Indicator</h5>
+              <span class="badge bg-light text-secondary border font-mono small" id="rStatusBadge">Ready</span>
+            </div>
+
+            <!-- Animated Dial SVG -->
+            <div class="rounded border p-3 text-center my-auto position-relative bg-light" style="min-height: 260px; background: #0f172a !important;">
+              <svg viewBox="0 0 300 300" width="220" height="220" id="dial-svg" class="mx-auto d-block">
+                <!-- Outer Bezel -->
+                <circle cx="150" cy="150" r="140" fill="#0f172a" stroke="#475569" stroke-width="4"/>
+                <circle cx="150" cy="150" r="130" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+                
+                <!-- Black Scale C Ring -->
+                <circle cx="150" cy="150" r="110" fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="2, 4"/>
+                <!-- Red Scale B Ring -->
+                <circle cx="150" cy="150" r="95" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="2, 4"/>
+
+                <!-- SET Point (Top) -->
+                <text x="150" y="55" text-anchor="middle" font-family="'Inter', sans-serif" font-size="10" font-weight="900" fill="#dc2626">SET (0)</text>
+                <text x="150" y="72" text-anchor="middle" font-family="'Inter', sans-serif" font-size="8" font-weight="700" fill="#0f172a">100 C</text>
+                <text x="150" y="85" text-anchor="middle" font-family="'Inter', sans-serif" font-size="8" font-weight="700" fill="#dc2626">130 B</text>
+
+                <!-- Scale Labels -->
+                <text x="210" y="155" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" font-weight="700" fill="#0f172a">50 C</text>
+                <text x="90" y="155" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" font-weight="700" fill="#0f172a">50 C</text>
+
+                <text x="150" y="210" text-anchor="middle" font-family="'Inter', sans-serif" font-size="9" font-weight="800" fill="#64748b">ASTM E18</text>
+                <text x="150" y="222" text-anchor="middle" font-family="'Inter', sans-serif" font-size="7" font-weight="600" fill="#0284c7">1 div = 0.002 mm</text>
+
+                <!-- Indicator Pointer Needle (Rotates via JS) -->
+                <g id="dialNeedleGroup" style="transform-origin: 150px 150px; transform: rotate(0deg); transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);">
+                  <line x1="150" y1="150" x2="150" y2="45" stroke="#dc2626" stroke-width="3" stroke-linecap="round"/>
+                  <circle cx="150" cy="150" r="7" fill="#0f172a"/>
+                  <circle cx="150" cy="150" r="2.5" fill="#ffffff"/>
+                </g>
+              </svg>
+
+              <!-- Live Dial Reading Overlay -->
+              <div class="mt-2 text-white font-mono fs-4 fw-bold">
+                Reading: <span class="text-cyan" id="rLiveDialVal">0.0</span> <span id="rUnitSymbol">HRB</span>
+              </div>
+            </div>
+
+            <!-- Virtual Test Results Panel -->
+            <div class="mt-3 p-3 bg-light rounded border border-secondary border-opacity-25" id="rResultPanel">
+              <div class="row g-2 text-center">
+                <div class="col-4">
+                  <div class="text-secondary small">Rockwell Hardness</div>
+                  <div class="fs-4 fw-bold text-primary font-mono" id="rResHardness">—</div>
+                </div>
+                <div class="col-4">
+                  <div class="text-secondary small">Permanent Depth ($e$)</div>
+                  <div class="fs-5 fw-bold text-steel font-mono" id="rResDepth">—</div>
+                </div>
+                <div class="col-4">
+                  <div class="text-secondary small">Scale Designation</div>
+                  <div class="fs-5 fw-bold text-success font-mono" id="rResScale">—</div>
+                </div>
+              </div>
+              <div class="text-center small mt-2 text-muted" id="rValidityMsg">Select scale and material, then click "Run Rockwell Test Cycle".</div>
+            </div>
+
+            <!-- Virtual Save & PDF Export Buttons -->
+            <div class="d-flex gap-2 mt-3">
+              <button type="button" class="btn btn-sm btn-lab-primary flex-fill" id="rSaveExpBtn" disabled>
+                <i class="fas fa-save me-1"></i> Save to My Experiments
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-success flex-fill" id="rDownloadPdfBtn" disabled>
+                <i class="fas fa-file-pdf me-1"></i> Generate PDF Report
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 7. MANUAL LABORATORY READING STUDIO -->
+  <!-- ========================================== -->
+  <section id="manual-lab" class="mb-4">
+    <div class="lab-card p-4 border border-success border-opacity-50 shadow-sm" style="background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-success bg-opacity-25 text-success fw-bold font-mono">07</span>
+          <h3 class="fw-bold text-navy fs-3 mb-0">Manual Laboratory Data Entry</h3>
+        </div>
+        <span class="badge bg-info bg-opacity-25 text-primary border border-info border-opacity-50 px-2 py-1 fw-bold">
+          <i class="fas fa-keyboard me-1"></i> USER-ENTERED LABORATORY DATA
+        </span>
+      </div>
+
+      <p class="text-secondary small mb-3">
+        Enter physical laboratory test readings obtained directly from a Rockwell Hardness Tester dial or digital indicator.
+      </p>
+
+      <form id="manualRockwellForm">
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label small fw-bold text-navy">Material Tested <span class="text-danger">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="rmMaterial" placeholder="Specimen material name" required value="AISI 1045 Quenched & Tempered Steel">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold text-navy">Rockwell Scale <span class="text-danger">*</span></label>
+            <select class="form-select form-select-sm" id="rmScale">
+              <option value="C" selected>Scale C (HRC) — Diamond Cone, 150 kgf</option>
+              <option value="B">Scale B (HRB) — 1/16" Ball, 100 kgf</option>
+              <option value="A">Scale A (HRA) — Diamond Cone, 60 kgf</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold text-navy">Total Test Force</label>
+            <input type="text" class="form-control form-control-sm font-mono bg-light" id="rmTotalForce" value="150 kgf (1471 N)" readonly>
+          </div>
+        </div>
+
+        <!-- Dynamic Multi-Trial Observation Table -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold text-navy mb-0"><i class="fas fa-table text-primary me-2"></i>Trial Observation Readings</h6>
+          <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-outline-primary" id="rmAddTrialBtn"><i class="fas fa-plus me-1"></i> Add Trial</button>
+            <button type="button" class="btn btn-outline-danger" id="rmRemoveTrialBtn"><i class="fas fa-minus me-1"></i> Remove Trial</button>
+          </div>
+        </div>
+
+        <div class="table-responsive rounded border border-secondary border-opacity-25 mb-3 bg-white">
+          <table class="table table-sm table-bordered align-middle mb-0 font-mono small text-center" id="rmTrialsTable">
+            <thead class="bg-light">
+              <tr>
+                <th style="width: 15%;">Trial #</th>
+                <th style="width: 35%;">Dial Hardness Reading</th>
+                <th style="width: 25%;">Depth $e$ (mm)</th>
+                <th style="width: 25%;">Scale Notation</th>
+              </tr>
+            </thead>
+            <tbody id="rmTrialsTbody">
+              <tr>
+                <td class="fw-bold">1</td>
+                <td><input type="number" step="0.1" class="form-control form-control-sm text-center font-mono rm-val" value="48.5" required></td>
+                <td class="rm-depth text-steel">0.1030</td>
+                <td class="rm-not fw-bold text-primary">48.5 HRC</td>
+              </tr>
+              <tr>
+                <td class="fw-bold">2</td>
+                <td><input type="number" step="0.1" class="form-control form-control-sm text-center font-mono rm-val" value="48.0" required></td>
+                <td class="rm-depth text-steel">0.1040</td>
+                <td class="rm-not fw-bold text-primary">48.0 HRC</td>
+              </tr>
+              <tr>
+                <td class="fw-bold">3</td>
+                <td><input type="number" step="0.1" class="form-control form-control-sm text-center font-mono rm-val" value="49.0" required></td>
+                <td class="rm-depth text-steel">0.1020</td>
+                <td class="rm-not fw-bold text-primary">49.0 HRC</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Manual Summary Card -->
+        <div class="p-3 bg-light rounded border border-secondary border-opacity-25 mb-3" id="rmSummaryPanel">
+          <div class="row g-3 text-center">
+            <div class="col-sm-3">
+              <div class="text-secondary small">Mean Hardness:</div>
+              <div class="fs-4 fw-bold text-primary font-mono" id="rmMeanVal">48.5 HRC</div>
+            </div>
+            <div class="col-sm-3">
+              <div class="text-secondary small">Standard Deviation:</div>
+              <div class="fs-5 fw-bold text-steel font-mono" id="rmStdDev">± 0.50 HRC</div>
+            </div>
+            <div class="col-sm-3">
+              <div class="text-secondary small">Range (Max - Min):</div>
+              <div class="fs-5 fw-bold text-dark font-mono" id="rmRange">1.0 HRC</div>
+            </div>
+            <div class="col-sm-3">
+              <div class="text-secondary small">Mean Penetration ($e$):</div>
+              <div class="fs-5 fw-bold text-success font-mono" id="rmMeanDepth">0.1030 mm</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+          <button type="button" class="btn btn-sm btn-lab-primary" id="rmCalculateBtn">
+            <i class="fas fa-calculator me-1"></i> Calculate Results
+          </button>
+          <button type="button" class="btn btn-sm btn-success" id="rmSaveBtn">
+            <i class="fas fa-save me-1"></i> Save User Laboratory Data
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-success" id="rmPdfBtn" disabled>
+            <i class="fas fa-file-pdf me-1"></i> Generate PDF Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 8. CALCULATIONS STEP-BY-STEP BREAKDOWN -->
+  <!-- ========================================== -->
+  <section id="calculations" class="mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold font-mono">08</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Step-by-Step Mathematical Calculation</h3>
+      </div>
+
+      <div class="p-3 bg-light rounded border border-secondary border-opacity-25 font-mono small mb-3">
+        <div class="text-secondary mb-1">Example: Hardened Medium Carbon Steel on Rockwell Scale C (150 kgf total load):</div>
+        <div class="text-dark">1. Recorded Dial Reading: $HRC = 48.5$</div>
+        <div class="text-dark">2. Net permanent indentation depth: $e = (N - HRC) \cdot 0.002\text{ mm} = (100 - 48.5) \cdot 0.002 = 51.5 \cdot 0.002 = \mathbf{0.1030\text{ mm}}\ (103\ \mu\text{m})$</div>
+        <div class="text-dark">3. Minimum Specimen Thickness: $t_{min} = 10 \cdot e = 10 \cdot 0.1030 = \mathbf{1.03\text{ mm}}$</div>
+        <div class="text-dark">4. Standard Designation: $\mathbf{48.5\text{ HRC}}$</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 9. QUIZ SECTION (ROCKWELL ASSESSMENT) -->
+  <!-- ========================================== -->
+  <section id="quiz-section" class="mb-4">
+    <div class="lab-card p-4 border border-warning border-opacity-50 shadow-sm" style="background: linear-gradient(180deg, #ffffff 0%, #fffbeb 100%);">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-warning text-dark fw-bold font-mono">09</span>
+          <h3 class="fw-bold text-navy fs-3 mb-0">Rockwell Hardness Assessment &amp; Viva Quiz</h3>
+        </div>
+        <span class="badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-50 px-2 py-1 small">
+          6 Syllabus Questions
+        </span>
+      </div>
+
+      <p class="text-secondary small mb-3">
+        Test your mastery of the differential depth principle, minor vs. major loads, and Rockwell scales B and C.
+      </p>
+
+      <div id="r-quiz-container">
+        {% if quiz_questions and quiz_questions|length > 0 %}
+          {% for q in quiz_questions %}
+          <div class="lab-card p-3 mb-3 border border-secondary border-opacity-25 bg-white question-card" data-qid="{{ q.id }}" data-correct="{{ q.correct_option }}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge bg-primary bg-opacity-10 text-primary small font-mono">Question {{ loop.index }} of {{ quiz_questions|length }}</span>
+              <span class="badge bg-light text-secondary border small">{{ q.difficulty }}</span>
+            </div>
+            <h6 class="fw-bold text-navy mb-3">{{ q.question }}</h6>
+            <div class="options-container d-flex flex-column gap-2 mb-2">
+              <label class="p-2 rounded border option-label d-flex align-items-center gap-2" style="cursor: pointer;">
+                <input type="radio" name="rq_{{ q.id }}" value="A" class="form-check-input mt-0">
+                <span class="small"><strong>A.</strong> {{ q.option_a }}</span>
+              </label>
+              <label class="p-2 rounded border option-label d-flex align-items-center gap-2" style="cursor: pointer;">
+                <input type="radio" name="rq_{{ q.id }}" value="B" class="form-check-input mt-0">
+                <span class="small"><strong>B.</strong> {{ q.option_b }}</span>
+              </label>
+              <label class="p-2 rounded border option-label d-flex align-items-center gap-2" style="cursor: pointer;">
+                <input type="radio" name="rq_{{ q.id }}" value="C" class="form-check-input mt-0">
+                <span class="small"><strong>C.</strong> {{ q.option_c }}</span>
+              </label>
+              <label class="p-2 rounded border option-label d-flex align-items-center gap-2" style="cursor: pointer;">
+                <input type="radio" name="rq_{{ q.id }}" value="D" class="form-check-input mt-0">
+                <span class="small"><strong>D.</strong> {{ q.option_d }}</span>
+              </label>
+            </div>
+            <div class="explanation-box p-2 rounded bg-light border border-secondary border-opacity-25 small d-none mt-2">
+              <strong>Explanation:</strong> <span class="explanation-text">{{ q.explanation }}</span>
+            </div>
+          </div>
+          {% endfor %}
+
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2">
+            <button type="button" class="btn btn-sm btn-lab-primary" id="submitRQuizBtn">
+              <i class="fas fa-check-circle me-1"></i> Submit Quiz Answers
+            </button>
+            <div id="rQuizResultScore" class="fw-bold fs-5 text-navy font-mono d-none"></div>
+          </div>
+        {% else %}
+          <div class="alert alert-info small">Quiz questions loaded directly via API.</div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  // =========================================================================
+  // 1. APPARATUS COMPONENT INSPECTOR INTERACTIVITY
+  // =========================================================================
+  const rComponentData = {
+    'frame': {
+      title: 'Cast Rigid Main Frame',
+      badge: 'MAIN STRUCTURAL HOUSING',
+      specs: 'Heavy cast alloy housing internal depth lever amplifications, load weights, and dashpot.',
+      desc: 'The C-frame structure encloses the mechanical depth-amplifying levers and hydraulic dashpot speed controller, isolating them from industrial dust and temperature fluctuations.',
+      tip: 'Structural rigidity is vital in Rockwell testing because even 2 microns (0.002 mm) of frame flexing alters the hardness reading by 1 whole unit.'
+    },
+    'dial-display': {
+      title: 'Dual Direct-Reading Hardness Dial',
+      badge: 'DEPTH INDICATOR',
+      specs: 'Dual scale dial: Black scale (HRC 0–100, Diamond cone) and Red scale (HRB 0–130, 1/16" ball). 1 div = 0.002 mm.',
+      desc: 'Directly translates vertical indenter spindle travel into hardness units. When the 10 kgf minor load is engaged, the large pointer aligns with the SET (0) mark. Following major load release, the pointer rests on the measured hardness value.',
+      tip: 'Always note whether you are testing on Red (B) or Black (C) scale to prevent recording invalid readings.'
+    },
+    'indenter': {
+      title: 'Rockwell Indenter (Diamond Cone / 1/16" Ball)',
+      badge: 'PENETRATOR',
+      specs: '120° Spheroconical Diamond Brale Cone (0.200 mm tip radius) for HRC/HRA, or 1/16" (1.5875 mm) polished WC ball for HRB.',
+      desc: 'Pressed into the specimen face. The diamond Brale cone is used for hard materials (> 20 HRC), while the hardened spherical ball is used for soft steels, copper, brass, and aluminium alloys.',
+      tip: 'Inspect diamond indenters regularly under a magnifying glass; chipping of the 0.2 mm spherical tip causes false high hardness readings.'
+    },
+    'specimen': {
+      title: 'Test Specimen',
+      badge: 'TEST SPECIMEN',
+      specs: 'Flat parallel ground sample (minimum thickness t >= 10e, typically >= 1.5 to 2.0 mm).',
+      desc: 'The test specimen must sit rigidly flat on the anvil without rocking or cantilever deflection. Heavy burrs on the bottom face cause false soft readings due to burr crushing under the 150 kgf load.',
+      tip: 'Do not test curved cylindrical stock on flat anvils; use 90° V-groove anvils and apply standard ASTM cylindrical correction factors.'
+    },
+    'anvil': {
+      title: 'Precision Anvil Platform',
+      badge: 'SPECIMEN ANVIL',
+      specs: 'Hardened tool-steel anvil (>= 60 HRC) ground flat within 0.002 mm.',
+      desc: 'Supports the test piece directly perpendicular to the vertical loading axis. Interchangeable anvils include flat platens, small pedestals for thin sheets, and V-groove anvils for rods.',
+      tip: 'Never seat the indenter directly onto the bare anvil face without a test specimen.'
+    },
+    'elevating-screw': {
+      title: 'Elevating Screw & Handwheel',
+      badge: 'SPECIMEN ELEVATION',
+      specs: 'Precision ground elevating lead screw with heavy capstan handwheel.',
+      desc: 'Rotated clockwise by the operator to lift the specimen into contact with the indenter until the preliminary minor load (10 kgf) is engaged and the dial needle points to the SET (0) datum.',
+      tip: 'If you accidentally overshoot the SET mark when applying minor load, do not turn the handwheel backward; relocate to a fresh test spot.'
+    },
+    'dashpot-lever': {
+      title: 'Oil Dashpot & Major Load Weight Stack',
+      badge: 'HYDRAULIC DASHPOT & WEIGHTS',
+      specs: 'Adjustable viscous oil dashpot and calibrated weight stack (60, 100, 150 kgf).',
+      desc: 'The oil dashpot cushions the rate of major load application, taking 2 to 5 seconds to smoothly complete penetration without dynamic inertia impact.',
+      tip: 'In cold weather, thick dashpot oil can slow penetration; standard ASTM dwell requires 2 to 6 seconds application time.'
+    },
+    'operating-lever': {
+      title: 'Load Application & Release Lever',
+      badge: 'OPERATING LEVER',
+      specs: 'Manual or motorized tripping arm for major load engagement and release.',
+      desc: 'Pushed forward to release the major load weights, allowing the indenter to penetrate to full depth. After the 2–6 second dwell, the lever is pulled back to release the major load while maintaining minor load for reading.',
+      tip: 'Pulling the lever back allows elastic recovery of the specimen matrix before reading the net permanent depth.'
+    }
+  };
+
+  function updateRComponentCard(partKey) {
+    const data = rComponentData[partKey];
+    if (!data) return;
+
+    document.getElementById('r-comp-badge').textContent = data.badge;
+    document.getElementById('r-comp-id').textContent = partKey;
+    document.getElementById('r-comp-title').textContent = data.title;
+    document.getElementById('r-comp-specs').textContent = data.specs;
+    document.getElementById('r-comp-desc').textContent = data.desc;
+    document.getElementById('r-comp-tip').textContent = data.tip;
+
+    document.querySelectorAll('.interactive-part').forEach(el => el.classList.remove('active-part'));
+    const activeEl = document.querySelector(`[data-part="${partKey}"]`);
+    if (activeEl) activeEl.classList.add('active-part');
+  }
+
+  document.querySelectorAll('.interactive-part').forEach(el => {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const part = this.getAttribute('data-part');
+      if (part) updateRComponentCard(part);
+    });
+  });
+
+  // =========================================================================
+  // 2. VIRTUAL EXPERIMENT SIMULATION STUDIO
+  // =========================================================================
+  const rScaleSelect = document.getElementById('rScaleSelect');
+  const rMaterialSelect = document.getElementById('rMaterialSelect');
+  const rStartTestBtn = document.getElementById('rStartTestBtn');
+  const rResetTestBtn = document.getElementById('rResetTestBtn');
+  const rSaveBtn = document.getElementById('rSaveExpBtn');
+  const rPdfBtn = document.getElementById('rDownloadPdfBtn');
+  const rStatusBadge = document.getElementById('rStatusBadge');
+  const needleGroup = document.getElementById('dialNeedleGroup');
+
+  const materialsByScale = {
+    'B': [
+      { slug: 'mild-steel', name: 'Mild Steel (IS 2062) — HRB ~ 75' },
+      { slug: 'aluminium-6061-t6', name: 'Aluminium 6061-T6 — HRB ~ 60' },
+      { slug: 'cartridge-brass', name: 'Cartridge Brass (70Cu-30Zn) — HRB ~ 70' }
+    ],
+    'C': [
+      { slug: 'medium-carbon-steel-hardened', name: 'AISI 1045 Quenched & Tempered Steel — HRC ~ 48' },
+      { slug: 'tool-steel-h13', name: 'H13 Tool Steel (Hardened) — HRC ~ 54' },
+      { slug: 'case-hardened-steel', name: 'Case Hardened Alloy Steel — HRC ~ 62' }
+    ],
+    'A': [
+      { slug: 'cemented-carbide', name: 'Cemented Tungsten Carbide (WC-Co) — HRA ~ 86' }
+    ]
+  };
+
+  function populateMaterials() {
+    const scale = rScaleSelect.value;
+    const list = materialsByScale[scale] || [];
+    rMaterialSelect.innerHTML = '';
+    list.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.slug;
+      opt.textContent = m.name;
+      rMaterialSelect.appendChild(opt);
+    });
+    document.getElementById('rUnitSymbol').textContent = `HR${scale}`;
+  }
+  populateMaterials();
+  rScaleSelect.addEventListener('change', populateMaterials);
+
+  let currentRSimData = null;
+  let savedRExpId = null;
+
+  rStartTestBtn.addEventListener('click', function() {
+    rStartTestBtn.disabled = true;
+    const scale = rScaleSelect.value;
+    const slug = rMaterialSelect.value;
+
+    const step1 = document.getElementById('step1-badge');
+    const step2 = document.getElementById('step2-badge');
+    const step3 = document.getElementById('step3-badge');
+
+    // Stage 1: Minor Load (10 kgf) -> Needle sets to SET (0)
+    step1.className = 'px-2 py-1 rounded border bg-primary text-white flex-fill me-1 fw-bold';
+    step2.className = 'px-2 py-1 rounded border bg-white flex-fill me-1';
+    step3.className = 'px-2 py-1 rounded border bg-white flex-fill';
+    rStatusBadge.className = 'badge bg-warning text-dark font-mono small';
+    rStatusBadge.textContent = 'Stage 1: Minor Load (10 kgf)';
+
+    needleGroup.style.transform = 'rotate(0deg)';
+    document.getElementById('rLiveDialVal').textContent = '0.0';
+
+    setTimeout(() => {
+      // Stage 2: Major Load Applied -> Needle sweeps anti-clockwise (penetrating)
+      step1.className = 'px-2 py-1 rounded border bg-white flex-fill me-1';
+      step2.className = 'px-2 py-1 rounded border bg-warning text-dark flex-fill me-1 fw-bold';
+      rStatusBadge.textContent = 'Stage 2: Major Load Penetration...';
+      
+      // Rotate needle deep into dial (e.g. 240 degrees)
+      needleGroup.style.transform = 'rotate(-240deg)';
+      document.getElementById('rLiveDialVal').textContent = '...';
+
+      setTimeout(() => {
+        // Stage 3: Major load released, minor retained -> Needle settles on reading
+        step2.className = 'px-2 py-1 rounded border bg-white flex-fill me-1';
+        step3.className = 'px-2 py-1 rounded border bg-success text-white flex-fill fw-bold';
+        rStatusBadge.className = 'badge bg-success text-white font-mono small';
+        rStatusBadge.textContent = 'Stage 3: Complete';
+
+        fetch(`/api/hardness/simulation-data?method=rockwell&material=${slug}&scale=${scale}`)
+          .then(r => r.json())
+          .then(data => {
+            currentRSimData = data;
+            const hr = data.mean_hardness;
+            const depth = data.mean_depth_mm;
+            
+            // Map HR value to angle (0 to 360 deg)
+            const angle = (hr / 100.0) * 360.0;
+            needleGroup.style.transform = `rotate(${angle.toFixed(1)}deg)`;
+
+            document.getElementById('rLiveDialVal').textContent = hr.toFixed(1);
+            document.getElementById('rResHardness').textContent = `${hr.toFixed(1)} HR${scale}`;
+            document.getElementById('rResDepth').textContent = `${depth.toFixed(4)} mm`;
+            document.getElementById('rResScale').textContent = `Scale ${scale} (${data.indenter})`;
+            document.getElementById('rValidityMsg').textContent = `Standard Notation: ${data.standard_notation} (ASTM E18 Verified)`;
+
+            rStartTestBtn.disabled = false;
+            rSaveBtn.disabled = false;
+            showToast('Rockwell simulation complete!', 'success');
+          });
+      }, 1400);
+    }, 1000);
+  });
+
+  rResetTestBtn.addEventListener('click', function() {
+    needleGroup.style.transform = 'rotate(0deg)';
+    document.getElementById('rLiveDialVal').textContent = '0.0';
+    document.getElementById('rResHardness').textContent = '—';
+    document.getElementById('rResDepth').textContent = '—';
+    document.getElementById('rResScale').textContent = '—';
+    document.getElementById('step1-badge').className = 'px-2 py-1 rounded border bg-white flex-fill me-1';
+    document.getElementById('step2-badge').className = 'px-2 py-1 rounded border bg-white flex-fill me-1';
+    document.getElementById('step3-badge').className = 'px-2 py-1 rounded border bg-white flex-fill';
+    rStatusBadge.className = 'badge bg-light text-secondary border font-mono small';
+    rStatusBadge.textContent = 'Ready';
+    rSaveBtn.disabled = true;
+    rPdfBtn.disabled = true;
+    currentRSimData = null;
+  });
+
+  rSaveBtn.addEventListener('click', function() {
+    if (!currentRSimData) return;
+    rSaveBtn.disabled = true;
+
+    const scale = rScaleSelect.value;
+    const payload = {
+      method: 'ROCKWELL',
+      mode: 'VIRTUAL_SIMULATION',
+      data_origin: 'SIMULATION / DEMONSTRATION DATA',
+      material_name: currentRSimData.material_name,
+      mean_hardness: currentRSimData.mean_hardness,
+      hardness_unit: `HR${scale}`,
+      parameters: {
+        scale: scale,
+        minor_load_kgf: 10.0,
+        major_load_kgf: scale === 'B' ? 90.0 : (scale === 'C' ? 140.0 : 50.0),
+        total_load_kgf: scale === 'B' ? 100.0 : (scale === 'C' ? 150.0 : 60.0),
+        indenter: currentRSimData.indenter
+      },
+      readings: currentRSimData.trials,
+      notes: `Rockwell Scale ${scale} virtual simulation on ${currentRSimData.material_name}`
+    };
+
+    fetch('/api/hardness/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        savedRExpId = res.experiment_id;
+        rPdfBtn.disabled = false;
+        showToast(`Experiment saved successfully (Run #${savedRExpId})!`, 'success');
+      } else {
+        showToast(res.error || 'Failed to save', 'danger');
+        rSaveBtn.disabled = false;
+      }
+    });
+  });
+
+  rPdfBtn.addEventListener('click', function() {
+    if (savedRExpId) {
+      window.location.href = `/hardness/report/${savedRExpId}`;
+    }
+  });
+
+  // =========================================================================
+  // 3. MANUAL LABORATORY READING STUDIO INTERACTIVITY
+  // =========================================================================
+  const rmScale = document.getElementById('rmScale');
+  const rmTotalForce = document.getElementById('rmTotalForce');
+  const rmAddTrialBtn = document.getElementById('rmAddTrialBtn');
+  const rmRemoveTrialBtn = document.getElementById('rmRemoveTrialBtn');
+  const rmTrialsTbody = document.getElementById('rmTrialsTbody');
+  const rmCalcBtn = document.getElementById('rmCalculateBtn');
+  const rmSaveBtn = document.getElementById('rmSaveBtn');
+  const rmPdfBtn = document.getElementById('rmPdfBtn');
+
+  let manualRSavedId = null;
+
+  rmScale.addEventListener('change', function() {
+    const s = this.value;
+    rmTotalForce.value = s === 'B' ? '100 kgf (981 N)' : (s === 'C' ? '150 kgf (1471 N)' : '60 kgf (588 N)');
+    recalculateRManual();
+  });
+
+  rmAddTrialBtn.addEventListener('click', function() {
+    const rowCount = rmTrialsTbody.querySelectorAll('tr').length;
+    if (rowCount >= 8) {
+      showToast('Maximum 8 trials allowed.', 'warning');
+      return;
+    }
+    const nextIdx = rowCount + 1;
+    const s = rmScale.value;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="fw-bold">${nextIdx}</td>
+      <td><input type="number" step="0.1" class="form-control form-control-sm text-center font-mono rm-val" value="48.5" required></td>
+      <td class="rm-depth text-steel">0.1030</td>
+      <td class="rm-not fw-bold text-primary">48.5 HR${s}</td>
+    `;
+    rmTrialsTbody.appendChild(tr);
+    bindRManualInputs();
+    recalculateRManual();
+  });
+
+  rmRemoveTrialBtn.addEventListener('click', function() {
+    const rows = rmTrialsTbody.querySelectorAll('tr');
+    if (rows.length <= 1) {
+      showToast('At least 1 trial reading required.', 'warning');
+      return;
+    }
+    rows[rows.length - 1].remove();
+    recalculateRManual();
+  });
+
+  function bindRManualInputs() {
+    rmTrialsTbody.querySelectorAll('input').forEach(input => {
+      input.removeEventListener('input', recalculateRManual);
+      input.addEventListener('input', recalculateRManual);
+    });
+  }
+  bindRManualInputs();
+
+  function recalculateRManual() {
+    const s = rmScale.value;
+    const N = s === 'B' ? 130.0 : 100.0;
+    const rows = rmTrialsTbody.querySelectorAll('tr');
+    let vals = [];
+    let depths = [];
+
+    rows.forEach(tr => {
+      const val = parseFloat(tr.querySelector('.rm-val').value) || 0.0;
+      const depth = (N - val) * 0.002;
+      tr.querySelector('.rm-depth').textContent = depth > 0 ? depth.toFixed(4) : '—';
+      tr.querySelector('.rm-not').textContent = `${val.toFixed(1)} HR${s}`;
+      vals.push(val);
+      depths.push(depth);
+    });
+
+    if (vals.length > 0) {
+      const mean = vals.reduce((a,b) => a+b, 0) / vals.length;
+      document.getElementById('rmMeanVal').textContent = `${mean.toFixed(1)} HR${s}`;
+      
+      const minV = Math.min(...vals);
+      const maxV = Math.max(...vals);
+      document.getElementById('rmRange').textContent = `${(maxV - minV).toFixed(1)} HR${s}`;
+
+      if (vals.length > 1) {
+        const variance = vals.map(x => Math.pow(x - mean, 2)).reduce((a,b) => a+b, 0) / (vals.length - 1);
+        document.getElementById('rmStdDev').textContent = `± ${Math.sqrt(variance).toFixed(2)} HR${s}`;
+      } else {
+        document.getElementById('rmStdDev').textContent = `± 0.00 HR${s}`;
+      }
+
+      const meanD = depths.reduce((a,b) => a+b, 0) / depths.length;
+      document.getElementById('rmMeanDepth').textContent = `${meanD.toFixed(4)} mm`;
+    }
+  }
+
+  rmCalcBtn.addEventListener('click', recalculateRManual);
+
+  rmSaveBtn.addEventListener('click', function() {
+    const mat = document.getElementById('rmMaterial').value.trim();
+    if (!mat) {
+      showToast('Please enter specimen material name.', 'warning');
+      return;
+    }
+    const s = rmScale.value;
+    const rows = rmTrialsTbody.querySelectorAll('tr');
+    let trials = [];
+    rows.forEach((tr, idx) => {
+      const val = parseFloat(tr.querySelector('.rm-val').value) || 0.0;
+      const depth = parseFloat(tr.querySelector('.rm-depth').textContent) || 0.0;
+      trials.push({
+        trial_number: idx + 1,
+        hardness_value: val,
+        depth_mm: depth
+      });
+    });
+
+    const meanVal = parseFloat(document.getElementById('rmMeanVal').textContent) || 0.0;
+
+    const payload = {
+      method: 'ROCKWELL',
+      mode: 'MANUAL_ENTRY',
+      data_origin: 'USER-ENTERED LABORATORY DATA',
+      material_name: mat,
+      mean_hardness: meanVal,
+      hardness_unit: `HR${s}`,
+      parameters: {
+        scale: s,
+        minor_load_kgf: 10.0,
+        major_load_kgf: s === 'B' ? 90.0 : (s === 'C' ? 140.0 : 50.0),
+        total_load_kgf: s === 'B' ? 100.0 : (s === 'C' ? 150.0 : 60.0),
+        indenter: s === 'B' ? '1/16" Ball' : '120° Diamond Cone'
+      },
+      readings: trials,
+      notes: `User laboratory readings entered by student on Rockwell Scale ${s} for ${mat}`
+    };
+
+    rmSaveBtn.disabled = true;
+    fetch('/api/hardness/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.success) {
+        manualRSavedId = res.experiment_id;
+        rmPdfBtn.disabled = false;
+        showToast(`User laboratory data saved (Run #${manualRSavedId})!`, 'success');
+      } else {
+        showToast(res.error || 'Failed to save', 'danger');
+        rmSaveBtn.disabled = false;
+      }
+    });
+  });
+
+  rmPdfBtn.addEventListener('click', function() {
+    if (manualRSavedId) {
+      window.location.href = `/hardness/report/${manualRSavedId}`;
+    }
+  });
+
+  // =========================================================================
+  // 4. QUIZ SUBMISSION INTERACTIVITY
+  // =========================================================================
+  const submitRQuizBtn = document.getElementById('submitRQuizBtn');
+  if (submitRQuizBtn) {
+    submitRQuizBtn.addEventListener('click', function() {
+      const qCards = document.querySelectorAll('.question-card');
+      let score = 0;
+      let total = qCards.length;
+
+      qCards.forEach(card => {
+        const correct = card.getAttribute('data-correct');
+        const selected = card.querySelector('input[type="radio"]:checked');
+        const expBox = card.querySelector('.explanation-box');
+
+        if (selected) {
+          if (selected.value === correct) {
+            score++;
+            selected.parentElement.classList.add('bg-success', 'bg-opacity-25', 'border-success');
+          } else {
+            selected.parentElement.classList.add('bg-danger', 'bg-opacity-25', 'border-danger');
+            card.querySelectorAll('input[type="radio"]').forEach(r => {
+              if (r.value === correct) r.parentElement.classList.add('bg-success', 'bg-opacity-10', 'border-success');
+            });
+          }
+        }
+        if (expBox) expBox.classList.remove('d-none');
+      });
+
+      const pct = Math.round((score / total) * 100);
+      const scoreEl = document.getElementById('rQuizResultScore');
+      scoreEl.className = 'fw-bold fs-5 text-navy font-mono';
+      scoreEl.innerHTML = `Score: <span class="${pct >= 70 ? 'text-success' : 'text-danger'}">${score} / ${total} (${pct}%)</span>`;
+      scoreEl.classList.remove('d-none');
+
+      fetch('/api/hardness/quiz/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          experiment_type: 'rockwell',
+          score: score,
+          total_questions: total
+        })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) showToast(`Quiz submitted! Your score: ${score}/${total}`, 'success');
+      });
+    });
+  }
+
+});
+</script>
+{% endblock %}
