@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}System Access — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-5 col-md-7">
+      
+      <!-- Admin Login Card Container -->
+      <div class="lab-card p-4 p-md-5 shadow-sm border border-secondary border-opacity-25">
+        
+        <!-- Header -->
+        <div class="text-center mb-4">
+          <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-dark text-white shadow-sm" style="width: 56px; height: 56px; font-size: 1.5rem;">
+            <i class="fas fa-user-shield"></i>
+          </div>
+          <span class="badge bg-secondary bg-opacity-10 text-navy font-mono mb-2">Restricted Area</span>
+          <h2 class="fw-bold text-navy mb-2">Administrative Console</h2>
+          <p class="text-secondary small mb-0">
+            Authorized academic faculty and laboratory administrators only.
+          </p>
+        </div>
+
+        <!-- Admin Login Form -->
+        <form action="{{ url_for('admin_login') }}{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}" method="POST" id="adminLoginForm">
+          
+          <!-- Username -->
+          <div class="mb-3">
+            <label for="admin_username" class="form-label fw-bold text-navy small text-uppercase">
+              <i class="fas fa-user me-1 text-steel"></i> Admin Username <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 text-muted">
+                <i class="fas fa-lock"></i>
+              </span>
+              <input 
+                type="text" 
+                class="form-control border-start-0" 
+                id="admin_username" 
+                name="username" 
+                placeholder="Username" 
+                value="{{ form_data.username if form_data else '' }}" 
+                required
+                autocomplete="username"
+                autofocus
+              >
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-4">
+            <label for="admin_password" class="form-label fw-bold text-navy small text-uppercase">
+              <i class="fas fa-key me-1 text-steel"></i> Security Password <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 text-muted">
+                <i class="fas fa-shield-alt"></i>
+              </span>
+              <input 
+                type="password" 
+                class="form-control border-start-0" 
+                id="admin_password" 
+                name="password" 
+                placeholder="Password" 
+                required
+                autocomplete="current-password"
+              >
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="d-grid mb-3">
+            <button type="submit" class="btn btn-dark btn-lg fs-6 py-2 fw-bold">
+              <i class="fas fa-sign-in-alt me-1"></i> Verify &amp; Enter Portal
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

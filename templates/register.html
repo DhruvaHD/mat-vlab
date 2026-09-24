@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Student Registration — Choose Your Student ID — MAT-VLAB{% endblock %}
+{% block title %}Student Registration — MAT-VLAB{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -16,10 +16,18 @@
             <i class="fas fa-user-graduate"></i>
           </div>
           <span class="badge-lab mb-2">Completely Free &amp; Simple</span>
-          <h2 class="fw-bold text-navy mb-2">Create Your Student Account</h2>
+          <h2 class="fw-bold text-navy mb-2">Create Student Account</h2>
           <p class="text-secondary small mb-0">
-            Choose your own unique Student ID to track virtual experiments, record lab measurements, and generate certified engineering reports.
+            Register to save virtual simulations, record laboratory measurements, and generate certified engineering reports.
           </p>
+        </div>
+
+        <!-- Privacy Notice -->
+        <div class="alert alert-light border border-secondary border-opacity-25 py-2 px-3 small d-flex align-items-center gap-2 mb-4">
+          <i class="fas fa-user-shield text-primary fs-5 flex-shrink-0"></i>
+          <div class="text-secondary">
+            <strong class="text-navy">Privacy Notice:</strong> The information provided during registration is used to create and manage your MAT-VLAB student account and to maintain educational usage statistics.
+          </div>
         </div>
 
         <!-- Registration Form -->
@@ -43,22 +51,22 @@
             <div class="form-text text-muted small">Your full name as you want it displayed on laboratory test reports.</div>
           </div>
 
-          <!-- 2. Course / Branch -->
+          <!-- 2. Course / Degree Program (Dropdown) -->
           <div class="mb-3">
             <label for="course" class="form-label fw-bold text-navy small text-uppercase">
-              <i class="fas fa-graduation-cap me-1 text-steel"></i> Course / Program <span class="text-danger">*</span>
+              <i class="fas fa-graduation-cap me-1 text-steel"></i> Course / Degree Program <span class="text-danger">*</span>
             </label>
-            <input 
-              type="text" 
-              class="form-control form-control-lg fs-6" 
-              id="course" 
-              name="course" 
-              placeholder="e.g. B.Tech Materials Science & Technology / Mechanical Engineering" 
-              value="{{ form_data.course if form_data else '' }}" 
-              required
-              autocomplete="organization-title"
-            >
-            <div class="form-text text-muted small">Your engineering discipline or academic degree program.</div>
+            <select class="form-select form-select-lg fs-6" id="course" name="course" required>
+              <option value="" disabled {% if not form_data or not form_data.course %}selected{% endif %}>Select your academic program</option>
+              <option value="B.Tech / B.E." {% if form_data and form_data.course == 'B.Tech / B.E.' %}selected{% endif %}>B.Tech / B.E.</option>
+              <option value="M.Tech / M.E." {% if form_data and form_data.course == 'M.Tech / M.E.' %}selected{% endif %}>M.Tech / M.E.</option>
+              <option value="B.Sc." {% if form_data and form_data.course == 'B.Sc.' %}selected{% endif %}>B.Sc.</option>
+              <option value="M.Sc." {% if form_data and form_data.course == 'M.Sc.' %}selected{% endif %}>M.Sc.</option>
+              <option value="Diploma" {% if form_data and form_data.course == 'Diploma' %}selected{% endif %}>Diploma</option>
+              <option value="Ph.D." {% if form_data and form_data.course == 'Ph.D.' %}selected{% endif %}>Ph.D.</option>
+              <option value="Other" {% if form_data and form_data.course == 'Other' %}selected{% endif %}>Other</option>
+            </select>
+            <div class="form-text text-muted small">Select your current engineering or science degree level.</div>
           </div>
 
           <!-- 3. University / College -->
@@ -71,16 +79,29 @@
               class="form-control form-control-lg fs-6" 
               id="university" 
               name="university" 
-              placeholder="e.g. National Institute of Technology / RV College of Engineering" 
+              list="universitySuggestions"
+              placeholder="e.g. Pondicherry University, IIT Madras, NIT Trichy" 
               value="{{ form_data.university if form_data else '' }}" 
               required
               autocomplete="organization"
             >
-            <div class="form-text text-muted small">Your affiliated institute or college (used together with Student ID for simple login).</div>
+            <datalist id="universitySuggestions">
+              <option value="Pondicherry University">
+              <option value="Indian Institute of Technology Madras">
+              <option value="National Institute of Technology Karnataka">
+              <option value="National Institute of Technology Tiruchirappalli">
+              <option value="Anna University">
+              <option value="Visvesvaraya Technological University">
+              <option value="RV College of Engineering">
+              <option value="PSG College of Technology">
+              <option value="Manipal Institute of Technology">
+              <option value="Vellore Institute of Technology">
+            </datalist>
+            <div class="form-text text-muted small">Your affiliated university, institute, or college.</div>
           </div>
 
           <!-- 4. Student ID (Chosen by Student) -->
-          <div class="mb-4 p-3 rounded border bg-light">
+          <div class="mb-3 p-3 rounded border bg-light">
             <label for="student_id" class="form-label fw-bold text-navy small text-uppercase d-flex justify-content-between align-items-center">
               <span><i class="fas fa-id-card me-1 text-primary"></i> Choose Your Student ID <span class="text-danger">*</span></span>
               <span class="badge bg-secondary bg-opacity-10 text-navy font-mono fw-normal">Letters &amp; Numbers only</span>
@@ -108,7 +129,7 @@
 
             <!-- Dynamic Availability Feedback -->
             <div id="idFeedback" class="mt-2 small" style="min-height: 22px;">
-              <span class="text-muted"><i class="fas fa-info-circle me-1"></i>Choose any available ID you want (no spaces allowed).</span>
+              <span class="text-muted"><i class="fas fa-info-circle me-1"></i>Letters and numbers only, 3–20 characters, no spaces.</span>
             </div>
 
             <!-- Rules & Examples -->
@@ -120,6 +141,38 @@
                 <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2 small font-mono example-id-btn" data-id="Sindhu07">Sindhu07</button>
                 <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2 small font-mono example-id-btn" data-id="Rahul25">Rahul25</button>
               </div>
+            </div>
+          </div>
+
+          <!-- 5. Security PIN (4-6 digits) -->
+          <div class="mb-4">
+            <label for="pin" class="form-label fw-bold text-navy small text-uppercase d-flex justify-content-between align-items-center">
+              <span><i class="fas fa-key me-1 text-steel"></i> Security PIN (4–6 Digits) <span class="text-danger">*</span></span>
+              <span class="badge bg-secondary bg-opacity-10 text-navy font-mono fw-normal">4 to 6 numbers</span>
+            </label>
+            <div class="input-group input-group-lg">
+              <span class="input-group-text bg-white border-end-0 text-muted">
+                <i class="fas fa-lock"></i>
+              </span>
+              <input 
+                type="password" 
+                class="form-control fs-6 font-mono border-start-0" 
+                id="pin" 
+                name="pin" 
+                placeholder="e.g. 1234 or 567890" 
+                inputmode="numeric" 
+                pattern="[0-9]{4,6}" 
+                minlength="4" 
+                maxlength="6" 
+                required
+                autocomplete="new-password"
+              >
+              <button class="btn btn-outline-secondary btn-sm px-3" type="button" id="togglePinBtn" title="Toggle PIN visibility">
+                <i class="fas fa-eye" id="togglePinIcon"></i>
+              </button>
+            </div>
+            <div class="form-text text-muted small">
+              <i class="fas fa-shield-alt text-success me-1"></i>Hashed securely. Used with your Student ID to log in.
             </div>
           </div>
 
@@ -155,31 +208,36 @@ document.addEventListener('DOMContentLoaded', function() {
   const idInput = document.getElementById('student_id');
   const feedback = document.getElementById('idFeedback');
   const checkBtn = document.getElementById('checkIdBtn');
-  const form = document.getElementById('studentRegisterForm');
-  const submitBtn = document.getElementById('submitRegisterBtn');
+  const pinInput = document.getElementById('pin');
+  const togglePinBtn = document.getElementById('togglePinBtn');
+  const togglePinIcon = document.getElementById('togglePinIcon');
   let debounceTimer = null;
-  let isIdValidAndAvailable = false;
+
+  // Toggle PIN visibility
+  if (togglePinBtn && pinInput) {
+    togglePinBtn.addEventListener('click', function() {
+      if (pinInput.type === 'password') {
+        pinInput.type = 'text';
+        togglePinIcon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        pinInput.type = 'password';
+        togglePinIcon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    });
+  }
 
   function setFeedback(message, type) {
     if (type === 'success') {
       feedback.innerHTML = `<span class="text-success fw-semibold"><i class="fas fa-check-circle me-1"></i>${message}</span>`;
       idInput.classList.remove('is-invalid');
       idInput.classList.add('is-valid');
-      isIdValidAndAvailable = true;
     } else if (type === 'danger') {
       feedback.innerHTML = `<span class="text-danger fw-semibold"><i class="fas fa-times-circle me-1"></i>${message}</span>`;
       idInput.classList.remove('is-valid');
       idInput.classList.add('is-invalid');
-      isIdValidAndAvailable = false;
-    } else if (type === 'warning') {
-      feedback.innerHTML = `<span class="text-warning fw-semibold"><i class="fas fa-exclamation-triangle me-1"></i>${message}</span>`;
-      idInput.classList.remove('is-valid');
-      idInput.classList.add('is-invalid');
-      isIdValidAndAvailable = false;
     } else {
       feedback.innerHTML = `<span class="text-muted"><i class="fas fa-info-circle me-1"></i>${message}</span>`;
       idInput.classList.remove('is-valid', 'is-invalid');
-      isIdValidAndAvailable = false;
     }
   }
 
@@ -190,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    if (val.includes(' ') || idInput.value.includes(' ')) {
+    if (val.includes(' ')) {
       setFeedback('Spaces are NOT allowed in Student ID. Letters and numbers only.', 'danger');
       return;
     }
@@ -201,16 +259,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (val.length < 3) {
-      setFeedback('Student ID must be at least 3 characters long.', 'warning');
+      setFeedback('Student ID must be at least 3 characters long.', 'danger');
       return;
     }
 
     if (val.length > 20) {
-      setFeedback('Student ID must be at most 20 characters long.', 'warning');
+      setFeedback('Student ID must not exceed 20 characters.', 'danger');
       return;
     }
-
-    setFeedback('Checking ID availability...', 'info');
 
     fetch(`/api/student/check-id?student_id=${encodeURIComponent(val)}`)
       .then(res => res.json())
@@ -222,52 +278,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       })
       .catch(() => {
-        setFeedback('Could not verify ID availability with server.', 'warning');
+        setFeedback('Could not verify availability right now.', 'info');
       });
   }
 
   idInput.addEventListener('input', function() {
     clearTimeout(debounceTimer);
-    const val = this.value;
-    
-    // Immediate space check
-    if (val.includes(' ')) {
-      setFeedback('Spaces are NOT allowed in Student ID. Letters and numbers only.', 'danger');
-      return;
-    }
-
     debounceTimer = setTimeout(() => {
-      checkAvailability(val);
+      checkAvailability(idInput.value);
     }, 350);
   });
 
-  if (checkBtn) {
-    checkBtn.addEventListener('click', () => checkAvailability(idInput.value));
-  }
+  checkBtn.addEventListener('click', function() {
+    checkAvailability(idInput.value);
+  });
 
-  // Example click buttons
   document.querySelectorAll('.example-id-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-      idInput.value = this.getAttribute('data-id');
-      checkAvailability(idInput.value);
+      idInput.value = this.dataset.id;
+      checkAvailability(this.dataset.id);
     });
   });
-
-  // Client-side validation on form submit
-  form.addEventListener('submit', function(e) {
-    const rawId = idInput.value;
-    if (rawId.includes(' ')) {
-      e.preventDefault();
-      setFeedback('Spaces are NOT allowed in Student ID. Please remove spaces.', 'danger');
-      idInput.focus();
-      return false;
-    }
-  });
-
-  // If page loaded with a pre-filled value
-  if (idInput.value.trim().length >= 3) {
-    checkAvailability(idInput.value);
-  }
 });
 </script>
 {% endblock %}

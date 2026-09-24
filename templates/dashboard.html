@@ -12,7 +12,7 @@
       <!-- Student Info -->
       <div class="col-lg-8">
         <div class="d-flex align-items-start gap-3 flex-wrap flex-sm-nowrap">
-          <div class="brand-icon flex-shrink-0" style="width: 64px; height: 64px; font-size: 1.8rem; background: linear-gradient(135deg, #1e3a8a, #0284c7);">
+          <div class="brand-icon flex-shrink-0" style="width: 68px; height: 68px; font-size: 1.8rem; background: linear-gradient(135deg, #1e3a8a, #0284c7);">
             <i class="fas fa-user-graduate text-white"></i>
           </div>
           <div>
@@ -25,7 +25,7 @@
               </span>
             </div>
             
-            <h1 class="fw-bold text-navy fs-2 mb-2">{{ student.name }}</h1>
+            <h1 class="fw-bold text-navy fs-2 mb-2">Welcome, {{ student.name }}!</h1>
             
             <div class="d-flex flex-column gap-1 text-secondary small">
               <div>
@@ -36,19 +36,20 @@
                 <i class="fas fa-university me-2 text-steel" style="width: 16px;"></i>
                 <strong class="text-dark">University / College:</strong> {{ student.university }}
               </div>
+              <div>
+                <i class="fas fa-id-badge me-2 text-info" style="width: 16px;"></i>
+                <strong class="text-dark">Student ID:</strong> <span class="font-mono">{{ student.student_id }}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Quick Action Buttons & Logout -->
+      <!-- Quick Action: Logout -->
       <div class="col-lg-4 text-lg-end">
         <div class="d-flex flex-wrap justify-content-lg-end gap-2">
           <a href="{{ url_for('simulation') }}" class="btn btn-sm btn-lab-primary">
-            <i class="fas fa-play me-1"></i> New Simulation
-          </a>
-          <a href="{{ url_for('manual_entry') }}" class="btn btn-sm btn-lab-secondary">
-            <i class="fas fa-keyboard me-1"></i> Manual Lab Entry
+            <i class="fas fa-play me-1"></i> Quick Simulation
           </a>
           <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-danger" title="Log out from account">
             <i class="fas fa-sign-out-alt me-1"></i> Log Out
@@ -59,50 +60,92 @@
     </div>
   </div>
 
-  <!-- 2. Academic Stats Row -->
+  <!-- 2. Academic Statistics (5 items) -->
   <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-lg-3">
-      <div class="lab-card p-3 border border-secondary border-opacity-25 shadow-sm text-center">
-        <div class="text-secondary small fw-semibold text-uppercase mb-1">Total Experiments</div>
+    <!-- Experiments Completed -->
+    <div class="col-sm-6 col-lg">
+      <div class="lab-card p-3 border border-secondary border-opacity-25 shadow-sm text-center h-100">
+        <div class="text-secondary small fw-semibold text-uppercase mb-1">Experiments Completed</div>
         <div class="fs-2 fw-bold text-navy font-mono">{{ stats.total_experiments }}</div>
-        <div class="small text-muted">Portfolio saved runs</div>
+        <div class="small text-muted">Total test runs</div>
       </div>
     </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="lab-card p-3 border border-secondary border-opacity-25 shadow-sm text-center">
-        <div class="text-secondary small fw-semibold text-uppercase mb-1">Virtual Simulations</div>
+
+    <!-- Virtual Experiments -->
+    <div class="col-sm-6 col-lg">
+      <div class="lab-card p-3 border border-secondary border-opacity-25 shadow-sm text-center h-100">
+        <div class="text-secondary small fw-semibold text-uppercase mb-1">Virtual Experiments</div>
         <div class="fs-2 fw-bold text-primary font-mono">{{ stats.simulation_count }}</div>
-        <div class="small text-muted">UTM physics tests</div>
+        <div class="small text-muted">UTM simulations</div>
       </div>
     </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="lab-card p-3 border border-secondary border-opacity-25 shadow-sm text-center">
-        <div class="text-secondary small fw-semibold text-uppercase mb-1">Physical Lab Entries</div>
+
+    <!-- Manual Experiments -->
+    <div class="col-sm-6 col-lg">
+      <div class="lab-card p-3 border border-secondary border-opacity-25 shadow-sm text-center h-100">
+        <div class="text-secondary small fw-semibold text-uppercase mb-1">Manual Experiments</div>
         <div class="fs-2 fw-bold text-success font-mono">{{ stats.manual_count }}</div>
-        <div class="small text-muted">Physical UTM tests</div>
+        <div class="small text-muted">Physical lab data</div>
       </div>
     </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="lab-card p-3 border border-secondary border-opacity-25 shadow-sm text-center">
-        <div class="text-secondary small fw-semibold text-uppercase mb-1">Account Type</div>
-        <div class="fs-2 fw-bold text-info"><i class="fas fa-award"></i></div>
-        <div class="small text-muted">Academic Free Tier</div>
+
+    <!-- Quiz Attempts -->
+    <div class="col-sm-6 col-lg">
+      <div class="lab-card p-3 border border-secondary border-opacity-25 shadow-sm text-center h-100">
+        <div class="text-secondary small fw-semibold text-uppercase mb-1">Quiz Attempts</div>
+        <div class="fs-2 fw-bold text-warning font-mono">{{ stats.quiz_attempts }}</div>
+        <div class="small text-muted">Assessments taken</div>
+      </div>
+    </div>
+
+    <!-- Saved Experiments -->
+    <div class="col-sm-6 col-lg">
+      <div class="lab-card p-3 border border-secondary border-opacity-25 shadow-sm text-center h-100">
+        <div class="text-secondary small fw-semibold text-uppercase mb-1">Saved Experiments</div>
+        <div class="fs-2 fw-bold text-info font-mono">{{ stats.saved_experiments }}</div>
+        <div class="small text-muted">Archived portfolio</div>
       </div>
     </div>
   </div>
 
-  <!-- 3. Saved Laboratory Experiments Portfolio -->
+  <!-- 3. Navigation Hub — 5 Required Buttons -->
+  <div class="lab-card p-4 mb-4 border border-primary border-opacity-25 bg-light shadow-sm">
+    <div class="text-secondary small fw-bold text-uppercase mb-3">
+      <i class="fas fa-th-large me-1 text-primary"></i> Laboratory Hub Navigation
+    </div>
+    <div class="d-flex flex-wrap gap-2 justify-content-start">
+      <!-- 1. START VIRTUAL LAB -->
+      <a href="{{ url_for('simulation') }}" class="btn btn-lab-primary fw-bold px-3 py-2">
+        <i class="fas fa-play me-1"></i> START VIRTUAL LAB
+      </a>
+      <!-- 2. EXPERIMENTS -->
+      <a href="{{ url_for('experiments') }}" class="btn btn-outline-primary fw-semibold px-3 py-2" style="background: white;">
+        <i class="fas fa-flask me-1"></i> EXPERIMENTS
+      </a>
+      <!-- 3. MATERIALS -->
+      <a href="{{ url_for('materials') }}" class="btn btn-outline-secondary fw-semibold px-3 py-2" style="background: white;">
+        <i class="fas fa-cubes me-1"></i> MATERIALS
+      </a>
+      <!-- 4. QUIZZES -->
+      <a href="{{ url_for('quizzes') }}" class="btn btn-outline-warning text-dark fw-semibold px-3 py-2" style="background: white;">
+        <i class="fas fa-graduation-cap me-1 text-warning"></i> QUIZZES
+      </a>
+      <!-- 5. MY EXPERIMENTS -->
+      <a href="{{ url_for('my_experiments') }}" class="btn btn-outline-info text-dark fw-semibold px-3 py-2" style="background: white;">
+        <i class="fas fa-folder-open me-1 text-info"></i> MY EXPERIMENTS
+      </a>
+    </div>
+  </div>
+
+  <!-- 4. Saved Laboratory Experiments Portfolio -->
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
     <div>
-      <h3 class="fw-bold text-navy fs-4 mb-0">My Laboratory Experiments</h3>
-      <p class="text-secondary small mb-0">Experiments saved under Student ID <strong>{{ student.student_id }}</strong></p>
+      <h3 class="fw-bold text-navy fs-4 mb-0">My Saved Experiments</h3>
+      <p class="text-secondary small mb-0">Laboratory test runs recorded under Student ID <strong>{{ student.student_id }}</strong></p>
     </div>
     <div class="d-flex gap-2">
-      <a href="{{ url_for('compare') }}" class="btn btn-sm btn-outline-secondary">
-        <i class="fas fa-balance-scale me-1"></i> Compare Materials
-      </a>
-      <a href="{{ url_for('quizzes') }}" class="btn btn-sm btn-outline-primary">
-        <i class="fas fa-graduation-cap me-1"></i> Self Assessment Quiz
+      <a href="{{ url_for('simulation') }}" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-plus me-1"></i> New Test
       </a>
     </div>
   </div>
@@ -118,45 +161,43 @@
             <th>Mode</th>
             <th>Readings</th>
             <th>UTS (MPa)</th>
-            <th>Modulus (GPa)</th>
-            <th>% Elongation</th>
-            <th>Date &amp; Time</th>
-            <th class="text-center">Actions</th>
+            <th>Elongation (%)</th>
+            <th>Date</th>
+            <th class="text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for exp in experiments %}
           <tr>
-            <td class="font-mono text-muted">#{{ exp.id }}</td>
+            <td class="font-mono text-muted small">#{{ exp.id }}</td>
             <td>
               <div class="fw-bold text-navy">{{ exp.title }}</div>
-              <div class="text-steel small">{{ exp.material_name }}</div>
+              <div class="small text-muted"><i class="fas fa-cube me-1"></i>{{ exp.material_name }}</div>
             </td>
             <td>
               {% if exp.mode == 'VIRTUAL_SIMULATION' %}
-              <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50">
-                Simulation
+              <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                <i class="fas fa-desktop me-1"></i>Virtual Simulation
               </span>
               {% else %}
-              <span class="badge bg-info bg-opacity-25 text-primary border border-info border-opacity-50">
-                Manual Lab Data
+              <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                <i class="fas fa-keyboard me-1"></i>Manual Entry
               </span>
               {% endif %}
             </td>
-            <td class="font-mono">{{ exp.readings_count }} pts</td>
-            <td class="font-mono text-danger fw-bold">{{ exp.uts_mpa or '—' }}</td>
-            <td class="font-mono text-steel">{{ exp.youngs_modulus_gpa or '—' }}</td>
-            <td class="font-mono text-success">{{ exp.elongation_pct or '—' }}%</td>
-            <td class="text-secondary small">{{ exp.created_at }}</td>
-            <td class="text-center">
+            <td class="font-mono">{{ exp.reading_count }}</td>
+            <td class="font-mono fw-semibold">{{ exp.uts_mpa if exp.uts_mpa else '—' }}</td>
+            <td class="font-mono">{{ exp.elongation_pct if exp.elongation_pct else '—' }}%</td>
+            <td class="small text-muted">{{ exp.created_at[:16] }}</td>
+            <td class="text-end">
               <div class="btn-group btn-group-sm">
-                <a href="{{ url_for('view_experiment', experiment_id=exp.id) }}" class="btn btn-outline-info" title="View Full Results">
+                <a href="{{ url_for('view_experiment', experiment_id=exp.id) }}" class="btn btn-outline-primary" title="View Full Results">
                   <i class="fas fa-eye"></i> View
                 </a>
                 <a href="{{ url_for('download_report_by_id', experiment_id=exp.id) }}" class="btn btn-outline-success" title="Download Certified PDF Report">
-                  <i class="fas fa-file-pdf"></i> PDF
+                  <i class="fas fa-file-pdf"></i> Report
                 </a>
-                <button type="button" class="btn btn-outline-danger" onclick="confirmDeleteExperiment({{ exp.id }})" title="Delete Run">
+                <button type="button" class="btn btn-outline-danger delete-exp-btn" data-exp-id="{{ exp.id }}" data-exp-title="{{ exp.title }}" title="Delete Experiment">
                   <i class="fas fa-trash-alt"></i>
                 </button>
               </div>
@@ -168,21 +209,20 @@
     </div>
   </div>
   {% else %}
-  <!-- Empty State -->
-  <div class="lab-card p-5 text-center border border-secondary border-opacity-25 shadow-sm">
-    <div class="mode-card-icon mx-auto mb-3" style="width: 64px; height: 64px;">
-      <i class="fas fa-folder-open text-muted"></i>
+  <div class="lab-card p-5 border border-secondary border-opacity-25 shadow-sm text-center">
+    <div class="brand-icon mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem; background: #f1f5f9; color: #64748b;">
+      <i class="fas fa-flask"></i>
     </div>
-    <h4 class="text-navy fw-bold mb-2">No Experiments Saved Yet</h4>
-    <p class="text-secondary mx-auto mb-4" style="max-width: 520px;">
-      Welcome to MAT-VLAB, <strong>{{ student.name }}</strong>! Run a tensile simulation on Universal Testing Machine (UTM) or input readings from your physical laboratory to populate your portfolio.
+    <h4 class="fw-bold text-navy mb-2">No Experiments Saved Yet</h4>
+    <p class="text-secondary small mb-4 mx-auto" style="max-width: 460px;">
+      You have not recorded any virtual simulations or manual test runs yet. Start a virtual tensile test to begin building your academic portfolio.
     </p>
-    <div class="d-flex justify-content-center gap-3 flex-wrap">
+    <div class="d-flex justify-content-center gap-2">
       <a href="{{ url_for('simulation') }}" class="btn btn-lab-primary">
         <i class="fas fa-play me-1"></i> Start Virtual Simulation
       </a>
-      <a href="{{ url_for('manual_entry') }}" class="btn btn-lab-secondary">
-        <i class="fas fa-keyboard me-1"></i> Enter Real Lab Readings
+      <a href="{{ url_for('manual_entry') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-keyboard me-1"></i> Enter Lab Readings
       </a>
     </div>
   </div>
@@ -193,22 +233,27 @@
 
 {% block extra_scripts %}
 <script>
-function confirmDeleteExperiment(id) {
-  if (confirm(`Are you sure you want to permanently delete Experiment #${id}? This will remove all associated readings and calculation results.`)) {
-    fetch(`/api/experiment/${id}`, { method: 'DELETE' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          showToast(`Experiment #${id} deleted successfully.`, 'success');
-          setTimeout(() => window.location.reload(), 800);
-        } else {
-          showToast('Failed to delete experiment.', 'danger');
-        }
-      })
-      .catch(err => {
-        showToast('Error communicating with database.', 'danger');
-      });
-  }
-}
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.delete-exp-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const expId = this.dataset.expId;
+      const expTitle = this.dataset.expTitle;
+      if (confirm(`Are you sure you want to delete experiment "${expTitle}" (#${expId})? This action cannot be undone.`)) {
+        fetch(`/api/experiment/${expId}`, {
+          method: 'DELETE'
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            window.location.reload();
+          } else {
+            alert('Failed to delete experiment: ' + (data.error || 'Unknown error'));
+          }
+        })
+        .catch(err => alert('Network error deleting experiment.'));
+      }
+    });
+  });
+});
 </script>
 {% endblock %}

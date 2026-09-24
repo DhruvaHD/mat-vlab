@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}MAT-VLAB — Interactive Virtual Materials Testing & Analysis Laboratory{% endblock %}
+
+{% block content %}
+<div class="auth-landing-wrapper">
+  <!-- Hero Section -->
+  <section class="py-5 bg-gradient text-center border-bottom border-secondary border-opacity-10 position-relative overflow-hidden" style="background: radial-gradient(circle at 50% 20%, rgba(30, 58, 138, 0.08) 0%, rgba(248, 250, 252, 0) 70%);">
+    <div class="container py-4">
+      <div class="row justify-content-center">
+        <div class="col-lg-9">
+          
+          <!-- Atom Brand Icon -->
+          <div class="brand-icon mx-auto mb-3 shadow" style="width: 72px; height: 72px; font-size: 2rem; background: linear-gradient(135deg, #1e3a8a, #0284c7);">
+            <i class="fas fa-atom text-white"></i>
+          </div>
+
+          <!-- Academic Badge -->
+          <div class="mb-3">
+            <span class="badge-lab px-3 py-1 fs-6">
+              <span class="badge-pulse"></span> Educational Materials Engineering Simulator
+            </span>
+          </div>
+
+          <!-- Main Title -->
+          <h1 class="display-4 fw-extrabold text-navy tracking-tight mb-2">
+            MAT-VLAB
+          </h1>
+          <h2 class="fs-4 text-steel fw-semibold mb-3">
+            Interactive Virtual Materials Testing &amp; Analysis Laboratory
+          </h2>
+
+          <!-- Motto -->
+          <p class="lead fs-5 text-secondary fst-italic mb-4">
+            &ldquo;Learn. Simulate. Experiment. Analyze.&rdquo;
+          </p>
+
+          <p class="text-secondary mb-4 mx-auto" style="max-width: 680px;">
+            A premier browser-based virtual laboratory platform for engineering students to master mechanical metallurgy, universal testing machine (UTM) operations, and standard material property evaluations.
+          </p>
+
+          <!-- Primary Call to Action Buttons -->
+          <div class="d-flex flex-wrap justify-content-center gap-3 pt-2 mb-4">
+            <a href="{{ url_for('login') }}" class="btn btn-lab-primary btn-lg px-4 py-3 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
+              <i class="fas fa-sign-in-alt"></i> STUDENT LOGIN
+            </a>
+            <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg px-4 py-3 fw-bold shadow-sm d-inline-flex align-items-center gap-2" style="background: white;">
+              <i class="fas fa-user-plus"></i> CREATE NEW ACCOUNT
+            </a>
+          </div>
+
+          <div class="small text-muted d-flex align-items-center justify-content-center gap-3 flex-wrap">
+            <span><i class="fas fa-check-circle text-success me-1"></i> 100% Free for Students</span>
+            <span><i class="fas fa-shield-alt text-primary me-1"></i> ASTM E8 / ISO 6892-1 Aligned</span>
+            <span><i class="fas fa-user-shield text-info me-1"></i> Strict Educational Privacy</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Capabilities Section -->
+  <section class="py-5 bg-white">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h3 class="fw-bold text-navy fs-3">Virtual Laboratory Features</h3>
+        <p class="text-secondary small mb-0">Everything you need to complete curriculum mechanical testing coursework online.</p>
+      </div>
+
+      <div class="row g-4">
+        <!-- 1. Virtual Simulation -->
+        <div class="col-md-6 col-lg-4">
+          <div class="lab-card p-4 h-100 border border-secondary border-opacity-25 shadow-sm">
+            <div class="brand-icon mb-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+              <i class="fas fa-desktop"></i>
+            </div>
+            <h5 class="fw-bold text-navy mb-2">Virtual UTM Simulator</h5>
+            <p class="text-secondary small mb-0">
+              Run interactive tensile testing simulations with live load-displacement curves, real-time necking visualizer, and instant mechanical calculations.
+            </p>
+          </div>
+        </div>
+
+        <!-- 2. Manual Data Processing -->
+        <div class="col-md-6 col-lg-4">
+          <div class="lab-card p-4 h-100 border border-secondary border-opacity-25 shadow-sm">
+            <div class="brand-icon mb-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+              <i class="fas fa-keyboard"></i>
+            </div>
+            <h5 class="fw-bold text-navy mb-2">Manual Data Entry Mode</h5>
+            <p class="text-secondary small mb-0">
+              Input physical tensile test data directly or upload CSV files. Calculates Young&apos;s Modulus, 0.2% Offset Yield Strength, UTS, Elongation, and Toughness.
+            </p>
+          </div>
+        </div>
+
+        <!-- 3. Materials Reference Library -->
+        <div class="col-md-6 col-lg-4">
+          <div class="lab-card p-4 h-100 border border-secondary border-opacity-25 shadow-sm">
+            <div class="brand-icon mb-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+              <i class="fas fa-cubes"></i>
+            </div>
+            <h5 class="fw-bold text-navy mb-2">Standard Materials Library</h5>
+            <p class="text-secondary small mb-0">
+              Access standard mechanical and physical properties for structural steels, aluminum alloys, titanium, brass, and copper with standard references.
+            </p>
+          </div>
+        </div>
+
+        <!-- 4. Stress-Strain Telemetry -->
+        <div class="col-md-6 col-lg-4">
+          <div class="lab-card p-4 h-100 border border-secondary border-opacity-25 shadow-sm">
+            <div class="brand-icon mb-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <h5 class="fw-bold text-navy mb-2">Interactive Stress-Strain Plotting</h5>
+            <p class="text-secondary small mb-0">
+              Explore engineering stress-strain behavior with interactive zoom, hover telemetry, yield offset tangent lines, and fracture point identification.
+            </p>
+          </div>
+        </div>
+
+        <!-- 5. Automated PDF Reports -->
+        <div class="col-md-6 col-lg-4">
+          <div class="lab-card p-4 h-100 border border-secondary border-opacity-25 shadow-sm">
+            <div class="brand-icon mb-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+              <i class="fas fa-file-pdf"></i>
+            </div>
+            <h5 class="fw-bold text-navy mb-2">Certified Lab Reports</h5>
+            <p class="text-secondary small mb-0">
+              Generate submission-ready PDF laboratory reports complete with student identification, specimen dimensions, calculated results, and embedded plots.
+            </p>
+          </div>
+        </div>
+
+        <!-- 6. Knowledge Assessment -->
+        <div class="col-md-6 col-lg-4">
+          <div class="lab-card p-4 h-100 border border-secondary border-opacity-25 shadow-sm">
+            <div class="brand-icon mb-3" style="width: 48px; height: 48px; font-size: 1.25rem;">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h5 class="fw-bold text-navy mb-2">Self-Assessment Quizzes</h5>
+            <p class="text-secondary small mb-0">
+              Test your understanding of mechanical metallurgy concepts, testing standards, and stress-strain analysis with immediate explanations.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Banner -->
+      <div class="lab-card p-4 p-md-5 mt-5 border border-primary border-opacity-25 bg-light text-center">
+        <h4 class="fw-bold text-navy mb-2">Ready to Start Experimenting?</h4>
+        <p class="text-secondary small mb-4 mx-auto" style="max-width: 500px;">
+          Join students from engineering institutions across the country. Choose your custom Student ID and begin your virtual testing session.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+          <a href="{{ url_for('login') }}" class="btn btn-lab-primary fw-bold px-4 py-2">
+            <i class="fas fa-sign-in-alt me-1"></i> Student Login
+          </a>
+          <a href="{{ url_for('register') }}" class="btn btn-outline-primary fw-bold px-4 py-2" style="background: white;">
+            <i class="fas fa-user-plus me-1"></i> Register Free
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+{% endblock %}

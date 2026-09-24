@@ -29,6 +29,11 @@ class TensileLaboratoryTests(unittest.TestCase):
         init_db()
         self.app = app.test_client()
         self.app.testing = True
+        with self.app.session_transaction() as sess:
+            sess['student_id'] = 'TestDhruva01'
+            sess['student_name'] = 'Dhruva H D'
+            sess['course'] = 'B.Tech'
+            sess['university'] = 'Pondicherry University'
 
     def test_cross_sectional_area(self):
         # 10 mm diameter -> pi * 25 = 78.5398 mm^2
@@ -179,7 +184,7 @@ class TensileLaboratoryTests(unittest.TestCase):
         ]
 
         for r in routes:
-            response = self.app.get(r)
+            response = self.app.get(r, follow_redirects=True)
             self.assertEqual(response.status_code, 200, f"Route {r} failed with status {response.status_code}")
 
     def test_api_calculate_endpoint(self):

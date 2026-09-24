@@ -3,6 +3,7 @@ import json
 import os
 import re
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 def get_database_path():
     path = os.environ.get('DATABASE_PATH')
@@ -122,12 +123,13 @@ def init_db():
         score INTEGER NOT NULL,
         total_questions INTEGER NOT NULL,
         percentage REAL NOT NULL,
+        student_id TEXT,
         completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (experiment_id) REFERENCES experiments (id) ON DELETE SET NULL
     )
     ''')
 
-    # Students table (unique student_id with COLLATE NOCASE, name, course, university)
+    # Students table (unique student_id with COLLATE NOCASE, name, course, university, pin_hash, last_login_at)
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS students (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -135,6 +137,38 @@ def init_db():
         name TEXT NOT NULL,
         course TEXT NOT NULL,
         university TEXT NOT NULL,
+        pin_hash TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_login_at TIMESTAMP
+    )
+    ''')
+
+    # Migrate columns if existing students table lacks pin_hash or last_login_at
+    cursor.execute("PRAGMA table_info(students)")
+    student_cols = [col['name'] for col in cursor.fetchall()]
+    if 'pin_hash' not in student_cols:
+        cursor.execute("ALTER TABLE students ADD COLUMN pin_hash TEXT")
+    if 'last_login_at' not in student_cols:
+        cursor.execute("ALTER TABLE students ADD COLUMN last_login_at TIMESTAMP")
+
+    # Login activity table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS login_activity (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id TEXT NOT NULL,
+        ip_address TEXT,
+        user_agent TEXT,
+        login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
+    # Activity logs table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS activity_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id TEXT,
+        activity_type TEXT NOT NULL, -- 'EXPERIMENT_START', 'EXPERIMENT_SAVE', 'QUIZ_ATTEMPT', 'REPORT_DOWNLOAD'
+        details TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
@@ -144,6 +178,12 @@ def init_db():
     columns = [col['name'] for col in cursor.fetchall()]
     if 'student_id' not in columns:
         cursor.execute("ALTER TABLE experiments ADD COLUMN student_id TEXT")
+
+    # Ensure student_id column exists in quiz_results table
+    cursor.execute("PRAGMA table_info(quiz_results)")
+    quiz_cols = [col['name'] for col in cursor.fetchall()]
+    if 'student_id' not in quiz_cols:
+        cursor.execute("ALTER TABLE quiz_results ADD COLUMN student_id TEXT")
 
     conn.commit()
 
@@ -464,14 +504,14 @@ def get_quiz_questions(experiment_type='tensile', limit=10):
     conn.close()
     return [dict(q) for q in questions]
 
-def save_quiz_result(experiment_id, experiment_type, score, total_questions):
+def save_quiz_result(experiment_id, experiment_type, score, total_questions, student_id=None):
     conn = get_db_connection()
     cursor = conn.cursor()
     pct = round((score / total_questions) * 100.0, 1) if total_questions > 0 else 0.0
     cursor.execute('''
-    INSERT INTO quiz_results (experiment_id, experiment_type, score, total_questions, percentage)
-    VALUES (?, ?, ?, ?, ?)
-    ''', (experiment_id, experiment_type, score, total_questions, pct))
+    INSERT INTO quiz_results (experiment_id, experiment_type, score, total_questions, percentage, student_id)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ''', (experiment_id, experiment_type, score, total_questions, pct, student_id))
     result_id = cursor.lastrowid
     conn.commit()
     conn.close()
@@ -527,14 +567,15 @@ def is_student_id_available(student_id):
         return False, f"The Student ID '{sid}' is already taken. Please choose another ID."
     return True, f"The Student ID '{sid}' is available!"
 
-def register_student(name, course, university, student_id):
+def register_student(name, course, university, student_id, pin=None):
     """
     Registers a new student.
     REGISTRATION FIELDS:
     - Name
     - Course
     - University / College
-    - Student ID (chosen by student)
+    - Student ID (chosen by student, unique, letters + numbers, no spaces, 3-20 chars)
+    - PIN (4-6 digits, hashed securely with werkzeug)
     """
     name = (name or '').strip()
     course = (course or '').strip()
@@ -554,13 +595,22 @@ def register_student(name, course, university, student_id):
     if not is_avail:
         raise ValueError(msg)
 
+    if pin is not None and str(pin).strip() != '':
+        pin_str = str(pin).strip()
+        if not re.match(r'^\d{4,6}$', pin_str):
+            raise ValueError("Security PIN must be 4 to 6 digits (numbers only, e.g. 1234).")
+        pin_hash = generate_password_hash(pin_str)
+    else:
+        # Default fallback for programmatic creation if pin omitted
+        pin_hash = generate_password_hash('1234')
+
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
         cursor.execute('''
-        INSERT INTO students (student_id, name, course, university)
-        VALUES (?, ?, ?, ?)
-        ''', (student_id, name, course, university))
+        INSERT INTO students (student_id, name, course, university, pin_hash)
+        VALUES (?, ?, ?, ?, ?)
+        ''', (student_id, name, course, university, pin_hash))
         conn.commit()
         cursor.execute('SELECT * FROM students WHERE id = ?', (cursor.lastrowid,))
         student = dict(cursor.fetchone())
@@ -570,37 +620,82 @@ def register_student(name, course, university, student_id):
         conn.close()
         raise ValueError(f"The Student ID '{student_id}' is already taken. Please choose another ID.")
 
-def authenticate_student(student_id, university):
+def authenticate_student(student_id, pin=None, university=None, ip_address=None, user_agent=None):
     """
-    Logs in an existing student using Student ID and University / College.
+    Logs in an existing student using Student ID and 4-6 digit PIN.
     LOGIN FIELDS:
     - Student ID
-    - University / College
+    - PIN (4-6 digits)
     (Does NOT require student name during login)
+    Also supports university verification for backward-compatibility.
+    Records login in login_activity and updates last_login_at.
     """
     student_id = (student_id or '').strip()
-    university = (university or '').strip()
-
     if not student_id:
         raise ValueError("Please enter your Student ID.")
-    if not university:
-        raise ValueError("Please enter your University / College.")
 
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM students WHERE LOWER(student_id) = LOWER(?)', (student_id,))
     row = cursor.fetchone()
-    conn.close()
 
     if not row:
+        conn.close()
         raise ValueError(f"Student ID '{student_id}' was not found. Please verify your ID or create a free student account.")
 
     student = dict(row)
-    # Check university match (case-insensitive and trimmed)
-    if student['university'].strip().lower() != university.lower():
-        raise ValueError("The University / College entered does not match our records for this Student ID.")
+
+    if pin is not None and str(pin).strip() != '':
+        pin_str = str(pin).strip()
+        if not student.get('pin_hash') or not check_password_hash(student['pin_hash'], pin_str):
+            conn.close()
+            raise ValueError("Invalid Security PIN. Please enter your correct 4-6 digit PIN.")
+    elif university is not None and str(university).strip() != '':
+        if student['university'].strip().lower() != str(university).strip().lower():
+            conn.close()
+            raise ValueError("The University / College entered does not match our records for this Student ID.")
+    else:
+        conn.close()
+        raise ValueError("Please enter your 4-6 digit PIN to log in.")
+
+    # Record login activity
+    try:
+        cursor.execute('''
+        INSERT INTO login_activity (student_id, ip_address, user_agent, login_time)
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        ''', (student['student_id'], ip_address, user_agent))
+    except Exception:
+        pass
+
+    # Update last_login_at
+    try:
+        cursor.execute('''
+        UPDATE students SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?
+        ''', (student['id'],))
+    except Exception:
+        pass
+
+    conn.commit()
+    conn.close()
 
     return student
+
+def log_activity(student_id, activity_type, details=None):
+    """
+    Records student action in activity_logs table:
+    EXPERIMENT_START, EXPERIMENT_SAVE, QUIZ_ATTEMPT, REPORT_DOWNLOAD
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+        INSERT INTO activity_logs (student_id, activity_type, details)
+        VALUES (?, ?, ?)
+        ''', (student_id, activity_type, str(details) if details else None))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Error logging activity: {e}")
 
 def get_student_by_id(student_id):
     """
@@ -615,12 +710,24 @@ def get_student_by_id(student_id):
     conn.close()
     return dict(row) if row else None
 
-def get_student_stats(student_id):
+def get_student_dashboard_stats(student_id):
     """
-    Returns summary statistics for a student's dashboard.
+    Returns summary statistics for a student's dashboard:
+    - Experiments Completed (total)
+    - Virtual Experiments
+    - Manual Experiments
+    - Quiz Attempts
+    - Saved Experiments
     """
     if not student_id:
-        return {'total_experiments': 0, 'simulation_count': 0, 'manual_count': 0, 'last_experiment_at': None}
+        return {
+            'total_experiments': 0,
+            'simulation_count': 0,
+            'manual_count': 0,
+            'quiz_attempts': 0,
+            'saved_experiments': 0,
+            'last_experiment_at': None
+        }
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -634,14 +741,29 @@ def get_student_stats(student_id):
     WHERE LOWER(student_id) = LOWER(?)
     ''', (student_id.strip(),))
     row = cursor.fetchone()
-    stats = {
-        'total_experiments': row['total_experiments'] or 0,
+
+    cursor.execute('''
+    SELECT COUNT(*) as quiz_count
+    FROM quiz_results
+    WHERE LOWER(student_id) = LOWER(?)
+    ''', (student_id.strip(),))
+    q_row = cursor.fetchone()
+    quiz_attempts = q_row['quiz_count'] if q_row else 0
+
+    conn.close()
+    total_exp = row['total_experiments'] or 0
+    return {
+        'total_experiments': total_exp,
         'simulation_count': row['simulation_count'] or 0,
         'manual_count': row['manual_count'] or 0,
+        'quiz_attempts': quiz_attempts,
+        'saved_experiments': total_exp,
         'last_experiment_at': row['last_experiment_at']
     }
-    conn.close()
-    return stats
+
+def get_student_stats(student_id):
+    """Alias for backwards compatibility."""
+    return get_student_dashboard_stats(student_id)
 
 # ==========================================
 # ADMIN & ROSTER MANAGEMENT
@@ -649,13 +771,14 @@ def get_student_stats(student_id):
 
 def get_all_students(search_query=None, university=None, course=None):
     """
-    Retrieves all registered students with experiment counts.
+    Retrieves all registered students with experiment and quiz counts.
     Supports optional search query and university/course filters.
     """
     conn = get_db_connection()
     query = '''
-    SELECT s.*,
-           (SELECT COUNT(*) FROM experiments WHERE LOWER(student_id) = LOWER(s.student_id)) as experiment_count
+    SELECT s.id, s.student_id, s.name, s.course, s.university, s.created_at, s.last_login_at,
+           (SELECT COUNT(*) FROM experiments WHERE LOWER(student_id) = LOWER(s.student_id)) as experiment_count,
+           (SELECT COUNT(*) FROM quiz_results WHERE LOWER(student_id) = LOWER(s.student_id)) as quiz_count
     FROM students s
     WHERE 1=1
     '''
@@ -712,6 +835,69 @@ def get_admin_stats():
         'universities': universities,
         'courses': courses
     }
+
+def get_admin_dashboard_data(search_query=None, university=None, course=None):
+    """
+    Returns full admin dashboard telemetry:
+    - Overview counts
+    - University & Course distributions
+    - Recent Registrations (last 10)
+    - Recent Login Activity (last 15)
+    - Recent Activity Logs (last 15)
+    - Filtered Student Roster
+    """
+    stats = get_admin_stats()
+    conn = get_db_connection()
+
+    # University distribution
+    uni_dist = conn.execute('''
+    SELECT university, COUNT(*) as count 
+    FROM students 
+    GROUP BY university 
+    ORDER BY count DESC, university ASC
+    ''').fetchall()
+    stats['university_distribution'] = [dict(r) for r in uni_dist]
+
+    # Course distribution
+    course_dist = conn.execute('''
+    SELECT course, COUNT(*) as count 
+    FROM students 
+    GROUP BY course 
+    ORDER BY count DESC, course ASC
+    ''').fetchall()
+    stats['course_distribution'] = [dict(r) for r in course_dist]
+
+    # Recent registrations (last 10)
+    recent_reg = conn.execute('''
+    SELECT student_id, name, course, university, created_at, last_login_at
+    FROM students 
+    ORDER BY id DESC LIMIT 10
+    ''').fetchall()
+    stats['recent_registrations'] = [dict(r) for r in recent_reg]
+
+    # Recent login activity (last 15)
+    recent_logins = conn.execute('''
+    SELECT l.id, l.student_id, s.name, s.university, l.ip_address, l.user_agent, l.login_time
+    FROM login_activity l
+    LEFT JOIN students s ON LOWER(l.student_id) = LOWER(s.student_id)
+    ORDER BY l.id DESC LIMIT 15
+    ''').fetchall()
+    stats['recent_login_activity'] = [dict(r) for r in recent_logins]
+
+    # Recent activity logs (last 15)
+    recent_act = conn.execute('''
+    SELECT a.id, a.student_id, s.name, a.activity_type, a.details, a.created_at
+    FROM activity_logs a
+    LEFT JOIN students s ON LOWER(a.student_id) = LOWER(s.student_id)
+    ORDER BY a.id DESC LIMIT 15
+    ''').fetchall()
+    stats['recent_activity_logs'] = [dict(r) for r in recent_act]
+
+    conn.close()
+
+    students = get_all_students(search_query=search_query, university=university, course=course)
+    stats['students'] = students
+    return stats
 
 def delete_student_account(student_id):
     """

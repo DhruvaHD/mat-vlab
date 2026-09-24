@@ -1,5 +1,6 @@
 import os
 import sys
+from functools import wraps
 
 # Ensure local packages in scratch/lib are discovered
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -20,7 +21,8 @@ from models.database import (
     get_quiz_questions, save_quiz_result,
     register_student, authenticate_student, is_student_id_available,
     validate_student_id, get_student_by_id, get_student_stats,
-    get_all_students, get_admin_stats, delete_student_account
+    get_student_dashboard_stats, get_all_students, get_admin_stats,
+    get_admin_dashboard_data, delete_student_account, log_activity
 )
 from calculations.tensile import (
     analyze_tensile_data, generate_simulation_data, calculate_cross_sectional_area
@@ -31,6 +33,11 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+# Private Admin Credentials & Configuration
+ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'matvlab_admin_2024')
+ADMIN_URL_PATH = os.environ.get('ADMIN_URL_PATH', '/portal-admin')
 
 # Enable ProxyFix for HTTPS termination behind cloud reverse proxies/load balancers
 if app.config.get('ENABLE_PROXY_FIX', True):
@@ -46,7 +53,25 @@ if app.config.get('ENABLE_PROXY_FIX', True):
 with app.app_context():
     init_db()
 
-# Context processor to make student details available globally in all templates
+# Access Control Decorators
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('student_id'):
+            flash("Please log in to access the MAT-VLAB laboratory.", "info")
+            return redirect(url_for('login', next=request.path))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('is_admin'):
+            return redirect(url_for('admin_login', next=request.path))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Context processor to make student & admin details available globally in all templates
 @app.context_processor
 def inject_student_context():
     student_id = session.get('student_id')
@@ -60,29 +85,49 @@ def inject_student_context():
             session.pop('university', None)
     return {
         'current_student': student,
-        'is_logged_in': bool(student)
+        'is_logged_in': bool(student),
+        'is_admin': bool(session.get('is_admin'))
     }
 
 # ==========================================
-# STUDENT AUTHENTICATION & DASHBOARD ROUTES
+# FIRST PAGE & STUDENT AUTHENTICATION ROUTES
 # ==========================================
+
+@app.route('/')
+def index():
+    """
+    First Landing Page:
+    If student is already logged in, redirect to Dashboard.
+    If unauthenticated, show professional MAT-VLAB authentication landing page.
+    """
+    if session.get('student_id'):
+        return redirect(url_for('dashboard'))
+    return render_template('auth_landing.html', active_page='landing')
+
+@app.route('/home')
+@login_required
+def home():
+    """Main Laboratory Home page — accessible after login."""
+    return render_template('index.html', active_page='home')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """
+    Student Registration:
+    Fields: Name, Course (Dropdown), University, Student ID, PIN (4-6 digits).
+    Shows privacy notice and post-registration confirmation screen.
+    """
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         course = request.form.get('course', '').strip()
         university = request.form.get('university', '').strip()
         student_id = request.form.get('student_id', '').strip()
+        pin = request.form.get('pin', '').strip()
 
         try:
-            student = register_student(name, course, university, student_id)
-            session['student_id'] = student['student_id']
-            session['student_name'] = student['name']
-            session['course'] = student['course']
-            session['university'] = student['university']
-            flash(f"Welcome to MAT-VLAB, {student['name']}! Your student account has been created with ID: {student['student_id']}.", 'success')
-            return redirect(url_for('dashboard'))
+            student = register_student(name, course, university, student_id, pin)
+            # Display confirmation screen with Name, Student ID, Course, University and [ LOGIN ] button
+            return render_template('register_success.html', student=student, active_page='register')
         except ValueError as e:
             flash(str(e), 'danger')
             return render_template(
@@ -98,52 +143,72 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Student Login:
+    Fields: Student ID, PIN (4-6 digits).
+    Does NOT require student name during login.
+    """
     if request.method == 'POST':
         student_id = request.form.get('student_id', '').strip()
+        pin = request.form.get('pin', '').strip()
         university = request.form.get('university', '').strip()
 
         try:
-            # Login only requires Student ID and University / College (NO name required)
-            student = authenticate_student(student_id, university)
+            student = authenticate_student(
+                student_id=student_id,
+                pin=pin if pin else None,
+                university=university if not pin else None,
+                ip_address=request.remote_addr,
+                user_agent=request.user_agent.string
+            )
             session['student_id'] = student['student_id']
             session['student_name'] = student['name']
             session['course'] = student['course']
             session['university'] = student['university']
             flash(f"Welcome back, {student['name']}!", 'success')
+            next_page = request.args.get('next') or request.form.get('next')
+            if next_page and next_page.startswith('/') and not next_page.startswith('//'):
+                return redirect(next_page)
             return redirect(url_for('dashboard'))
         except ValueError as e:
             flash(str(e), 'danger')
             return render_template(
                 'login.html',
                 active_page='login',
-                form_data={'student_id': student_id, 'university': university}
+                form_data={'student_id': student_id}
             )
 
-    # If already logged in, redirect to dashboard
     if session.get('student_id'):
         return redirect(url_for('dashboard'))
-    return render_template('login.html', active_page='login', form_data={})
+    prefill_id = request.args.get('student_id', '')
+    return render_template('login.html', active_page='login', form_data={'student_id': prefill_id})
 
 @app.route('/logout')
 def logout():
     name = session.get('student_name')
-    session.clear()
+    session.pop('student_id', None)
+    session.pop('student_name', None)
+    session.pop('course', None)
+    session.pop('university', None)
     flash(f"You have been successfully logged out. Have a productive day{', ' + name if name else ''}!", 'info')
     return redirect(url_for('login'))
 
 @app.route('/dashboard')
+@login_required
 def dashboard():
+    """
+    Student Dashboard:
+    Welcome [Student Name], Course, University, Student ID.
+    Stats: Experiments Completed, Virtual Experiments, Manual Experiments, Quiz Attempts, Saved Experiments.
+    5 buttons: [ START VIRTUAL LAB ], [ EXPERIMENTS ], [ MATERIALS ], [ QUIZZES ], [ MY EXPERIMENTS ].
+    """
     student_id = session.get('student_id')
-    if not student_id:
-        flash("Please log in with your Student ID to access your personal dashboard.", "info")
-        return redirect(url_for('login'))
-
     student = get_student_by_id(student_id)
     if not student:
         session.clear()
         return redirect(url_for('login'))
 
-    stats = get_student_stats(student_id)
+    stats = get_student_dashboard_stats(student_id)
     student_exps = get_all_experiments(student_id=student_id)
     return render_template(
         'dashboard.html',
@@ -154,18 +219,50 @@ def dashboard():
     )
 
 # ==========================================
-# MAT-VLAB ADMIN & STUDENT ROSTER ROUTES
+# PRIVATE ADMIN SYSTEM (NON-OBVIOUS ROUTE)
 # ==========================================
 
+@app.route('/portal-admin/login', methods=['GET', 'POST'])
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    """Dedicated private admin login page."""
+    if session.get('is_admin'):
+        return redirect(url_for('admin_dashboard'))
+
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['is_admin'] = True
+            flash("Administrator session authenticated.", "success")
+            next_url = request.args.get('next') or url_for('admin_dashboard')
+            return redirect(next_url)
+        else:
+            flash("Invalid administrator credentials.", "danger")
+            return render_template('admin_login.html', form_data={'username': username})
+
+    return render_template('admin_login.html', form_data={})
+
+@app.route('/portal-admin/logout')
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('is_admin', None)
+    flash("Administrator session terminated.", "info")
+    return redirect(url_for('admin_login'))
+
+@app.route('/portal-admin')
+@app.route('/portal-admin/students')
 @app.route('/admin')
 @app.route('/admin/students')
+@admin_required
 def admin_dashboard():
+    """Private Admin Dashboard with system telemetry and student roster."""
     search_q = request.args.get('q', '').strip()
     selected_uni = request.args.get('university', '').strip()
     selected_course = request.args.get('course', '').strip()
 
-    stats = get_admin_stats()
-    students = get_all_students(
+    data = get_admin_dashboard_data(
         search_query=search_q if search_q else None,
         university=selected_uni if selected_uni and selected_uni != 'ALL' else None,
         course=selected_course if selected_course and selected_course != 'ALL' else None
@@ -174,21 +271,24 @@ def admin_dashboard():
     return render_template(
         'admin.html',
         active_page='admin',
-        stats=stats,
-        students=students,
-        total_students=len(students),
-        all_students_count=stats['total_students'],
+        stats=data,
+        students=data['students'],
+        total_students=len(data['students']),
+        all_students_count=data['total_students'],
         search_q=search_q,
         selected_uni=selected_uni,
         selected_course=selected_course
     )
 
+@app.route('/portal-admin/export-csv')
 @app.route('/admin/export-csv')
+@admin_required
 def admin_export_csv():
+    """Exports full student roster to CSV."""
     students = get_all_students()
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['Student ID', 'Name', 'Course', 'University', 'Registration Date', 'Experiments Count'])
+    writer.writerow(['Student ID', 'Name', 'Course', 'University', 'Registration Date', 'Experiments Count', 'Quiz Count', 'Last Login'])
     for s in students:
         writer.writerow([
             s.get('student_id', ''),
@@ -196,7 +296,9 @@ def admin_export_csv():
             s.get('course', ''),
             s.get('university', ''),
             s.get('created_at', ''),
-            s.get('experiment_count', 0)
+            s.get('experiment_count', 0),
+            s.get('quiz_count', 0),
+            s.get('last_login_at', '')
         ])
 
     mem = io.BytesIO()
@@ -211,7 +313,9 @@ def admin_export_csv():
         download_name='mat_vlab_students_roster.csv'
     )
 
+@app.route('/portal-admin/student/<student_id>/delete', methods=['POST'])
 @app.route('/admin/student/<student_id>/delete', methods=['POST'])
+@admin_required
 def admin_delete_student(student_id):
     success = delete_student_account(student_id)
     if success:
@@ -221,66 +325,77 @@ def admin_delete_student(student_id):
     return redirect(url_for('admin_dashboard'))
 
 # ==========================================
-# WEB PAGE ROUTES
+# PROTECTED LABORATORY WEB PAGES
 # ==========================================
 
-@app.route('/')
-def index():
-    return render_template('index.html', active_page='index')
-
 @app.route('/experiments')
+@login_required
 def experiments():
     return render_template('experiments.html', active_page='experiments')
 
 @app.route('/experiments/tensile')
+@login_required
 def tensile_hub():
     return render_template('tensile.html', active_page='tensile')
 
 @app.route('/simulation')
+@login_required
 def simulation():
+    sid = session.get('student_id')
+    if sid:
+        log_activity(sid, 'EXPERIMENT_START', 'Virtual Simulation Mode')
     return render_template('simulation.html', active_page='simulation')
 
 @app.route('/manual')
+@login_required
 def manual_entry():
+    sid = session.get('student_id')
+    if sid:
+        log_activity(sid, 'EXPERIMENT_START', 'Manual Data Entry Mode')
     return render_template('manual_entry.html', active_page='manual')
 
 @app.route('/results')
+@login_required
 def results():
     return render_template('results.html', active_page='results')
 
 @app.route('/materials')
+@login_required
 def materials():
     mat_list = get_all_materials()
     return render_template('materials.html', active_page='materials', materials=mat_list)
 
 @app.route('/compare')
+@login_required
 def compare():
     mat_list = get_all_materials()
-    saved_list = get_all_experiments()
+    sid = session.get('student_id')
+    saved_list = get_all_experiments(student_id=sid)
     return render_template('compare.html', active_page='compare', materials=mat_list, saved_experiments=saved_list)
 
 @app.route('/my-experiments')
+@login_required
 def my_experiments():
-    student_id = session.get('student_id')
-    if student_id:
-        return redirect(url_for('dashboard'))
-    exp_list = get_all_experiments()
+    sid = session.get('student_id')
+    exp_list = get_all_experiments(student_id=sid)
     return render_template('my_experiments.html', active_page='my_experiments', experiments=exp_list)
 
 @app.route('/experiments/<int:experiment_id>')
+@login_required
 def view_experiment(experiment_id):
     exp = get_experiment_by_id(experiment_id)
     if not exp:
         return redirect(url_for('my_experiments'))
-    # Load into results view via template context or client-side storage
     return render_template('results.html', active_page='results', preloaded_experiment=exp)
 
 @app.route('/quizzes')
+@login_required
 def quizzes():
     q_list = get_quiz_questions(experiment_type='tensile', limit=10)
     return render_template('quizzes.html', active_page='quizzes', questions=q_list)
 
 @app.route('/about')
+@login_required
 def about():
     return render_template('about.html', active_page='about')
 
@@ -354,12 +469,9 @@ def api_student_register():
         course = data.get('course', '').strip()
         university = data.get('university', '').strip()
         student_id = data.get('student_id', '').strip()
+        pin = data.get('pin', '').strip()
 
-        student = register_student(name, course, university, student_id)
-        session['student_id'] = student['student_id']
-        session['student_name'] = student['name']
-        session['course'] = student['course']
-        session['university'] = student['university']
+        student = register_student(name, course, university, student_id, pin)
         return jsonify({'success': True, 'student': student})
     except ValueError as ve:
         return jsonify({'success': False, 'error': str(ve)}), 400
@@ -371,9 +483,16 @@ def api_student_login():
     try:
         data = request.get_json() or {}
         student_id = data.get('student_id', '').strip()
+        pin = data.get('pin', '').strip()
         university = data.get('university', '').strip()
 
-        student = authenticate_student(student_id, university)
+        student = authenticate_student(
+            student_id=student_id,
+            pin=pin if pin else None,
+            university=university if not pin else None,
+            ip_address=request.remote_addr,
+            user_agent=request.user_agent.string
+        )
         session['student_id'] = student['student_id']
         session['student_name'] = student['name']
         session['course'] = student['course']
@@ -403,6 +522,8 @@ def api_save():
 
         student_id = session.get('student_id') or data.get('student_id')
         experiment_id = save_experiment(data, student_id=student_id)
+        if student_id:
+            log_activity(student_id, 'EXPERIMENT_SAVE', f"Experiment #{experiment_id} saved ({data.get('material_name', 'Tensile')})")
         return jsonify({'success': True, 'experiment_id': experiment_id})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -427,8 +548,11 @@ def api_quiz_submit():
         score = int(data.get('score', 0))
         total = int(data.get('total_questions', 10))
         exp_id = data.get('experiment_id')
+        sid = session.get('student_id')
 
-        res_id = save_quiz_result(exp_id, exp_type, score, total)
+        res_id = save_quiz_result(exp_id, exp_type, score, total, student_id=sid)
+        if sid:
+            log_activity(sid, 'QUIZ_ATTEMPT', f"Quiz {exp_type}: Score {score}/{total}")
         return jsonify({'success': True, 'result_id': res_id})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -448,6 +572,7 @@ def download_report_by_id(experiment_id):
             exp['student_id'] = st['student_id']
             exp['student_course'] = st['course']
             exp['student_university'] = st['university']
+        log_activity(sid, 'REPORT_DOWNLOAD', f"Downloaded PDF for Exp #{experiment_id}")
 
     pdf_buffer = generate_tensile_pdf(exp)
     filename = f"MAT_VLAB_Report_Exp{experiment_id}_{(exp.get('material_name', 'tensile')).replace(' ', '_')}.pdf"
@@ -473,6 +598,7 @@ def api_generate_pdf():
                 data['student_id'] = st['student_id']
                 data['student_course'] = st['course']
                 data['student_university'] = st['university']
+            log_activity(sid, 'REPORT_DOWNLOAD', f"Generated PDF report for {data.get('material_name', 'Tensile')}")
 
         pdf_buffer = generate_tensile_pdf(data)
         filename = f"MAT_VLAB_Report_{(data.get('material_name', 'tensile')).replace(' ', '_')}.pdf"

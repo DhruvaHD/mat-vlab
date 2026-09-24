@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Account Created Successfully — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      
+      <!-- Confirmation Card Container -->
+      <div class="lab-card p-4 p-md-5 shadow border border-success border-opacity-50 text-center">
+        
+        <!-- Success Icon -->
+        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-success bg-opacity-10 text-success" style="width: 72px; height: 72px; font-size: 2.2rem;">
+          <i class="fas fa-check-circle"></i>
+        </div>
+
+        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1 mb-2">Registration Successful</span>
+        <h2 class="fw-bold text-navy mb-2">Student Account Created</h2>
+        <p class="text-secondary small mb-4">
+          Your MAT-VLAB student account is ready. Please review your account details below and click Login to access the laboratory.
+        </p>
+
+        <!-- Account Summary Box -->
+        <div class="p-3 mb-4 rounded border bg-light text-start">
+          <div class="row g-2 small">
+            <div class="col-sm-4 text-muted fw-semibold">
+              <i class="fas fa-user me-1 text-steel"></i> Full Name:
+            </div>
+            <div class="col-sm-8 fw-bold text-navy" id="confirmName">
+              {{ student.name }}
+            </div>
+
+            <div class="col-sm-4 text-muted fw-semibold">
+              <i class="fas fa-id-card me-1 text-primary"></i> Student ID:
+            </div>
+            <div class="col-sm-8 fw-bold text-primary font-mono fs-6" id="confirmStudentId">
+              {{ student.student_id }}
+            </div>
+
+            <div class="col-sm-4 text-muted fw-semibold">
+              <i class="fas fa-graduation-cap me-1 text-cyan"></i> Course:
+            </div>
+            <div class="col-sm-8 fw-semibold text-dark" id="confirmCourse">
+              {{ student.course }}
+            </div>
+
+            <div class="col-sm-4 text-muted fw-semibold">
+              <i class="fas fa-university me-1 text-steel"></i> University / College:
+            </div>
+            <div class="col-sm-8 fw-semibold text-dark" id="confirmUniversity">
+              {{ student.university }}
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-info border-info border-opacity-25 py-2 px-3 small text-start mb-4">
+          <i class="fas fa-info-circle text-info me-1"></i>
+          <strong>Security Reminder:</strong> Keep your chosen Student ID and 4-6 digit Security PIN safe for future logins.
+        </div>
+
+        <!-- Primary Action: [ LOGIN ] Button -->
+        <div class="d-grid gap-2">
+          <a href="{{ url_for('login', student_id=student.student_id) }}" class="btn btn-lab-primary btn-lg fw-bold py-2 shadow-sm" id="confirmLoginBtn">
+            <i class="fas fa-sign-in-alt me-1"></i> LOGIN TO MAT-VLAB
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

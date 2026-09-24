@@ -18,12 +18,12 @@
           <span class="badge-lab mb-2">Simple &amp; Free Access</span>
           <h2 class="fw-bold text-navy mb-2">Student Login</h2>
           <p class="text-secondary small mb-0">
-            Enter your Student ID and affiliated University / College to access your personalized virtual laboratory dashboard.
+            Enter your Student ID and Security PIN to enter the virtual laboratory.
           </p>
         </div>
 
         <!-- Login Form -->
-        <form action="{{ url_for('login') }}" method="POST" id="studentLoginForm">
+        <form action="{{ url_for('login') }}{% if request.args.get('next') %}?next={{ request.args.get('next') }}{% endif %}" method="POST" id="studentLoginForm">
           
           <!-- 1. Student ID -->
           <div class="mb-3">
@@ -43,47 +43,55 @@
                 value="{{ form_data.student_id if form_data else '' }}" 
                 required
                 autocomplete="username"
-                autofocus
+                {% if not form_data or not form_data.student_id %}autofocus{% endif %}
               >
             </div>
-            <div class="form-text text-muted small">The unique ID you chose during registration.</div>
+            <div class="form-text text-muted small">Your unique Student ID created during registration.</div>
           </div>
 
-          <!-- 2. University / College -->
+          <!-- 2. Security PIN (4-6 digits) -->
           <div class="mb-4">
-            <label for="university" class="form-label fw-bold text-navy small text-uppercase">
-              <i class="fas fa-university me-1 text-steel"></i> University / College <span class="text-danger">*</span>
+            <label for="pin" class="form-label fw-bold text-navy small text-uppercase d-flex justify-content-between align-items-center">
+              <span><i class="fas fa-key me-1 text-steel"></i> Security PIN <span class="text-danger">*</span></span>
+              <span class="badge bg-secondary bg-opacity-10 text-navy font-mono fw-normal">4–6 digits</span>
             </label>
             <div class="input-group input-group-lg">
               <span class="input-group-text bg-white border-end-0 text-muted">
-                <i class="fas fa-building"></i>
+                <i class="fas fa-lock"></i>
               </span>
               <input 
-                type="text" 
-                class="form-control fs-6 border-start-0" 
-                id="university" 
-                name="university" 
-                placeholder="e.g. National Institute of Technology" 
-                value="{{ form_data.university if form_data else '' }}" 
+                type="password" 
+                class="form-control fs-6 font-mono border-start-0" 
+                id="pin" 
+                name="pin" 
+                placeholder="Enter your 4–6 digit PIN" 
+                inputmode="numeric" 
+                pattern="[0-9]{4,6}" 
+                minlength="4" 
+                maxlength="6" 
                 required
-                autocomplete="organization"
+                autocomplete="current-password"
+                {% if form_data and form_data.student_id %}autofocus{% endif %}
               >
+              <button class="btn btn-outline-secondary btn-sm px-3" type="button" id="togglePinBtn" title="Toggle PIN visibility">
+                <i class="fas fa-eye" id="togglePinIcon"></i>
+              </button>
             </div>
-            <div class="form-text text-muted small">Your registered institution name.</div>
+            <div class="form-text text-muted small">The 4–6 digit security PIN you chose during registration.</div>
           </div>
 
           <!-- Notice: Name not required -->
           <div class="alert alert-info border-info border-opacity-25 py-2 px-3 small d-flex align-items-center gap-2 mb-4">
             <i class="fas fa-info-circle text-info fs-5 flex-shrink-0"></i>
             <div>
-              <strong>Quick Access:</strong> You do <em>not</em> need to enter your name. Your name and course will be automatically retrieved from your account upon login.
+              <strong>Quick Access:</strong> You do <em>not</em> need to enter your name. Your name, course, and university will be automatically retrieved upon login.
             </div>
           </div>
 
           <!-- Submit Button -->
           <div class="d-grid mb-3">
-            <button type="submit" class="btn btn-lab-primary btn-lg fs-6 py-2 fw-bold">
-              <i class="fas fa-sign-in-alt me-1"></i> Log In to Student Dashboard
+            <button type="submit" class="btn btn-lab-primary btn-lg fs-6 py-2 fw-bold" id="submitLoginBtn">
+              <i class="fas fa-sign-in-alt me-1"></i> Log In to Laboratory
             </button>
           </div>
 
@@ -104,4 +112,26 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const pinInput = document.getElementById('pin');
+  const togglePinBtn = document.getElementById('togglePinBtn');
+  const togglePinIcon = document.getElementById('togglePinIcon');
+
+  if (togglePinBtn && pinInput) {
+    togglePinBtn.addEventListener('click', function() {
+      if (pinInput.type === 'password') {
+        pinInput.type = 'text';
+        togglePinIcon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        pinInput.type = 'password';
+        togglePinIcon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    });
+  }
+});
+</script>
 {% endblock %}

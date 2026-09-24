@@ -28,22 +28,24 @@
   <!-- Navigation Bar -->
   <nav class="navbar navbar-expand-lg navbar-dark navbar-matvlab sticky-top">
     <div class="container-fluid px-2 px-sm-3 px-lg-4">
-      <a class="navbar-brand" href="{{ url_for('index') }}">
+      <a class="navbar-brand" href="{% if is_logged_in %}{{ url_for('dashboard') }}{% else %}{{ url_for('index') }}{% endif %}">
         <div class="brand-icon">
           <i class="fas fa-atom"></i>
         </div>
         <span class="brand-text">MAT-VLAB</span>
       </a>
 
-      <!-- Mobile Hamburger Button with comfortable 44px touch target -->
+      <!-- Mobile Hamburger Button -->
       <button class="navbar-toggler border-0 shadow-none px-2 py-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation" style="min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;">
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <div class="collapse navbar-collapse" id="navbarMain">
+        <!-- Main Laboratory Navigation: Visible ONLY after student has logged in -->
+        {% if is_logged_in %}
         <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
           <li class="nav-item">
-            <a class="nav-link {% if active_page == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('home') }}">
               <i class="fas fa-home me-1"></i> Home
             </a>
           </li>
@@ -100,12 +102,11 @@
               <i class="fas fa-info-circle me-1"></i> About
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link {% if active_page == 'admin' %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
-              <i class="fas fa-shield-alt me-1 text-danger"></i> Admin
-            </a>
-          </li>
         </ul>
+        {% else %}
+        <!-- Spacer for unauthenticated visitor view -->
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
+        {% endif %}
 
         <div class="d-flex align-items-center flex-wrap gap-2 pt-2 pt-lg-0">
           {% if current_student %}
@@ -132,11 +133,6 @@
                   <i class="fas fa-folder-open text-info me-2"></i> My Experiments
                 </a>
               </li>
-              <li>
-                <a class="dropdown-item py-2 {% if active_page == 'admin' %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
-                  <i class="fas fa-shield-alt text-danger me-2"></i> MAT-VLAB Admin
-                </a>
-              </li>
               <li><hr class="dropdown-divider"></li>
               <li>
                 <a class="dropdown-item py-2 text-danger" href="{{ url_for('logout') }}">
@@ -145,6 +141,9 @@
               </li>
             </ul>
           </div>
+          <a href="{{ url_for('simulation') }}" class="btn btn-sm btn-nav-cta ms-lg-1">
+            <i class="fas fa-play me-1"></i> Start Virtual Lab
+          </a>
           {% else %}
           <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-light d-inline-flex align-items-center gap-1 {% if active_page == 'login' %}active{% endif %}">
             <i class="fas fa-sign-in-alt"></i> Login
@@ -153,9 +152,6 @@
             <i class="fas fa-user-plus"></i> Register
           </a>
           {% endif %}
-          <a href="{{ url_for('simulation') }}" class="btn btn-sm btn-nav-cta ms-lg-1">
-            <i class="fas fa-play me-1"></i> Start Virtual Lab
-          </a>
         </div>
       </div>
     </div>
@@ -200,21 +196,20 @@
         <div class="col-lg-2 col-6">
           <h6 class="footer-heading">Testing Labs</h6>
           <ul class="list-unstyled small mb-0">
-            <li class="mb-2"><a href="{{ url_for('tensile_hub') }}" class="footer-link">Tensile Testing</a></li>
-            <li class="mb-2"><a href="{{ url_for('simulation') }}" class="footer-link">UTM Simulation</a></li>
-            <li class="mb-2"><a href="{{ url_for('manual_entry') }}" class="footer-link">Manual Data Entry</a></li>
-            <li class="mb-2"><a href="{{ url_for('experiments') }}" class="footer-link">All Experiments</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('tensile_hub') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">Tensile Testing</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('simulation') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">UTM Simulation</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('manual_entry') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">Manual Data Entry</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('experiments') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">All Experiments</a></li>
           </ul>
         </div>
 
         <div class="col-lg-3 col-6">
           <h6 class="footer-heading">Engineering Tools</h6>
           <ul class="list-unstyled small mb-0">
-            <li class="mb-2"><a href="{{ url_for('materials') }}" class="footer-link">Material Database</a></li>
-            <li class="mb-2"><a href="{{ url_for('compare') }}" class="footer-link">Material Comparison</a></li>
-            <li class="mb-2"><a href="{{ url_for('my_experiments') }}" class="footer-link">Saved Experiments</a></li>
-            <li class="mb-2"><a href="{{ url_for('quizzes') }}" class="footer-link">Knowledge Assessment</a></li>
-            <li class="mb-2"><a href="{{ url_for('admin_dashboard') }}" class="footer-link text-primary fw-semibold"><i class="fas fa-shield-alt text-danger me-1"></i> MAT-VLAB Admin</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('materials') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">Material Database</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('compare') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">Material Comparison</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('my_experiments') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">Saved Experiments</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('quizzes') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">Knowledge Assessment</a></li>
           </ul>
         </div>
 

@@ -30,6 +30,9 @@
         <a href="{{ url_for('register') }}" class="btn btn-sm btn-lab-primary">
           <i class="fas fa-user-plus me-1"></i> Register Student
         </a>
+        <a href="{{ url_for('admin_logout') }}" class="btn btn-sm btn-outline-danger">
+          <i class="fas fa-sign-out-alt me-1"></i> Admin Logout
+        </a>
       </div>
     </div>
   </div>
@@ -87,6 +90,79 @@
           {{ stats.total_experiments }}
         </div>
         <div class="small text-muted">{{ stats.sim_count }} Sim • {{ stats.manual_count }} Manual</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Institutional & Activity Row -->
+  <div class="row g-3 mb-4">
+    <!-- University & Course Cohorts -->
+    <div class="col-lg-6">
+      <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm h-100">
+        <h5 class="fw-bold text-navy mb-3">
+          <i class="fas fa-university me-2 text-primary"></i>Institution &amp; Degree Cohorts
+        </h5>
+        
+        <div class="mb-3">
+          <div class="small text-muted fw-bold text-uppercase mb-2">Universities &amp; Colleges</div>
+          <div class="list-group list-group-flush border rounded small" style="max-height: 150px; overflow-y: auto;">
+            {% for u in stats.university_distribution %}
+            <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+              <span class="text-truncate fw-semibold text-dark">{{ u.university }}</span>
+              <span class="badge bg-primary rounded-pill font-mono">{{ u.count }}</span>
+            </div>
+            {% else %}
+            <div class="list-group-item text-muted text-center py-2">No institutions yet</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div>
+          <div class="small text-muted fw-bold text-uppercase mb-2">Academic Programs</div>
+          <div class="list-group list-group-flush border rounded small" style="max-height: 150px; overflow-y: auto;">
+            {% for c in stats.course_distribution %}
+            <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+              <span class="text-truncate fw-semibold text-dark">{{ c.course }}</span>
+              <span class="badge bg-cyan text-navy rounded-pill font-mono">{{ c.count }}</span>
+            </div>
+            {% else %}
+            <div class="list-group-item text-muted text-center py-2">No programs yet</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Login Activity -->
+    <div class="col-lg-6">
+      <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm h-100">
+        <h5 class="fw-bold text-navy mb-3">
+          <i class="fas fa-history me-2 text-success"></i>Recent Student Login Activity
+        </h5>
+        <div class="table-responsive rounded border border-secondary border-opacity-25" style="max-height: 335px; overflow-y: auto;">
+          <table class="table table-sm table-hover align-middle mb-0 small">
+            <thead class="table-light">
+              <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Login Time</th>
+                <th>IP Address</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for l in stats.recent_login_activity %}
+              <tr>
+                <td><span class="badge bg-cyan text-navy font-mono">{{ l.student_id }}</span></td>
+                <td class="text-truncate" style="max-width: 140px;">{{ l.name or '—' }}</td>
+                <td class="text-muted font-mono">{{ l.login_time[:16] if l.login_time else '—' }}</td>
+                <td class="text-muted font-mono">{{ l.ip_address or '127.0.0.1' }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="4" class="text-center text-muted py-4">No login activity recorded yet</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
