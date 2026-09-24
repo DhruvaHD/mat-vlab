@@ -100,6 +100,11 @@
               <i class="fas fa-info-circle me-1"></i> About
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link {% if active_page == 'admin' %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
+              <i class="fas fa-shield-alt me-1 text-danger"></i> Admin
+            </a>
+          </li>
         </ul>
 
         <div class="d-flex align-items-center flex-wrap gap-2 pt-2 pt-lg-0">
@@ -125,6 +130,11 @@
               <li>
                 <a class="dropdown-item py-2 {% if active_page == 'my_experiments' %}active{% endif %}" href="{{ url_for('my_experiments') }}">
                   <i class="fas fa-folder-open text-info me-2"></i> My Experiments
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2 {% if active_page == 'admin' %}active{% endif %}" href="{{ url_for('admin_dashboard') }}">
+                  <i class="fas fa-shield-alt text-danger me-2"></i> MAT-VLAB Admin
                 </a>
               </li>
               <li><hr class="dropdown-divider"></li>
@@ -204,6 +214,7 @@
             <li class="mb-2"><a href="{{ url_for('compare') }}" class="footer-link">Material Comparison</a></li>
             <li class="mb-2"><a href="{{ url_for('my_experiments') }}" class="footer-link">Saved Experiments</a></li>
             <li class="mb-2"><a href="{{ url_for('quizzes') }}" class="footer-link">Knowledge Assessment</a></li>
+            <li class="mb-2"><a href="{{ url_for('admin_dashboard') }}" class="footer-link text-primary fw-semibold"><i class="fas fa-shield-alt text-danger me-1"></i> MAT-VLAB Admin</a></li>
           </ul>
         </div>
 

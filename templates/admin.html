@@ -1,0 +1,460 @@
+{% extends "base.html" %}
+
+{% block title %}MAT-VLAB ADMIN — Total Students: {{ all_students_count }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  
+  <!-- 1. Admin Header Banner -->
+  <div class="lab-card p-4 p-md-5 mb-4 border border-secondary border-opacity-25 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-2 py-1 fw-bold">
+            <i class="fas fa-shield-alt me-1"></i> Academic Administration Portal
+          </span>
+          <span class="badge bg-info bg-opacity-10 text-primary border border-info border-opacity-25 px-2 py-1">
+            <i class="fas fa-database me-1"></i> Live SQLite Sync
+          </span>
+        </div>
+        <h1 class="fw-bold text-navy fs-2 mb-1">MAT-VLAB ADMIN</h1>
+        <p class="text-secondary small mb-0">
+          Central student directory, institutional cohort monitoring, and laboratory experiment logs.
+        </p>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('admin_export_csv') }}" class="btn btn-sm btn-outline-success">
+          <i class="fas fa-file-csv me-1"></i> Export Roster (CSV)
+        </a>
+        <a href="{{ url_for('register') }}" class="btn btn-sm btn-lab-primary">
+          <i class="fas fa-user-plus me-1"></i> Register Student
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Overview Stats (Total Students: 247) -->
+  <div class="row g-3 mb-4">
+    <!-- Total Students Card -->
+    <div class="col-sm-6 col-lg-3">
+      <div class="lab-card p-4 border border-primary border-opacity-25 shadow-sm text-center bg-light">
+        <div class="text-secondary small fw-bold text-uppercase mb-1 tracking-wider">
+          <i class="fas fa-users me-1 text-primary"></i> Total Students
+        </div>
+        <div class="fs-1 fw-bold text-navy font-mono mb-1" id="totalStudentsStat">
+          {{ all_students_count }}
+        </div>
+        <div class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 small">
+          Active Registered Cohort
+        </div>
+      </div>
+    </div>
+
+    <!-- Universities Count -->
+    <div class="col-sm-6 col-lg-3">
+      <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm text-center">
+        <div class="text-secondary small fw-bold text-uppercase mb-1 tracking-wider">
+          <i class="fas fa-university me-1 text-steel"></i> Universities &amp; Colleges
+        </div>
+        <div class="fs-1 fw-bold text-steel font-mono mb-1">
+          {{ stats.total_universities }}
+        </div>
+        <div class="small text-muted">Affiliated Institutions</div>
+      </div>
+    </div>
+
+    <!-- Courses Count -->
+    <div class="col-sm-6 col-lg-3">
+      <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm text-center">
+        <div class="text-secondary small fw-bold text-uppercase mb-1 tracking-wider">
+          <i class="fas fa-graduation-cap me-1 text-cyan"></i> Degree Programs
+        </div>
+        <div class="fs-1 fw-bold text-cyan font-mono mb-1">
+          {{ stats.total_courses }}
+        </div>
+        <div class="small text-muted">B.Tech &amp; M.Tech Disciplines</div>
+      </div>
+    </div>
+
+    <!-- Total Experiments Count -->
+    <div class="col-sm-6 col-lg-3">
+      <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm text-center">
+        <div class="text-secondary small fw-bold text-uppercase mb-1 tracking-wider">
+          <i class="fas fa-vial me-1 text-success"></i> Lab Experiments
+        </div>
+        <div class="fs-1 fw-bold text-success font-mono mb-1">
+          {{ stats.total_experiments }}
+        </div>
+        <div class="small text-muted">{{ stats.sim_count }} Sim • {{ stats.manual_count }} Manual</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Students Table Section -->
+  <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm mb-4">
+    
+    <!-- Title & Controls Header -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 pb-3 mb-3 border-bottom">
+      <div>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Students</h3>
+        <p class="text-secondary small mb-0">
+          Complete enrolled roster showing Name, Student ID, Course, and University.
+        </p>
+      </div>
+      <div>
+        <span class="badge bg-light text-navy border px-3 py-2 fs-6 font-mono" id="showingCountBadge">
+          Showing {{ students|length }} of {{ all_students_count }} Students
+        </span>
+      </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="row g-2 mb-3">
+      <!-- Search Input -->
+      <div class="col-md-5">
+        <div class="input-group">
+          <span class="input-group-text bg-white border-end-0 text-muted">
+            <i class="fas fa-search"></i>
+          </span>
+          <input 
+            type="text" 
+            class="form-control border-start-0" 
+            id="studentSearchInput" 
+            placeholder="Search by Name, Student ID, Course, University..." 
+            value="{{ search_q }}"
+          >
+        </div>
+      </div>
+
+      <!-- University Filter Dropdown -->
+      <div class="col-md-3">
+        <select class="form-select" id="universityFilter">
+          <option value="">All Universities ({{ stats.universities|length }})</option>
+          {% for uni in stats.universities %}
+          <option value="{{ uni }}" {% if selected_uni == uni %}selected{% endif %}>{{ uni }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Course Filter Dropdown -->
+      <div class="col-md-3">
+        <select class="form-select" id="courseFilter">
+          <option value="">All Courses ({{ stats.courses|length }})</option>
+          {% for c in stats.courses %}
+          <option value="{{ c }}" {% if selected_course == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Reset Button -->
+      <div class="col-md-1">
+        <button class="btn btn-outline-secondary w-100" id="resetFiltersBtn" title="Reset all filters">
+          <i class="fas fa-undo"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Students Roster Table -->
+    <div class="table-responsive rounded border border-secondary border-opacity-25">
+      <table class="table table-lab table-hover align-middle mb-0" id="studentsRosterTable">
+        <thead>
+          <tr>
+            <th style="width: 50px;">#</th>
+            <th>Name</th>
+            <th>Student ID</th>
+            <th>Course</th>
+            <th>University</th>
+            <th class="text-center">Experiments</th>
+            <th class="text-center" style="width: 120px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentsTableBody">
+          {% for student in students %}
+          <tr class="student-row" 
+              data-name="{{ student.name|lower }}" 
+              data-id="{{ student.student_id|lower }}" 
+              data-course="{{ student.course|lower }}" 
+              data-uni="{{ student.university|lower }}">
+            <td class="font-mono text-muted small">{{ loop.index }}</td>
+            <td>
+              <div class="fw-bold text-navy student-name-cell">{{ student.name }}</div>
+              <div class="small text-muted d-sm-none font-mono">{{ student.student_id }}</div>
+            </td>
+            <td>
+              <span class="badge bg-cyan text-navy font-mono fw-bold px-2 py-1">
+                {{ student.student_id }}
+              </span>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark border">{{ student.course }}</span>
+            </td>
+            <td>
+              <div class="text-dark small fw-semibold">{{ student.university }}</div>
+            </td>
+            <td class="text-center">
+              {% if student.experiment_count > 0 %}
+              <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 font-mono">
+                {{ student.experiment_count }} runs
+              </span>
+              {% else %}
+              <span class="text-muted small font-mono">0 runs</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <div class="btn-group btn-group-sm">
+                <button type="button" class="btn btn-outline-info" title="View Student Info" onclick="showStudentModal('{{ student.name }}', '{{ student.student_id }}', '{{ student.course }}', '{{ student.university }}', '{{ student.experiment_count }}', '{{ student.created_at }}')">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <form action="{{ url_for('admin_delete_student', student_id=student.student_id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete student account {{ student.student_id }}?');">
+                  <button type="submit" class="btn btn-outline-danger" title="Remove Student">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Table Pagination / Navigation Controls -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-3 mt-2 border-top">
+      <div class="small text-muted" id="paginationSummary">
+        Showing 1 to 25 of {{ students|length }} entries
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <label for="perPageSelect" class="small text-muted mb-0">Show:</label>
+        <select class="form-select form-select-sm" id="perPageSelect" style="width: auto;">
+          <option value="25" selected>25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="all">All</option>
+        </select>
+        <nav aria-label="Student roster pagination">
+          <ul class="pagination pagination-sm mb-0" id="paginationUl">
+            <!-- Dynamic pagination links populated by JavaScript -->
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Student Detail Modal -->
+<div class="modal fade" id="studentDetailModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content lab-card border">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title fw-bold text-navy" id="studentModalLabel">
+          <i class="fas fa-user-graduate me-2 text-primary"></i>Student Profile Details
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="text-center mb-3">
+          <div class="brand-icon mx-auto mb-2" style="width: 52px; height: 52px; font-size: 1.4rem;">
+            <i class="fas fa-user"></i>
+          </div>
+          <h4 class="fw-bold text-navy mb-1" id="modalStudentName">—</h4>
+          <span class="badge bg-cyan text-navy font-mono px-3 py-1 fw-bold fs-6" id="modalStudentID">—</span>
+        </div>
+        <div class="list-group list-group-flush border rounded">
+          <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+            <span class="text-secondary small fw-bold text-uppercase">Course / Branch:</span>
+            <span class="fw-semibold text-dark text-end" id="modalStudentCourse">—</span>
+          </div>
+          <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+            <span class="text-secondary small fw-bold text-uppercase">University / College:</span>
+            <span class="fw-semibold text-dark text-end" id="modalStudentUniversity">—</span>
+          </div>
+          <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+            <span class="text-secondary small fw-bold text-uppercase">Experiments Completed:</span>
+            <span class="badge bg-success font-mono" id="modalStudentExps">0</span>
+          </div>
+          <div class="list-group-item d-flex justify-content-between align-items-center py-2">
+            <span class="text-secondary small fw-bold text-uppercase">Account Registered:</span>
+            <span class="small text-muted" id="modalStudentDate">—</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-top">
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('studentSearchInput');
+  const uniFilter = document.getElementById('universityFilter');
+  const courseFilter = document.getElementById('courseFilter');
+  const resetBtn = document.getElementById('resetFiltersBtn');
+  const perPageSelect = document.getElementById('perPageSelect');
+  const tbody = document.getElementById('studentsTableBody');
+  const allRows = Array.from(tbody.querySelectorAll('.student-row'));
+  const showingBadge = document.getElementById('showingCountBadge');
+  const paginationSummary = document.getElementById('paginationSummary');
+  const paginationUl = document.getElementById('paginationUl');
+
+  let currentPage = 1;
+  let perPage = 25;
+  let filteredRows = allRows;
+
+  function filterAndPaginate() {
+    const q = (searchInput.value || '').trim().toLowerCase();
+    const selectedUni = (uniFilter.value || '').trim().toLowerCase();
+    const selectedCourse = (courseFilter.value || '').trim().toLowerCase();
+
+    // 1. Filter rows
+    filteredRows = allRows.filter(row => {
+      const name = row.getAttribute('data-name');
+      const id = row.getAttribute('data-id');
+      const course = row.getAttribute('data-course');
+      const uni = row.getAttribute('data-uni');
+
+      const matchesQ = !q || name.includes(q) || id.includes(q) || course.includes(q) || uni.includes(q);
+      const matchesUni = !selectedUni || uni === selectedUni;
+      const matchesCourse = !selectedCourse || course === selectedCourse;
+
+      return matchesQ && matchesUni && matchesCourse;
+    });
+
+    showingBadge.textContent = `Showing ${filteredRows.length} of ${allRows.length} Students`;
+
+    // 2. Paginate
+    const totalItems = filteredRows.length;
+    const effectivePerPage = perPage === 'all' ? totalItems : parseInt(perPage, 10);
+    const totalPages = effectivePerPage > 0 ? Math.ceil(totalItems / effectivePerPage) || 1 : 1;
+
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const startIdx = (currentPage - 1) * effectivePerPage;
+    const endIdx = effectivePerPage === 'all' ? totalItems : Math.min(startIdx + effectivePerPage, totalItems);
+
+    // Hide all rows first
+    allRows.forEach(row => row.style.display = 'none');
+
+    // Show only the page subset of filtered rows
+    filteredRows.slice(startIdx, endIdx).forEach(row => {
+      row.style.display = '';
+    });
+
+    // Update pagination summary
+    if (totalItems === 0) {
+      paginationSummary.textContent = 'No matching students found';
+    } else {
+      paginationSummary.textContent = `Showing ${startIdx + 1} to ${endIdx} of ${totalItems} entries`;
+    }
+
+    // Build pagination links
+    renderPagination(totalPages);
+  }
+
+  function renderPagination(totalPages) {
+    paginationUl.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    // Previous Button
+    const prevLi = document.createElement('li');
+    prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+    prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous">&laquo;</a>`;
+    prevLi.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (currentPage > 1) {
+        currentPage--;
+        filterAndPaginate();
+      }
+    });
+    paginationUl.appendChild(prevLi);
+
+    // Page Numbers (sliding window)
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+
+    for (let p = startPage; p <= endPage; p++) {
+      const pageLi = document.createElement('li');
+      pageLi.className = `page-item ${p === currentPage ? 'active' : ''}`;
+      pageLi.innerHTML = `<a class="page-link" href="#">${p}</a>`;
+      pageLi.addEventListener('click', function(e) {
+        e.preventDefault();
+        currentPage = p;
+        filterAndPaginate();
+      });
+      paginationUl.appendChild(pageLi);
+    }
+
+    // Next Button
+    const nextLi = document.createElement('li');
+    nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+    nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next">&raquo;</a>`;
+    nextLi.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (currentPage < totalPages) {
+        currentPage++;
+        filterAndPaginate();
+      }
+    });
+    paginationUl.appendChild(nextLi);
+  }
+
+  // Event Listeners
+  searchInput.addEventListener('input', function() {
+    currentPage = 1;
+    filterAndPaginate();
+  });
+
+  uniFilter.addEventListener('change', function() {
+    currentPage = 1;
+    filterAndPaginate();
+  });
+
+  courseFilter.addEventListener('change', function() {
+    currentPage = 1;
+    filterAndPaginate();
+  });
+
+  perPageSelect.addEventListener('change', function() {
+    perPage = this.value;
+    currentPage = 1;
+    filterAndPaginate();
+  });
+
+  resetBtn.addEventListener('click', function() {
+    searchInput.value = '';
+    uniFilter.value = '';
+    courseFilter.value = '';
+    perPageSelect.value = '25';
+    perPage = 25;
+    currentPage = 1;
+    filterAndPaginate();
+  });
+
+  // Initial call
+  filterAndPaginate();
+});
+
+// Modal function
+function showStudentModal(name, id, course, uni, exps, date) {
+  document.getElementById('modalStudentName').textContent = name;
+  document.getElementById('modalStudentID').textContent = id;
+  document.getElementById('modalStudentCourse').textContent = course;
+  document.getElementById('modalStudentUniversity').textContent = uni;
+  document.getElementById('modalStudentExps').textContent = `${exps} tests`;
+  document.getElementById('modalStudentDate').textContent = date || 'N/A';
+
+  const modal = new bootstrap.Modal(document.getElementById('studentDetailModal'));
+  modal.show();
+}
+</script>
+{% endblock %}

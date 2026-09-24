@@ -66,29 +66,17 @@ class TestStudentAccountSystem(unittest.TestCase):
         """Verify registration and clear error message when chosen ID is already taken."""
         from models.database import register_student, is_student_id_available
 
-        # 1. Register Dhruva01
-        st = register_student(
-            name='Dhruva H D',
-            course='B.Tech Materials Science & Technology',
-            university='National Institute of Technology',
-            student_id='Dhruva01'
-        )
-        self.assertEqual(st['student_id'], 'Dhruva01')
-        self.assertEqual(st['name'], 'Dhruva H D')
-        self.assertEqual(st['course'], 'B.Tech Materials Science & Technology')
-        self.assertEqual(st['university'], 'National Institute of Technology')
-
-        # 2. Availability check on taken ID
+        # 1. Pre-seeded Dhruva01 check
         avail, msg = is_student_id_available('Dhruva01')
         self.assertFalse(avail)
         self.assertEqual(msg, "The Student ID 'Dhruva01' is already taken. Please choose another ID.")
 
-        # 3. Case-insensitive collision check
+        # 2. Case-insensitive collision check
         avail_lower, msg_lower = is_student_id_available('dhruva01')
         self.assertFalse(avail_lower)
         self.assertIn("already taken", msg_lower)
 
-        # 4. Attempt duplicate registration must raise ValueError with clear message
+        # 3. Attempt duplicate registration on taken ID must raise ValueError with clear message
         with self.assertRaises(ValueError) as ctx:
             register_student(
                 name='Another Student',
@@ -98,51 +86,66 @@ class TestStudentAccountSystem(unittest.TestCase):
             )
         self.assertIn("already taken", str(ctx.exception))
 
+        # 4. Register a new unique student
+        st = register_student(
+            name='Tanvi Sharma',
+            course='B.Tech Materials Science',
+            university='Delhi Technological University',
+            student_id='Tanvi88'
+        )
+        self.assertEqual(st['student_id'], 'Tanvi88')
+        self.assertEqual(st['name'], 'Tanvi Sharma')
+        self.assertEqual(st['course'], 'B.Tech Materials Science')
+        self.assertEqual(st['university'], 'Delhi Technological University')
+
+        # Now Tanvi88 is taken
+        avail_new, _ = is_student_id_available('Tanvi88')
+        self.assertFalse(avail_new)
+
     def test_login_without_requiring_name(self):
         """Verify login requires ONLY Student ID and University (does NOT require name)."""
-        from models.database import register_student, authenticate_student
+        from models.database import authenticate_student
 
-        # Register Sindhu07
-        register_student(
-            name='Sindhu K',
-            course='M.Tech Metallurgical Engineering',
-            university='IISc Bangalore',
-            student_id='Sindhu07'
-        )
-
-        # Login with Student ID + University (NO NAME)
-        student = authenticate_student(student_id='Sindhu07', university='IISc Bangalore')
+        # 1. Login with pre-seeded Dhruva01 + Pondicherry University (NO NAME)
+        student = authenticate_student(student_id='Dhruva01', university='Pondicherry University')
         self.assertIsNotNone(student)
-        self.assertEqual(student['name'], 'Sindhu K')
-        self.assertEqual(student['course'], 'M.Tech Metallurgical Engineering')
-        self.assertEqual(student['university'], 'IISc Bangalore')
+        self.assertEqual(student['name'], 'Dhruva H D')
+        self.assertEqual(student['course'], 'B.Tech')
+        self.assertEqual(student['university'], 'Pondicherry University')
 
-        # Wrong university rejects login
+        # 2. Login with pre-seeded Rahul25 + XYZ University (NO NAME)
+        student_rahul = authenticate_student(student_id='Rahul25', university='XYZ University')
+        self.assertIsNotNone(student_rahul)
+        self.assertEqual(student_rahul['name'], 'Rahul K')
+        self.assertEqual(student_rahul['course'], 'B.Tech')
+        self.assertEqual(student_rahul['university'], 'XYZ University')
+
+        # 3. Wrong university rejects login
         with self.assertRaises(ValueError) as ctx:
-            authenticate_student(student_id='Sindhu07', university='Other College')
+            authenticate_student(student_id='Dhruva01', university='Other College')
         self.assertIn("does not match", str(ctx.exception))
 
-        # Unknown Student ID rejects login
+        # 4. Unknown Student ID rejects login
         with self.assertRaises(ValueError) as ctx:
-            authenticate_student(student_id='Unknown99', university='IISc Bangalore')
+            authenticate_student(student_id='Unknown99', university='Pondicherry University')
         self.assertIn("not found", str(ctx.exception))
 
     def test_web_routes_registration_and_dashboard_display(self):
         """Verify web registration, session login, and automatic display of student data on dashboard."""
         # 1. Register via Web POST
         res = self.client.post('/register', data={
-            'name': 'Rahul Sharma',
+            'name': 'Arjun Mehta',
             'course': 'B.Tech Mechanical Engineering',
             'university': 'IIT Madras',
-            'student_id': 'Rahul25'
+            'student_id': 'Arjun99'
         }, follow_redirects=True)
 
         self.assertEqual(res.status_code, 200)
         content = res.data.decode('utf-8')
 
         # Verify student details are automatically retrieved and displayed on the dashboard
-        self.assertIn('Rahul Sharma', content)
-        self.assertIn('Rahul25', content)
+        self.assertIn('Arjun Mehta', content)
+        self.assertIn('Arjun99', content)
         self.assertIn('B.Tech Mechanical Engineering', content)
         self.assertIn('IIT Madras', content)
         self.assertIn('Active Student Account', content)
@@ -154,7 +157,7 @@ class TestStudentAccountSystem(unittest.TestCase):
 
         # 3. Log back in with ONLY Student ID and University (NO name)
         res_login = self.client.post('/login', data={
-            'student_id': 'Rahul25',
+            'student_id': 'Arjun99',
             'university': 'IIT Madras'
         }, follow_redirects=True)
 
@@ -162,8 +165,8 @@ class TestStudentAccountSystem(unittest.TestCase):
         dashboard_content = res_login.data.decode('utf-8')
 
         # Verify student details retrieved from account and displayed automatically
-        self.assertIn('Rahul Sharma', dashboard_content)
-        self.assertIn('Rahul25', dashboard_content)
+        self.assertIn('Arjun Mehta', dashboard_content)
+        self.assertIn('Arjun99', dashboard_content)
         self.assertIn('B.Tech Mechanical Engineering', dashboard_content)
         self.assertIn('IIT Madras', dashboard_content)
 
@@ -192,6 +195,40 @@ class TestStudentAccountSystem(unittest.TestCase):
         data = res.get_json()
         self.assertFalse(data['available'])
         self.assertIn("spaces", data['message'].lower())
+
+    def test_admin_portal_and_students_roster(self):
+        """Verify MAT-VLAB ADMIN dashboard, Total Students: 247, and students table."""
+        res = self.client.get('/admin')
+        self.assertEqual(res.status_code, 200)
+        content = res.data.decode('utf-8')
+
+        # 1. Headline & Total Students count
+        self.assertIn('MAT-VLAB ADMIN', content)
+        self.assertIn('Total Students', content)
+        self.assertIn('247', content)
+
+        # 2. Key students from specification
+        self.assertIn('Dhruva H D', content)
+        self.assertIn('Dhruva01', content)
+        self.assertIn('Pondicherry University', content)
+
+        self.assertIn('Rahul K', content)
+        self.assertIn('Rahul25', content)
+        self.assertIn('XYZ University', content)
+
+        # 3. CSV Roster Export endpoint
+        res_csv = self.client.get('/admin/export-csv')
+        self.assertEqual(res_csv.status_code, 200)
+        csv_text = res_csv.data.decode('utf-8')
+        self.assertIn('Student ID,Name,Course,University', csv_text)
+        self.assertIn('Dhruva01,Dhruva H D,B.Tech,Pondicherry University', csv_text)
+        self.assertIn('Rahul25,Rahul K,B.Tech,XYZ University', csv_text)
+
+        # 4. Search and filter query
+        res_search = self.client.get('/admin?q=Dhruva01')
+        self.assertEqual(res_search.status_code, 200)
+        search_content = res_search.data.decode('utf-8')
+        self.assertIn('Dhruva H D', search_content)
 
 if __name__ == '__main__':
     unittest.main()

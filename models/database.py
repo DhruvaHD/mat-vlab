@@ -150,8 +150,24 @@ def init_db():
     # Seed data if tables are empty
     seed_materials(conn)
     seed_quiz_questions(conn)
+    seed_students(conn)
 
     conn.close()
+
+def seed_students(conn):
+    cursor = conn.cursor()
+    cursor.execute('SELECT COUNT(*) as count FROM students')
+    if cursor.fetchone()['count'] == 0:
+        seed_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'students_seed.json')
+        if os.path.exists(seed_file):
+            with open(seed_file, 'r') as f:
+                students = json.load(f)
+                for s in students:
+                    cursor.execute('''
+                    INSERT INTO students (name, student_id, course, university)
+                    VALUES (?, ?, ?, ?)
+                    ''', (s['name'], s['student_id'], s['course'], s['university']))
+            conn.commit()
 
 def seed_materials(conn):
     cursor = conn.cursor()
@@ -642,3 +658,86 @@ def get_student_stats(student_id):
     }
     conn.close()
     return stats
+
+# ==========================================
+# ADMIN & ROSTER MANAGEMENT
+# ==========================================
+
+def get_all_students(search_query=None, university=None, course=None):
+    """
+    Retrieves all registered students with experiment counts.
+    Supports optional search query and university/course filters.
+    """
+    conn = get_db_connection()
+    query = '''
+    SELECT s.*,
+           (SELECT COUNT(*) FROM experiments WHERE LOWER(student_id) = LOWER(s.student_id)) as experiment_count
+    FROM students s
+    WHERE 1=1
+    '''
+    params = []
+    if search_query:
+        query += ''' AND (
+            s.name LIKE ? OR 
+            s.student_id LIKE ? OR 
+            s.course LIKE ? OR 
+            s.university LIKE ?
+        )'''
+        term = f"%{search_query.strip()}%"
+        params.extend([term, term, term, term])
+
+    if university and university.strip() and university.strip() != 'ALL':
+        query += " AND s.university = ?"
+        params.append(university.strip())
+
+    if course and course.strip() and course.strip() != 'ALL':
+        query += " AND s.course = ?"
+        params.append(course.strip())
+
+    query += " ORDER BY s.id ASC"
+    rows = conn.execute(query, params).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def get_admin_stats():
+    """
+    Returns administrative summary statistics for MAT-VLAB ADMIN.
+    """
+    conn = get_db_connection()
+    
+    total_students = conn.execute('SELECT COUNT(*) FROM students').fetchone()[0]
+    total_universities = conn.execute('SELECT COUNT(DISTINCT university) FROM students').fetchone()[0]
+    total_courses = conn.execute('SELECT COUNT(DISTINCT course) FROM students').fetchone()[0]
+    total_experiments = conn.execute('SELECT COUNT(*) FROM experiments').fetchone()[0]
+    sim_count = conn.execute("SELECT COUNT(*) FROM experiments WHERE mode = 'VIRTUAL_SIMULATION'").fetchone()[0]
+    manual_count = conn.execute("SELECT COUNT(*) FROM experiments WHERE mode = 'MANUAL_ENTRY'").fetchone()[0]
+    total_quizzes = conn.execute('SELECT COUNT(*) FROM quiz_results').fetchone()[0]
+    
+    universities = [r[0] for r in conn.execute('SELECT DISTINCT university FROM students ORDER BY university ASC').fetchall() if r[0]]
+    courses = [r[0] for r in conn.execute('SELECT DISTINCT course FROM students ORDER BY course ASC').fetchall() if r[0]]
+
+    conn.close()
+    return {
+        'total_students': total_students,
+        'total_universities': total_universities,
+        'total_courses': total_courses,
+        'total_experiments': total_experiments,
+        'sim_count': sim_count,
+        'manual_count': manual_count,
+        'total_quizzes': total_quizzes,
+        'universities': universities,
+        'courses': courses
+    }
+
+def delete_student_account(student_id):
+    """
+    Deletes a student account by student_id.
+    """
+    if not student_id:
+        return False
+    conn = get_db_connection()
+    conn.execute('DELETE FROM students WHERE LOWER(student_id) = LOWER(?)', (student_id.strip(),))
+    conn.commit()
+    conn.close()
+    return True
+

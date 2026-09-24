@@ -10,6 +10,8 @@ if os.path.exists(SCRATCH_LIB) and SCRATCH_LIB not in sys.path:
 # Ensure matplotlib writes to writable directory
 os.environ['MPLCONFIGDIR'] = '/tmp'
 
+import io
+import csv
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, session, flash
 from config import Config
 from models.database import (
@@ -17,7 +19,8 @@ from models.database import (
     save_experiment, get_experiment_by_id, get_all_experiments, delete_experiment,
     get_quiz_questions, save_quiz_result,
     register_student, authenticate_student, is_student_id_available,
-    validate_student_id, get_student_by_id, get_student_stats
+    validate_student_id, get_student_by_id, get_student_stats,
+    get_all_students, get_admin_stats, delete_student_account
 )
 from calculations.tensile import (
     analyze_tensile_data, generate_simulation_data, calculate_cross_sectional_area
@@ -149,6 +152,73 @@ def dashboard():
         stats=stats,
         experiments=student_exps
     )
+
+# ==========================================
+# MAT-VLAB ADMIN & STUDENT ROSTER ROUTES
+# ==========================================
+
+@app.route('/admin')
+@app.route('/admin/students')
+def admin_dashboard():
+    search_q = request.args.get('q', '').strip()
+    selected_uni = request.args.get('university', '').strip()
+    selected_course = request.args.get('course', '').strip()
+
+    stats = get_admin_stats()
+    students = get_all_students(
+        search_query=search_q if search_q else None,
+        university=selected_uni if selected_uni and selected_uni != 'ALL' else None,
+        course=selected_course if selected_course and selected_course != 'ALL' else None
+    )
+
+    return render_template(
+        'admin.html',
+        active_page='admin',
+        stats=stats,
+        students=students,
+        total_students=len(students),
+        all_students_count=stats['total_students'],
+        search_q=search_q,
+        selected_uni=selected_uni,
+        selected_course=selected_course
+    )
+
+@app.route('/admin/export-csv')
+def admin_export_csv():
+    students = get_all_students()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Student ID', 'Name', 'Course', 'University', 'Registration Date', 'Experiments Count'])
+    for s in students:
+        writer.writerow([
+            s.get('student_id', ''),
+            s.get('name', ''),
+            s.get('course', ''),
+            s.get('university', ''),
+            s.get('created_at', ''),
+            s.get('experiment_count', 0)
+        ])
+
+    mem = io.BytesIO()
+    mem.write(output.getvalue().encode('utf-8'))
+    mem.seek(0)
+    output.close()
+
+    return send_file(
+        mem,
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='mat_vlab_students_roster.csv'
+    )
+
+@app.route('/admin/student/<student_id>/delete', methods=['POST'])
+def admin_delete_student(student_id):
+    success = delete_student_account(student_id)
+    if success:
+        flash(f"Student account '{student_id}' has been removed successfully.", "warning")
+    else:
+        flash(f"Failed to remove student account '{student_id}'.", "danger")
+    return redirect(url_for('admin_dashboard'))
 
 # ==========================================
 # WEB PAGE ROUTES
