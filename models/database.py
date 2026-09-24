@@ -534,7 +534,7 @@ def validate_student_id(student_id):
 
     sid = student_id.strip()
     if ' ' in sid or ' ' in student_id:
-        return False, "Spaces are not allowed in Student ID. Use only letters and numbers (e.g., Dhruva01, Rahul25)."
+        return False, "Spaces are not allowed in Student ID. Use only letters and numbers."
 
     if not re.match(r'^[a-zA-Z0-9]+$', sid):
         return False, "Student ID can only contain letters and numbers (no spaces or special symbols)."
@@ -598,7 +598,7 @@ def register_student(name, course, university, student_id, pin=None):
     if pin is not None and str(pin).strip() != '':
         pin_str = str(pin).strip()
         if not re.match(r'^\d{4,6}$', pin_str):
-            raise ValueError("Security PIN must be 4 to 6 digits (numbers only, e.g. 1234).")
+            raise ValueError("Security PIN must be 4 to 6 digits (numbers only).")
         pin_hash = generate_password_hash(pin_str)
     else:
         # Default fallback for programmatic creation if pin omitted

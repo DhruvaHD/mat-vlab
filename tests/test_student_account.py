@@ -364,5 +364,29 @@ class TestStudentAuthAndPrivateAdmin(unittest.TestCase):
         self.assertEqual(res_logout.status_code, 200)
         self.assertIn('Administrative Console', res_logout.data.decode('utf-8'))
 
+    def test_no_examples_in_login_or_create_page(self):
+        """Verify that login and create account pages do NOT show any examples in placeholders, buttons, or suggestions."""
+        # 1. Check Register Page
+        res_reg = self.client.get('/register')
+        self.assertEqual(res_reg.status_code, 200)
+        reg_html = res_reg.data.decode('utf-8')
+
+        self.assertNotIn('e.g.', reg_html)
+        self.assertNotIn('Dhruva01', reg_html)
+        self.assertNotIn('Rahul25', reg_html)
+        self.assertNotIn('Sindhu07', reg_html)
+        self.assertNotIn('example-id-btn', reg_html)
+        self.assertNotIn('universitySuggestions', reg_html)
+
+        # 2. Check Login Page
+        res_login = self.client.get('/login')
+        self.assertEqual(res_login.status_code, 200)
+        login_html = res_login.data.decode('utf-8')
+
+        self.assertNotIn('e.g.', login_html)
+        self.assertNotIn('Dhruva01', login_html)
+        self.assertNotIn('Rahul25', login_html)
+        self.assertNotIn('Sindhu07', login_html)
+
 if __name__ == '__main__':
     unittest.main()

@@ -43,7 +43,7 @@
               class="form-control form-control-lg fs-6" 
               id="name" 
               name="name" 
-              placeholder="e.g. Dhruva H D" 
+              placeholder="Enter your full name" 
               value="{{ form_data.name if form_data else '' }}" 
               required
               autocomplete="name"
@@ -79,24 +79,11 @@
               class="form-control form-control-lg fs-6" 
               id="university" 
               name="university" 
-              list="universitySuggestions"
-              placeholder="e.g. Pondicherry University, IIT Madras, NIT Trichy" 
+              placeholder="Enter your university or college" 
               value="{{ form_data.university if form_data else '' }}" 
               required
               autocomplete="organization"
             >
-            <datalist id="universitySuggestions">
-              <option value="Pondicherry University">
-              <option value="Indian Institute of Technology Madras">
-              <option value="National Institute of Technology Karnataka">
-              <option value="National Institute of Technology Tiruchirappalli">
-              <option value="Anna University">
-              <option value="Visvesvaraya Technological University">
-              <option value="RV College of Engineering">
-              <option value="PSG College of Technology">
-              <option value="Manipal Institute of Technology">
-              <option value="Vellore Institute of Technology">
-            </datalist>
             <div class="form-text text-muted small">Your affiliated university, institute, or college.</div>
           </div>
 
@@ -116,7 +103,7 @@
                 class="form-control fs-6 font-mono border-start-0" 
                 id="student_id" 
                 name="student_id" 
-                placeholder="e.g. Dhruva01, Dhruva123, Sindhu07, Rahul25" 
+                placeholder="Choose your unique Student ID" 
                 value="{{ form_data.student_id if form_data else '' }}" 
                 required
                 maxlength="20"
@@ -130,17 +117,6 @@
             <!-- Dynamic Availability Feedback -->
             <div id="idFeedback" class="mt-2 small" style="min-height: 22px;">
               <span class="text-muted"><i class="fas fa-info-circle me-1"></i>Letters and numbers only, 3–20 characters, no spaces.</span>
-            </div>
-
-            <!-- Rules & Examples -->
-            <div class="mt-3 pt-2 border-top border-secondary border-opacity-10">
-              <div class="d-flex align-items-center flex-wrap gap-2">
-                <span class="text-secondary small fw-semibold">Examples:</span>
-                <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2 small font-mono example-id-btn" data-id="Dhruva01">Dhruva01</button>
-                <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2 small font-mono example-id-btn" data-id="Dhruva123">Dhruva123</button>
-                <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2 small font-mono example-id-btn" data-id="Sindhu07">Sindhu07</button>
-                <button type="button" class="btn btn-xs btn-outline-primary py-0 px-2 small font-mono example-id-btn" data-id="Rahul25">Rahul25</button>
-              </div>
             </div>
           </div>
 
@@ -159,7 +135,7 @@
                 class="form-control fs-6 font-mono border-start-0" 
                 id="pin" 
                 name="pin" 
-                placeholder="e.g. 1234 or 567890" 
+                placeholder="Enter 4 to 6 digit PIN" 
                 inputmode="numeric" 
                 pattern="[0-9]{4,6}" 
                 minlength="4" 
@@ -291,13 +267,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   checkBtn.addEventListener('click', function() {
     checkAvailability(idInput.value);
-  });
-
-  document.querySelectorAll('.example-id-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      idInput.value = this.dataset.id;
-      checkAvailability(this.dataset.id);
-    });
   });
 });
 </script>
