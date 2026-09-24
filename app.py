@@ -22,7 +22,8 @@ from models.database import (
     register_student, authenticate_student, is_student_id_available,
     validate_student_id, get_student_by_id, get_student_stats,
     get_student_dashboard_stats, get_all_students, get_admin_stats,
-    get_admin_dashboard_data, delete_student_account, log_activity
+    get_admin_dashboard_data, delete_student_account, log_activity,
+    get_admin_credentials, verify_admin_login, update_admin_credentials
 )
 from calculations.tensile import (
     analyze_tensile_data, generate_simulation_data, calculate_cross_sectional_area
@@ -233,13 +234,15 @@ def admin_login():
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '').strip()
 
-        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        success, message = verify_admin_login(username, password)
+        if success:
             session['is_admin'] = True
+            session['admin_username'] = username
             flash("Administrator session authenticated.", "success")
             next_url = request.args.get('next') or url_for('admin_dashboard')
             return redirect(next_url)
         else:
-            flash("Invalid administrator credentials.", "danger")
+            flash(message, "danger")
             return render_template('admin_login.html', form_data={'username': username})
 
     return render_template('admin_login.html', form_data={})
@@ -248,6 +251,7 @@ def admin_login():
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('is_admin', None)
+    session.pop('admin_username', None)
     flash("Administrator session terminated.", "info")
     return redirect(url_for('admin_login'))
 
@@ -268,6 +272,8 @@ def admin_dashboard():
         course=selected_course if selected_course and selected_course != 'ALL' else None
     )
 
+    admin_creds = get_admin_credentials()
+
     return render_template(
         'admin.html',
         active_page='admin',
@@ -277,8 +283,41 @@ def admin_dashboard():
         all_students_count=data['total_students'],
         search_q=search_q,
         selected_uni=selected_uni,
-        selected_course=selected_course
+        selected_course=selected_course,
+        admin_creds=admin_creds
     )
+
+@app.route('/portal-admin/update-credentials', methods=['POST'])
+@app.route('/admin/update-credentials', methods=['POST'])
+@admin_required
+def admin_update_credentials_route():
+    """Allows admin to update their username and password directly."""
+    current_password = request.form.get('current_password', '').strip()
+    new_username = request.form.get('new_username', '').strip()
+    new_password = request.form.get('new_password', '').strip()
+    confirm_password = request.form.get('confirm_password', '').strip()
+
+    if not new_username:
+        flash("Username cannot be empty.", "danger")
+        return redirect(url_for('admin_dashboard'))
+
+    if not new_password or len(new_password) < 4:
+        flash("New password must be at least 4 characters.", "danger")
+        return redirect(url_for('admin_dashboard'))
+
+    if new_password != confirm_password:
+        flash("New password and confirmation do not match.", "danger")
+        return redirect(url_for('admin_dashboard'))
+
+    success, msg = update_admin_credentials(new_username, new_password, current_password=current_password)
+    if success:
+        session['admin_username'] = new_username
+        flash(f"Administrator credentials updated successfully! New login username: {new_username}", "success")
+    else:
+        flash(msg, "danger")
+
+    return redirect(url_for('admin_dashboard'))
+
 
 @app.route('/portal-admin/export-csv')
 @app.route('/admin/export-csv')

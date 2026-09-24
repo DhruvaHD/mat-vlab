@@ -7,14 +7,29 @@ import os
 import re
 import json
 
-# Add scratch/lib to path
-sys.path.insert(0, '/home/hd/.gemini/antigravity/scratch/lib')
-sys.path.insert(0, '/home/hd/.gemini/antigravity/scratch/mat-vlab')
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+SCRATCH_LIB = os.path.abspath(os.path.join(BASE_DIR, '..', 'lib'))
+if os.path.exists(SCRATCH_LIB) and SCRATCH_LIB not in sys.path:
+    sys.path.insert(0, SCRATCH_LIB)
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
+from models.database import init_db, register_student, is_student_id_available
 from app import app
 
 def run_audit():
-    client = app.test_client()
+    init_db()
+    is_avail, _ = is_student_id_available('AuditStudent01')
+    if is_avail:
+        register_student('Audit Student', 'B.Tech / B.E.', 'Audit University', 'AuditStudent01', '1234')
+
+    unauth_client = app.test_client()
+    auth_client = app.test_client()
+    with auth_client.session_transaction() as sess:
+        sess['student_id'] = 'AuditStudent01'
+        sess['student_name'] = 'Audit Student'
+        sess['course'] = 'B.Tech / B.E.'
+        sess['university'] = 'Audit University'
     passed = 0
     failed = 0
 
@@ -23,8 +38,17 @@ def run_audit():
     print("=" * 60)
 
     # 1. Test All Routes (HTTP 200)
-    routes = [
-        ('/', 'Home Page'),
+    # Auth landing is 200 for unauthenticated visitors
+    print("\n--- Route Availability Audit ---")
+    res_landing = unauth_client.get('/')
+    if res_landing.status_code == 200:
+        print("  [PASS] Authentication Landing Page (/) -> HTTP 200")
+        passed += 1
+    else:
+        print(f"  [FAIL] Authentication Landing Page (/) -> HTTP {res_landing.status_code}")
+        failed += 1
+
+    lab_routes = [
         ('/experiments', 'Experiments Directory'),
         ('/experiments/tensile', 'Tensile Hub (Flagship)'),
         ('/simulation', 'Virtual Simulation Studio'),
@@ -37,9 +61,8 @@ def run_audit():
         ('/about', 'About Laboratory')
     ]
 
-    print("\n--- Route Availability Audit ---")
-    for path, name in routes:
-        res = client.get(path)
+    for path, name in lab_routes:
+        res = auth_client.get(path)
         if res.status_code == 200:
             print(f"  [PASS] {name} ({path}) -> HTTP 200")
             passed += 1
@@ -49,6 +72,7 @@ def run_audit():
 
     # 2. Test API Endpoints
     print("\n--- API Endpoints Audit ---")
+    client = auth_client
     res_sim = client.get('/api/simulation-data?material=mild-steel&diameter=10.0&gauge_length=50.0')
     if res_sim.status_code == 200 and res_sim.is_json:
         print("  [PASS] GET /api/simulation-data -> HTTP 200 (Valid JSON)")

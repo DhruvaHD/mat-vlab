@@ -388,5 +388,73 @@ class TestStudentAuthAndPrivateAdmin(unittest.TestCase):
         self.assertNotIn('Rahul25', login_html)
         self.assertNotIn('Sindhu07', login_html)
 
+    def test_admin_credentials_update_and_customization(self):
+        """Verify admin can change username and password as wished and log in with new details."""
+        from models.database import verify_admin_login, update_admin_credentials, get_admin_credentials
+
+        # 1. Initially seeded with testadmin / testsecret2026
+        success, _ = verify_admin_login('testadmin', 'testsecret2026')
+        self.assertTrue(success)
+
+        # 2. Log in via web interface
+        login_res = self.client.post('/portal-admin/login', data={
+            'username': 'testadmin',
+            'password': 'testsecret2026'
+        }, follow_redirects=True)
+        self.assertEqual(login_res.status_code, 200)
+        self.assertIn('Change Admin Details', login_res.data.decode('utf-8'))
+
+        # 3. Attempt update with wrong current password -> fails
+        bad_pw_res = self.client.post('/portal-admin/update-credentials', data={
+            'current_password': 'wrongpassword',
+            'new_username': 'myCustomAdmin',
+            'new_password': 'newpassword123',
+            'confirm_password': 'newpassword123'
+        }, follow_redirects=True)
+        self.assertIn('Current administrator password is incorrect', bad_pw_res.data.decode('utf-8'))
+
+        # 4. Attempt update with mismatching confirmation -> fails
+        mismatch_res = self.client.post('/portal-admin/update-credentials', data={
+            'current_password': 'testsecret2026',
+            'new_username': 'myCustomAdmin',
+            'new_password': 'newpassword123',
+            'confirm_password': 'differentpassword'
+        }, follow_redirects=True)
+        self.assertIn('do not match', mismatch_res.data.decode('utf-8'))
+
+        # 5. Successfully update credentials
+        update_res = self.client.post('/portal-admin/update-credentials', data={
+            'current_password': 'testsecret2026',
+            'new_username': 'DhruvaAdmin',
+            'new_password': 'DhruvaSuperPass2026',
+            'confirm_password': 'DhruvaSuperPass2026'
+        }, follow_redirects=True)
+        self.assertIn('Administrator credentials updated successfully', update_res.data.decode('utf-8'))
+        self.assertIn('DhruvaAdmin', update_res.data.decode('utf-8'))
+
+        # 6. Verify in database
+        cred = get_admin_credentials()
+        self.assertEqual(cred['username'], 'DhruvaAdmin')
+
+        # 7. Log out first
+        self.client.get('/portal-admin/logout')
+
+        # 8. Old credentials no longer work
+        old_login_res = self.client.post('/portal-admin/login', data={
+            'username': 'testadmin',
+            'password': 'testsecret2026'
+        }, follow_redirects=True)
+        self.assertIn('Invalid administrator credentials', old_login_res.data.decode('utf-8'))
+
+        # 9. Log in with new credentials succeeds
+        new_login_res = self.client.post('/portal-admin/login', data={
+            'username': 'DhruvaAdmin',
+            'password': 'DhruvaSuperPass2026'
+        }, follow_redirects=True)
+        self.assertEqual(new_login_res.status_code, 200)
+        self.assertIn('MAT-VLAB ADMIN', new_login_res.data.decode('utf-8'))
+        self.assertIn('DhruvaAdmin', new_login_res.data.decode('utf-8'))
+
 if __name__ == '__main__':
     unittest.main()
+

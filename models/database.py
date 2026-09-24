@@ -185,6 +185,24 @@ def init_db():
     if 'student_id' not in quiz_cols:
         cursor.execute("ALTER TABLE quiz_results ADD COLUMN student_id TEXT")
 
+    # Admin credentials table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS admin_credentials (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        password_hash TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    cursor.execute('SELECT COUNT(*) as count FROM admin_credentials')
+    if cursor.fetchone()['count'] == 0:
+        default_user = os.environ.get('ADMIN_USERNAME', 'admin')
+        default_pass = os.environ.get('ADMIN_PASSWORD', 'matvlab_admin_2024')
+        cursor.execute('''
+        INSERT INTO admin_credentials (username, password_hash)
+        VALUES (?, ?)
+        ''', (default_user, generate_password_hash(default_pass)))
+
     conn.commit()
 
     # Seed data if tables are empty
@@ -910,4 +928,78 @@ def delete_student_account(student_id):
     conn.commit()
     conn.close()
     return True
+
+def get_admin_credentials():
+    """
+    Returns the active admin credentials dictionary or None.
+    """
+    conn = get_db_connection()
+    row = conn.execute('SELECT id, username, password_hash, updated_at FROM admin_credentials ORDER BY id DESC LIMIT 1').fetchone()
+    conn.close()
+    if row:
+        return dict(row)
+    return None
+
+def verify_admin_login(username, password):
+    """
+    Verifies admin credentials against the admin_credentials table.
+    Falls back to environment variables if table is empty.
+    Returns (True, "success") or (False, "error message").
+    """
+    if not username or not password:
+        return False, "Username and password are required."
+    
+    cred = get_admin_credentials()
+    if cred:
+        if cred['username'].strip().lower() == username.strip().lower() and check_password_hash(cred['password_hash'], password):
+            return True, "Login successful."
+        return False, "Invalid administrator credentials."
+    
+    # Fallback to env
+    env_user = os.environ.get('ADMIN_USERNAME', 'admin')
+    env_pass = os.environ.get('ADMIN_PASSWORD', 'matvlab_admin_2024')
+    if username.strip() == env_user and password == env_pass:
+        return True, "Login successful."
+    return False, "Invalid administrator credentials."
+
+def update_admin_credentials(new_username, new_password, current_password=None):
+    """
+    Updates the admin username and password.
+    If current_password is provided, verifies it first against existing credentials.
+    Returns (True, "Success message") or (False, "Error message").
+    """
+    if not new_username or not new_username.strip():
+        return False, "New admin username cannot be empty."
+    if not new_password or len(new_password) < 4:
+        return False, "New admin password must be at least 4 characters long."
+    
+    new_username = new_username.strip()
+    cred = get_admin_credentials()
+    
+    if cred and current_password is not None:
+        if not check_password_hash(cred['password_hash'], current_password):
+            return False, "Current administrator password is incorrect."
+    elif not cred and current_password is not None:
+        env_pass = os.environ.get('ADMIN_PASSWORD', 'matvlab_admin_2024')
+        if current_password != env_pass:
+            return False, "Current administrator password is incorrect."
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    new_hash = generate_password_hash(new_password)
+    if cred:
+        cursor.execute('''
+        UPDATE admin_credentials 
+        SET username = ?, password_hash = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        ''', (new_username, new_hash, cred['id']))
+    else:
+        cursor.execute('''
+        INSERT INTO admin_credentials (username, password_hash)
+        VALUES (?, ?)
+        ''', (new_username, new_hash))
+    conn.commit()
+    conn.close()
+    return True, "Administrator credentials successfully updated."
+
 
