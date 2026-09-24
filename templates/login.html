@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Student Login — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      
+      <!-- Card Container -->
+      <div class="lab-card p-4 p-md-5 shadow-sm border border-secondary border-opacity-25">
+        
+        <!-- Header -->
+        <div class="text-center mb-4">
+          <div class="brand-icon mx-auto mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+            <i class="fas fa-sign-in-alt"></i>
+          </div>
+          <span class="badge-lab mb-2">Simple &amp; Free Access</span>
+          <h2 class="fw-bold text-navy mb-2">Student Login</h2>
+          <p class="text-secondary small mb-0">
+            Enter your Student ID and affiliated University / College to access your personalized virtual laboratory dashboard.
+          </p>
+        </div>
+
+        <!-- Login Form -->
+        <form action="{{ url_for('login') }}" method="POST" id="studentLoginForm">
+          
+          <!-- 1. Student ID -->
+          <div class="mb-3">
+            <label for="student_id" class="form-label fw-bold text-navy small text-uppercase">
+              <i class="fas fa-id-card me-1 text-primary"></i> Student ID <span class="text-danger">*</span>
+            </label>
+            <div class="input-group input-group-lg">
+              <span class="input-group-text bg-white border-end-0 text-muted">
+                <i class="fas fa-user"></i>
+              </span>
+              <input 
+                type="text" 
+                class="form-control fs-6 font-mono border-start-0" 
+                id="student_id" 
+                name="student_id" 
+                placeholder="e.g. Dhruva01, Dhruva123, Sindhu07, Rahul25" 
+                value="{{ form_data.student_id if form_data else '' }}" 
+                required
+                autocomplete="username"
+                autofocus
+              >
+            </div>
+            <div class="form-text text-muted small">The unique ID you chose during registration.</div>
+          </div>
+
+          <!-- 2. University / College -->
+          <div class="mb-4">
+            <label for="university" class="form-label fw-bold text-navy small text-uppercase">
+              <i class="fas fa-university me-1 text-steel"></i> University / College <span class="text-danger">*</span>
+            </label>
+            <div class="input-group input-group-lg">
+              <span class="input-group-text bg-white border-end-0 text-muted">
+                <i class="fas fa-building"></i>
+              </span>
+              <input 
+                type="text" 
+                class="form-control fs-6 border-start-0" 
+                id="university" 
+                name="university" 
+                placeholder="e.g. National Institute of Technology" 
+                value="{{ form_data.university if form_data else '' }}" 
+                required
+                autocomplete="organization"
+              >
+            </div>
+            <div class="form-text text-muted small">Your registered institution name.</div>
+          </div>
+
+          <!-- Notice: Name not required -->
+          <div class="alert alert-info border-info border-opacity-25 py-2 px-3 small d-flex align-items-center gap-2 mb-4">
+            <i class="fas fa-info-circle text-info fs-5 flex-shrink-0"></i>
+            <div>
+              <strong>Quick Access:</strong> You do <em>not</em> need to enter your name. Your name and course will be automatically retrieved from your account upon login.
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="d-grid mb-3">
+            <button type="submit" class="btn btn-lab-primary btn-lg fs-6 py-2 fw-bold">
+              <i class="fas fa-sign-in-alt me-1"></i> Log In to Student Dashboard
+            </button>
+          </div>
+
+          <!-- Switch to Registration -->
+          <div class="text-center pt-2 border-top border-secondary border-opacity-10">
+            <p class="text-secondary small mb-0">
+              Don't have a Student ID yet? 
+              <a href="{{ url_for('register') }}" class="fw-bold text-navy text-decoration-none">
+                Register Free in 30 Seconds <i class="fas fa-arrow-right ms-1"></i>
+              </a>
+            </p>
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

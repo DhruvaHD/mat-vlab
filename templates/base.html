@@ -102,8 +102,48 @@
           </li>
         </ul>
 
-        <div class="d-flex align-items-center gap-2 pt-2 pt-lg-0">
-          <a href="{{ url_for('simulation') }}" class="btn btn-sm btn-nav-cta w-100 w-lg-auto">
+        <div class="d-flex align-items-center flex-wrap gap-2 pt-2 pt-lg-0">
+          {% if current_student %}
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-light dropdown-toggle d-flex align-items-center gap-2" type="button" id="studentMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-user-graduate text-cyan"></i>
+              <span class="fw-semibold text-truncate d-none d-sm-inline" style="max-width: 140px;">{{ current_student.name }}</span>
+              <span class="badge bg-cyan text-navy font-mono">{{ current_student.student_id }}</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border" aria-labelledby="studentMenuDropdown">
+              <li class="px-3 py-2 border-bottom bg-light">
+                <div class="fw-bold text-navy">{{ current_student.name }}</div>
+                <div class="small text-muted font-mono"><i class="fas fa-id-card me-1"></i>ID: <strong>{{ current_student.student_id }}</strong></div>
+                <div class="small text-muted text-truncate" style="max-width: 220px;" title="{{ current_student.course }}"><i class="fas fa-graduation-cap me-1"></i>{{ current_student.course }}</div>
+                <div class="small text-muted text-truncate" style="max-width: 220px;" title="{{ current_student.university }}"><i class="fas fa-university me-1"></i>{{ current_student.university }}</div>
+              </li>
+              <li>
+                <a class="dropdown-item py-2 {% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                  <i class="fas fa-tachometer-alt text-primary me-2"></i> Student Dashboard
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2 {% if active_page == 'my_experiments' %}active{% endif %}" href="{{ url_for('my_experiments') }}">
+                  <i class="fas fa-folder-open text-info me-2"></i> My Experiments
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <a class="dropdown-item py-2 text-danger" href="{{ url_for('logout') }}">
+                  <i class="fas fa-sign-out-alt me-2"></i> Log Out
+                </a>
+              </li>
+            </ul>
+          </div>
+          {% else %}
+          <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-light d-inline-flex align-items-center gap-1 {% if active_page == 'login' %}active{% endif %}">
+            <i class="fas fa-sign-in-alt"></i> Login
+          </a>
+          <a href="{{ url_for('register') }}" class="btn btn-sm btn-light text-navy fw-semibold d-inline-flex align-items-center gap-1 {% if active_page == 'register' %}active{% endif %}">
+            <i class="fas fa-user-plus"></i> Register
+          </a>
+          {% endif %}
+          <a href="{{ url_for('simulation') }}" class="btn btn-sm btn-nav-cta ms-lg-1">
             <i class="fas fa-play me-1"></i> Start Virtual Lab
           </a>
         </div>
@@ -113,6 +153,18 @@
 
   <!-- Main Content Wrapper -->
   <main class="flex-grow-1">
+    <div class="container pt-3">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show shadow-sm" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
     {% block content %}{% endblock %}
   </main>
 

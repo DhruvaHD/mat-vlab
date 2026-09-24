@@ -1,6 +1,7 @@
 import sqlite3
 import json
 import os
+import re
 from datetime import datetime
 
 def get_database_path():
@@ -125,6 +126,24 @@ def init_db():
         FOREIGN KEY (experiment_id) REFERENCES experiments (id) ON DELETE SET NULL
     )
     ''')
+
+    # Students table (unique student_id with COLLATE NOCASE, name, course, university)
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS students (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id TEXT UNIQUE NOT NULL COLLATE NOCASE,
+        name TEXT NOT NULL,
+        course TEXT NOT NULL,
+        university TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
+    # Ensure student_id column exists in experiments table
+    cursor.execute("PRAGMA table_info(experiments)")
+    columns = [col['name'] for col in cursor.fetchall()]
+    if 'student_id' not in columns:
+        cursor.execute("ALTER TABLE experiments ADD COLUMN student_id TEXT")
 
     conn.commit()
 
@@ -305,16 +324,18 @@ def get_material_by_id(material_id):
     return dict(material) if material else None
 
 # Experiment CRUD functions
-def save_experiment(data):
+def save_experiment(data, student_id=None):
     conn = get_db_connection()
     cursor = conn.cursor()
+
+    sid = student_id or data.get('student_id')
 
     cursor.execute('''
     INSERT INTO experiments (
         title, experiment_type, mode, material_name,
         original_diameter, original_gauge_length,
-        final_gauge_length, final_diameter, notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        final_gauge_length, final_diameter, notes, student_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         data.get('title', 'Tensile Test Experiment'),
         data.get('experiment_type', 'tensile'),
@@ -324,7 +345,8 @@ def save_experiment(data):
         float(data.get('original_gauge_length', 50.0)),
         float(data['final_gauge_length']) if data.get('final_gauge_length') else None,
         float(data['final_diameter']) if data.get('final_diameter') else None,
-        data.get('notes', '')
+        data.get('notes', ''),
+        sid
     ))
 
     experiment_id = cursor.lastrowid
@@ -391,20 +413,40 @@ def get_experiment_by_id(experiment_id):
     conn.close()
     return exp_dict
 
-def get_all_experiments():
+def get_all_experiments(student_id=None):
     conn = get_db_connection()
-    experiments = conn.execute('''
-    SELECT e.*, r.uts_mpa, r.youngs_modulus_gpa, r.elongation_pct,
-           (SELECT COUNT(*) FROM experiment_readings WHERE experiment_id = e.id) as readings_count
-    FROM experiments e
-    LEFT JOIN experiment_results r ON e.id = r.experiment_id
-    ORDER BY e.created_at DESC
-    ''').fetchall()
+    if student_id:
+        experiments = conn.execute('''
+        SELECT e.*, r.uts_mpa, r.youngs_modulus_gpa, r.elongation_pct,
+               (SELECT COUNT(*) FROM experiment_readings WHERE experiment_id = e.id) as readings_count
+        FROM experiments e
+        LEFT JOIN experiment_results r ON e.id = r.experiment_id
+        WHERE LOWER(e.student_id) = LOWER(?)
+        ORDER BY e.created_at DESC
+        ''', (student_id.strip(),)).fetchall()
+    else:
+        experiments = conn.execute('''
+        SELECT e.*, r.uts_mpa, r.youngs_modulus_gpa, r.elongation_pct,
+               (SELECT COUNT(*) FROM experiment_readings WHERE experiment_id = e.id) as readings_count
+        FROM experiments e
+        LEFT JOIN experiment_results r ON e.id = r.experiment_id
+        ORDER BY e.created_at DESC
+        ''').fetchall()
     conn.close()
     return [dict(e) for e in experiments]
 
-def delete_experiment(experiment_id):
+def delete_experiment(experiment_id, student_id=None):
     conn = get_db_connection()
+    if student_id:
+        # Check ownership
+        exp = conn.execute('SELECT id, student_id FROM experiments WHERE id = ?', (experiment_id,)).fetchone()
+        if not exp:
+            conn.close()
+            return False
+        if exp['student_id'] and exp['student_id'].lower() != student_id.lower():
+            conn.close()
+            return False
+
     conn.execute('DELETE FROM experiment_readings WHERE experiment_id = ?', (experiment_id,))
     conn.execute('DELETE FROM experiment_results WHERE experiment_id = ?', (experiment_id,))
     conn.execute('DELETE FROM quiz_results WHERE experiment_id = ?', (experiment_id,))
@@ -434,3 +476,169 @@ def save_quiz_result(experiment_id, experiment_type, score, total_questions):
     conn.commit()
     conn.close()
     return result_id
+
+# ==========================================
+# STUDENT ACCOUNT SYSTEM
+# ==========================================
+
+def validate_student_id(student_id):
+    """
+    Validates student ID rules:
+    - Unique (checked via is_student_id_available)
+    - Allow letters and numbers
+    - Do not allow spaces
+    - Keep it reasonably short (3 to 20 characters)
+    """
+    if not student_id or not isinstance(student_id, str):
+        return False, "Student ID cannot be empty."
+
+    sid = student_id.strip()
+    if ' ' in sid or ' ' in student_id:
+        return False, "Spaces are not allowed in Student ID. Use only letters and numbers (e.g., Dhruva01, Rahul25)."
+
+    if not re.match(r'^[a-zA-Z0-9]+$', sid):
+        return False, "Student ID can only contain letters and numbers (no spaces or special symbols)."
+
+    if len(sid) < 3:
+        return False, "Student ID must be at least 3 characters long."
+
+    if len(sid) > 20:
+        return False, "Student ID must be reasonably short (maximum 20 characters)."
+
+    return True, ""
+
+def is_student_id_available(student_id):
+    """
+    Checks if a student ID is valid and not already taken.
+    Returns (bool, message).
+    """
+    is_valid, err_msg = validate_student_id(student_id)
+    if not is_valid:
+        return False, err_msg
+
+    sid = student_id.strip()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT 1 FROM students WHERE LOWER(student_id) = LOWER(?)', (sid,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if row:
+        return False, f"The Student ID '{sid}' is already taken. Please choose another ID."
+    return True, f"The Student ID '{sid}' is available!"
+
+def register_student(name, course, university, student_id):
+    """
+    Registers a new student.
+    REGISTRATION FIELDS:
+    - Name
+    - Course
+    - University / College
+    - Student ID (chosen by student)
+    """
+    name = (name or '').strip()
+    course = (course or '').strip()
+    university = (university or '').strip()
+    student_id = (student_id or '').strip()
+
+    if not name:
+        raise ValueError("Please enter your Full Name.")
+    if not course:
+        raise ValueError("Please enter your Course / Degree Program.")
+    if not university:
+        raise ValueError("Please enter your University / College.")
+    if not student_id:
+        raise ValueError("Please choose a Student ID.")
+
+    is_avail, msg = is_student_id_available(student_id)
+    if not is_avail:
+        raise ValueError(msg)
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+        INSERT INTO students (student_id, name, course, university)
+        VALUES (?, ?, ?, ?)
+        ''', (student_id, name, course, university))
+        conn.commit()
+        cursor.execute('SELECT * FROM students WHERE id = ?', (cursor.lastrowid,))
+        student = dict(cursor.fetchone())
+        conn.close()
+        return student
+    except sqlite3.IntegrityError:
+        conn.close()
+        raise ValueError(f"The Student ID '{student_id}' is already taken. Please choose another ID.")
+
+def authenticate_student(student_id, university):
+    """
+    Logs in an existing student using Student ID and University / College.
+    LOGIN FIELDS:
+    - Student ID
+    - University / College
+    (Does NOT require student name during login)
+    """
+    student_id = (student_id or '').strip()
+    university = (university or '').strip()
+
+    if not student_id:
+        raise ValueError("Please enter your Student ID.")
+    if not university:
+        raise ValueError("Please enter your University / College.")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM students WHERE LOWER(student_id) = LOWER(?)', (student_id,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        raise ValueError(f"Student ID '{student_id}' was not found. Please verify your ID or create a free student account.")
+
+    student = dict(row)
+    # Check university match (case-insensitive and trimmed)
+    if student['university'].strip().lower() != university.lower():
+        raise ValueError("The University / College entered does not match our records for this Student ID.")
+
+    return student
+
+def get_student_by_id(student_id):
+    """
+    Retrieves student account details by student_id.
+    """
+    if not student_id:
+        return None
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM students WHERE LOWER(student_id) = LOWER(?)', (student_id.strip(),))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+def get_student_stats(student_id):
+    """
+    Returns summary statistics for a student's dashboard.
+    """
+    if not student_id:
+        return {'total_experiments': 0, 'simulation_count': 0, 'manual_count': 0, 'last_experiment_at': None}
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+    SELECT 
+        COUNT(*) as total_experiments,
+        SUM(CASE WHEN mode = 'VIRTUAL_SIMULATION' THEN 1 ELSE 0 END) as simulation_count,
+        SUM(CASE WHEN mode = 'MANUAL_ENTRY' THEN 1 ELSE 0 END) as manual_count,
+        MAX(created_at) as last_experiment_at
+    FROM experiments
+    WHERE LOWER(student_id) = LOWER(?)
+    ''', (student_id.strip(),))
+    row = cursor.fetchone()
+    stats = {
+        'total_experiments': row['total_experiments'] or 0,
+        'simulation_count': row['simulation_count'] or 0,
+        'manual_count': row['manual_count'] or 0,
+        'last_experiment_at': row['last_experiment_at']
+    }
+    conn.close()
+    return stats

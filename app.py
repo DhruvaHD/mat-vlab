@@ -10,12 +10,14 @@ if os.path.exists(SCRATCH_LIB) and SCRATCH_LIB not in sys.path:
 # Ensure matplotlib writes to writable directory
 os.environ['MPLCONFIGDIR'] = '/tmp'
 
-from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
+from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, session, flash
 from config import Config
 from models.database import (
     init_db, get_all_materials, get_material_by_slug,
     save_experiment, get_experiment_by_id, get_all_experiments, delete_experiment,
-    get_quiz_questions, save_quiz_result
+    get_quiz_questions, save_quiz_result,
+    register_student, authenticate_student, is_student_id_available,
+    validate_student_id, get_student_by_id, get_student_stats
 )
 from calculations.tensile import (
     analyze_tensile_data, generate_simulation_data, calculate_cross_sectional_area
@@ -40,6 +42,113 @@ if app.config.get('ENABLE_PROXY_FIX', True):
 # Auto-initialize database on startup
 with app.app_context():
     init_db()
+
+# Context processor to make student details available globally in all templates
+@app.context_processor
+def inject_student_context():
+    student_id = session.get('student_id')
+    student = None
+    if student_id:
+        student = get_student_by_id(student_id)
+        if not student:
+            session.pop('student_id', None)
+            session.pop('student_name', None)
+            session.pop('course', None)
+            session.pop('university', None)
+    return {
+        'current_student': student,
+        'is_logged_in': bool(student)
+    }
+
+# ==========================================
+# STUDENT AUTHENTICATION & DASHBOARD ROUTES
+# ==========================================
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        course = request.form.get('course', '').strip()
+        university = request.form.get('university', '').strip()
+        student_id = request.form.get('student_id', '').strip()
+
+        try:
+            student = register_student(name, course, university, student_id)
+            session['student_id'] = student['student_id']
+            session['student_name'] = student['name']
+            session['course'] = student['course']
+            session['university'] = student['university']
+            flash(f"Welcome to MAT-VLAB, {student['name']}! Your student account has been created with ID: {student['student_id']}.", 'success')
+            return redirect(url_for('dashboard'))
+        except ValueError as e:
+            flash(str(e), 'danger')
+            return render_template(
+                'register.html',
+                active_page='register',
+                form_data={'name': name, 'course': course, 'university': university, 'student_id': student_id}
+            )
+
+    # If already logged in, redirect to dashboard
+    if session.get('student_id'):
+        return redirect(url_for('dashboard'))
+    return render_template('register.html', active_page='register', form_data={})
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        student_id = request.form.get('student_id', '').strip()
+        university = request.form.get('university', '').strip()
+
+        try:
+            # Login only requires Student ID and University / College (NO name required)
+            student = authenticate_student(student_id, university)
+            session['student_id'] = student['student_id']
+            session['student_name'] = student['name']
+            session['course'] = student['course']
+            session['university'] = student['university']
+            flash(f"Welcome back, {student['name']}!", 'success')
+            return redirect(url_for('dashboard'))
+        except ValueError as e:
+            flash(str(e), 'danger')
+            return render_template(
+                'login.html',
+                active_page='login',
+                form_data={'student_id': student_id, 'university': university}
+            )
+
+    # If already logged in, redirect to dashboard
+    if session.get('student_id'):
+        return redirect(url_for('dashboard'))
+    return render_template('login.html', active_page='login', form_data={})
+
+@app.route('/logout')
+def logout():
+    name = session.get('student_name')
+    session.clear()
+    flash(f"You have been successfully logged out. Have a productive day{', ' + name if name else ''}!", 'info')
+    return redirect(url_for('login'))
+
+@app.route('/dashboard')
+def dashboard():
+    student_id = session.get('student_id')
+    if not student_id:
+        flash("Please log in with your Student ID to access your personal dashboard.", "info")
+        return redirect(url_for('login'))
+
+    student = get_student_by_id(student_id)
+    if not student:
+        session.clear()
+        return redirect(url_for('login'))
+
+    stats = get_student_stats(student_id)
+    student_exps = get_all_experiments(student_id=student_id)
+    return render_template(
+        'dashboard.html',
+        active_page='dashboard',
+        student=student,
+        stats=stats,
+        experiments=student_exps
+    )
 
 # ==========================================
 # WEB PAGE ROUTES
@@ -82,6 +191,9 @@ def compare():
 
 @app.route('/my-experiments')
 def my_experiments():
+    student_id = session.get('student_id')
+    if student_id:
+        return redirect(url_for('dashboard'))
     exp_list = get_all_experiments()
     return render_template('my_experiments.html', active_page='my_experiments', experiments=exp_list)
 
@@ -150,6 +262,68 @@ def api_simulation_data():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# ==========================================
+# STUDENT REST API ENDPOINTS
+# ==========================================
+
+@app.route('/api/student/check-id', methods=['GET'])
+def api_check_student_id():
+    sid = request.args.get('student_id') or request.args.get('id', '')
+    is_avail, message = is_student_id_available(sid)
+    return jsonify({
+        'available': is_avail,
+        'message': message,
+        'student_id': sid
+    })
+
+@app.route('/api/student/register', methods=['POST'])
+def api_student_register():
+    try:
+        data = request.get_json() or {}
+        name = data.get('name', '').strip()
+        course = data.get('course', '').strip()
+        university = data.get('university', '').strip()
+        student_id = data.get('student_id', '').strip()
+
+        student = register_student(name, course, university, student_id)
+        session['student_id'] = student['student_id']
+        session['student_name'] = student['name']
+        session['course'] = student['course']
+        session['university'] = student['university']
+        return jsonify({'success': True, 'student': student})
+    except ValueError as ve:
+        return jsonify({'success': False, 'error': str(ve)}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/student/login', methods=['POST'])
+def api_student_login():
+    try:
+        data = request.get_json() or {}
+        student_id = data.get('student_id', '').strip()
+        university = data.get('university', '').strip()
+
+        student = authenticate_student(student_id, university)
+        session['student_id'] = student['student_id']
+        session['student_name'] = student['name']
+        session['course'] = student['course']
+        session['university'] = student['university']
+        return jsonify({'success': True, 'student': student})
+    except ValueError as ve:
+        return jsonify({'success': False, 'error': str(ve)}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/student/me', methods=['GET'])
+def api_student_me():
+    student_id = session.get('student_id')
+    if not student_id:
+        return jsonify({'logged_in': False, 'student': None})
+    student = get_student_by_id(student_id)
+    if not student:
+        return jsonify({'logged_in': False, 'student': None})
+    return jsonify({'logged_in': True, 'student': student})
+
 @app.route('/api/save', methods=['POST'])
 def api_save():
     try:
@@ -157,7 +331,8 @@ def api_save():
         if not data:
             return jsonify({'error': 'Missing payload to save.'}), 400
 
-        experiment_id = save_experiment(data)
+        student_id = session.get('student_id') or data.get('student_id')
+        experiment_id = save_experiment(data, student_id=student_id)
         return jsonify({'success': True, 'experiment_id': experiment_id})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -165,7 +340,8 @@ def api_save():
 @app.route('/api/experiment/<int:experiment_id>', methods=['GET', 'DELETE'])
 def api_experiment_detail(experiment_id):
     if request.method == 'DELETE':
-        success = delete_experiment(experiment_id)
+        student_id = session.get('student_id')
+        success = delete_experiment(experiment_id, student_id=student_id)
         return jsonify({'success': success})
 
     exp = get_experiment_by_id(experiment_id)
@@ -193,6 +369,16 @@ def download_report_by_id(experiment_id):
     if not exp:
         return "Experiment not found", 404
 
+    # Attach student profile if available
+    sid = exp.get('student_id') or session.get('student_id')
+    if sid:
+        st = get_student_by_id(sid)
+        if st:
+            exp['student_name'] = st['name']
+            exp['student_id'] = st['student_id']
+            exp['student_course'] = st['course']
+            exp['student_university'] = st['university']
+
     pdf_buffer = generate_tensile_pdf(exp)
     filename = f"MAT_VLAB_Report_Exp{experiment_id}_{(exp.get('material_name', 'tensile')).replace(' ', '_')}.pdf"
     return send_file(
@@ -208,6 +394,15 @@ def api_generate_pdf():
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Missing data for PDF generation'}), 400
+
+        sid = data.get('student_id') or session.get('student_id')
+        if sid:
+            st = get_student_by_id(sid)
+            if st:
+                data['student_name'] = st['name']
+                data['student_id'] = st['student_id']
+                data['student_course'] = st['course']
+                data['student_university'] = st['university']
 
         pdf_buffer = generate_tensile_pdf(data)
         filename = f"MAT_VLAB_Report_{(data.get('material_name', 'tensile')).replace(' ', '_')}.pdf"

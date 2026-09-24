@@ -157,6 +157,25 @@ def generate_tensile_pdf(experiment_data):
         ]
     ]
 
+    # Include Student Details if student account is attached
+    student_name = experiment_data.get('student_name')
+    student_id = experiment_data.get('student_id')
+    student_course = experiment_data.get('student_course')
+    student_university = experiment_data.get('student_university')
+
+    if student_name or student_id:
+        student_rows = [
+            [
+                Paragraph("<b>Student Name:</b>", body_style), Paragraph(str(student_name or 'N/A'), body_style),
+                Paragraph("<b>Student ID:</b>", body_style), Paragraph(str(student_id or 'N/A'), body_style)
+            ],
+            [
+                Paragraph("<b>Course / Program:</b>", body_style), Paragraph(str(student_course or 'Materials Science & Technology'), body_style),
+                Paragraph("<b>University / College:</b>", body_style), Paragraph(str(student_university or 'Engineering College'), body_style)
+            ]
+        ]
+        meta_data = student_rows + meta_data
+
     meta_table = Table(meta_data, colWidths=[130, 130, 130, 130])
     meta_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8fafc')),
