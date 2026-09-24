@@ -66,17 +66,29 @@ class TestStudentAccountSystem(unittest.TestCase):
         """Verify registration and clear error message when chosen ID is already taken."""
         from models.database import register_student, is_student_id_available
 
-        # 1. Pre-seeded Dhruva01 check
+        # 1. Register a real student: Dhruva H D
+        st = register_student(
+            name='Dhruva H D',
+            course='B.Tech',
+            university='Pondicherry University',
+            student_id='Dhruva01'
+        )
+        self.assertEqual(st['student_id'], 'Dhruva01')
+        self.assertEqual(st['name'], 'Dhruva H D')
+        self.assertEqual(st['course'], 'B.Tech')
+        self.assertEqual(st['university'], 'Pondicherry University')
+
+        # 2. Availability check on taken ID
         avail, msg = is_student_id_available('Dhruva01')
         self.assertFalse(avail)
         self.assertEqual(msg, "The Student ID 'Dhruva01' is already taken. Please choose another ID.")
 
-        # 2. Case-insensitive collision check
+        # 3. Case-insensitive collision check
         avail_lower, msg_lower = is_student_id_available('dhruva01')
         self.assertFalse(avail_lower)
         self.assertIn("already taken", msg_lower)
 
-        # 3. Attempt duplicate registration on taken ID must raise ValueError with clear message
+        # 4. Attempt duplicate registration on taken ID must raise ValueError with clear message
         with self.assertRaises(ValueError) as ctx:
             register_student(
                 name='Another Student',
@@ -86,48 +98,43 @@ class TestStudentAccountSystem(unittest.TestCase):
             )
         self.assertIn("already taken", str(ctx.exception))
 
-        # 4. Register a new unique student
-        st = register_student(
-            name='Tanvi Sharma',
-            course='B.Tech Materials Science',
-            university='Delhi Technological University',
-            student_id='Tanvi88'
+        # 5. Register another unique student
+        st2 = register_student(
+            name='Rahul K',
+            course='B.Tech',
+            university='XYZ University',
+            student_id='Rahul25'
         )
-        self.assertEqual(st['student_id'], 'Tanvi88')
-        self.assertEqual(st['name'], 'Tanvi Sharma')
-        self.assertEqual(st['course'], 'B.Tech Materials Science')
-        self.assertEqual(st['university'], 'Delhi Technological University')
-
-        # Now Tanvi88 is taken
-        avail_new, _ = is_student_id_available('Tanvi88')
-        self.assertFalse(avail_new)
+        self.assertEqual(st2['student_id'], 'Rahul25')
+        self.assertEqual(st2['name'], 'Rahul K')
 
     def test_login_without_requiring_name(self):
         """Verify login requires ONLY Student ID and University (does NOT require name)."""
-        from models.database import authenticate_student
+        from models.database import register_student, authenticate_student
 
-        # 1. Login with pre-seeded Dhruva01 + Pondicherry University (NO NAME)
-        student = authenticate_student(student_id='Dhruva01', university='Pondicherry University')
+        # Register Sindhu07
+        register_student(
+            name='Sindhu K',
+            course='B.Tech Materials Science',
+            university='National Institute of Technology',
+            student_id='Sindhu07'
+        )
+
+        # 1. Login with Student ID + University (NO NAME)
+        student = authenticate_student(student_id='Sindhu07', university='National Institute of Technology')
         self.assertIsNotNone(student)
-        self.assertEqual(student['name'], 'Dhruva H D')
-        self.assertEqual(student['course'], 'B.Tech')
-        self.assertEqual(student['university'], 'Pondicherry University')
+        self.assertEqual(student['name'], 'Sindhu K')
+        self.assertEqual(student['course'], 'B.Tech Materials Science')
+        self.assertEqual(student['university'], 'National Institute of Technology')
 
-        # 2. Login with pre-seeded Rahul25 + XYZ University (NO NAME)
-        student_rahul = authenticate_student(student_id='Rahul25', university='XYZ University')
-        self.assertIsNotNone(student_rahul)
-        self.assertEqual(student_rahul['name'], 'Rahul K')
-        self.assertEqual(student_rahul['course'], 'B.Tech')
-        self.assertEqual(student_rahul['university'], 'XYZ University')
-
-        # 3. Wrong university rejects login
+        # 2. Wrong university rejects login
         with self.assertRaises(ValueError) as ctx:
-            authenticate_student(student_id='Dhruva01', university='Other College')
+            authenticate_student(student_id='Sindhu07', university='Other College')
         self.assertIn("does not match", str(ctx.exception))
 
-        # 4. Unknown Student ID rejects login
+        # 3. Unknown Student ID rejects login
         with self.assertRaises(ValueError) as ctx:
-            authenticate_student(student_id='Unknown99', university='Pondicherry University')
+            authenticate_student(student_id='Unknown99', university='National Institute of Technology')
         self.assertIn("not found", str(ctx.exception))
 
     def test_web_routes_registration_and_dashboard_display(self):
@@ -197,7 +204,13 @@ class TestStudentAccountSystem(unittest.TestCase):
         self.assertIn("spaces", data['message'].lower())
 
     def test_admin_portal_and_students_roster(self):
-        """Verify MAT-VLAB ADMIN dashboard, Total Students: 247, and students table."""
+        """Verify MAT-VLAB ADMIN dashboard and real registered students table."""
+        from models.database import register_student
+
+        # Register real students
+        register_student('Dhruva H D', 'B.Tech', 'Pondicherry University', 'Dhruva01')
+        register_student('Rahul K', 'B.Tech', 'XYZ University', 'Rahul25')
+
         res = self.client.get('/admin')
         self.assertEqual(res.status_code, 200)
         content = res.data.decode('utf-8')
@@ -205,9 +218,9 @@ class TestStudentAccountSystem(unittest.TestCase):
         # 1. Headline & Total Students count
         self.assertIn('MAT-VLAB ADMIN', content)
         self.assertIn('Total Students', content)
-        self.assertIn('247', content)
+        self.assertIn('2', content)
 
-        # 2. Key students from specification
+        # 2. Real registered students from specification
         self.assertIn('Dhruva H D', content)
         self.assertIn('Dhruva01', content)
         self.assertIn('Pondicherry University', content)

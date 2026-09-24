@@ -150,24 +150,8 @@ def init_db():
     # Seed data if tables are empty
     seed_materials(conn)
     seed_quiz_questions(conn)
-    seed_students(conn)
 
     conn.close()
-
-def seed_students(conn):
-    cursor = conn.cursor()
-    cursor.execute('SELECT COUNT(*) as count FROM students')
-    if cursor.fetchone()['count'] == 0:
-        seed_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data', 'students_seed.json')
-        if os.path.exists(seed_file):
-            with open(seed_file, 'r') as f:
-                students = json.load(f)
-                for s in students:
-                    cursor.execute('''
-                    INSERT INTO students (name, student_id, course, university)
-                    VALUES (?, ?, ?, ?)
-                    ''', (s['name'], s['student_id'], s['course'], s['university']))
-            conn.commit()
 
 def seed_materials(conn):
     cursor = conn.cursor()

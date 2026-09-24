@@ -215,6 +215,22 @@
             </td>
           </tr>
           {% endfor %}
+          {% if not students or students|length == 0 %}
+          <tr>
+            <td colspan="7" class="text-center py-5">
+              <div class="mode-card-icon mx-auto mb-3" style="width: 54px; height: 54px;">
+                <i class="fas fa-user-graduate text-muted"></i>
+              </div>
+              <h5 class="fw-bold text-navy mb-1">No Students Registered Yet</h5>
+              <p class="text-secondary small mb-3">
+                Only students who actually register with their custom Student ID will appear in this administrative roster.
+              </p>
+              <a href="{{ url_for('register') }}" class="btn btn-sm btn-lab-primary">
+                <i class="fas fa-user-plus me-1"></i> Register Student
+              </a>
+            </td>
+          </tr>
+          {% endif %}
         </tbody>
       </table>
     </div>
