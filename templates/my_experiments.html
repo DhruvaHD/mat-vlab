@@ -6,10 +6,10 @@
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
     <div>
-      <span class="badge-lab mb-2">Persistent Database Storage</span>
+      <span class="badge-lab mb-2">Active Session Lab Portfolio</span>
       <h1 class="fw-bold text-navy fs-2 mb-0">My Laboratory Experiments</h1>
       <p class="text-secondary small mb-0">
-        Review your saved tensile and hardness simulations and physical laboratory test runs stored in SQLite.
+        Review your saved tensile and hardness simulations and physical laboratory test runs performed during your session.
       </p>
     </div>
 
@@ -29,20 +29,35 @@
     </div>
   </div>
 
-  {% if not current_student %}
-  <div class="alert alert-info border-info border-opacity-25 d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4 p-3 shadow-sm">
-    <div class="d-flex align-items-center gap-2">
-      <i class="fas fa-user-graduate text-primary fs-4"></i>
+  <!-- Session Scope Notice Banner -->
+  <div class="alert alert-info border-info border-opacity-25 d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 p-3 shadow-sm rounded-3">
+    <div class="d-flex align-items-center gap-3">
+      <div class="p-2 rounded bg-info bg-opacity-10 text-info fs-4">
+        <i class="fas fa-info-circle"></i>
+      </div>
       <div>
-        <strong>Personalized Student Portfolio:</strong> Log in with your Student ID to save experiments under your name and export certified laboratory reports.
+        <div class="fw-bold text-navy">
+          Active Laboratory Session:
+          {% if current_student %}
+            <span class="text-primary">{{ current_student.student_name }}</span>
+            <span class="text-secondary fw-normal">({{ current_student.university }})</span>
+          {% else %}
+            <span class="text-secondary">Guest Student</span>
+          {% endif %}
+        </div>
+        <div class="text-secondary small mt-1">
+          These experiment records belong to your current active laboratory session. To preserve records across sessions, export PDF reports or have your administrator review the central usage logs.
+        </div>
       </div>
     </div>
-    <div class="d-flex gap-2">
-      <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-primary">Log In</a>
-      <a href="{{ url_for('register') }}" class="btn btn-sm btn-primary">Register Free</a>
+    {% if not current_student %}
+    <div>
+      <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-primary">
+        <i class="fas fa-id-card me-1"></i> Set Student Identification
+      </a>
     </div>
+    {% endif %}
   </div>
-  {% endif %}
 
   <!-- Tabbed Navigation between Modules -->
   <ul class="nav nav-pills mb-4 gap-2" id="expTabs" role="tablist">

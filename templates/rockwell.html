@@ -112,7 +112,7 @@
             <li class="mb-1"><strong>Unloading to Minor Load ($F_0$):</strong> The major load is released while the minor load is maintained. Elastic deformation recovers, leaving permanent plastic depth ($h_2$). The net permanent increase is $e = h_2 - h_0$.</li>
           </ol>
 
-          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 font-mono text-center fs-5 text-navy mb-2">
+          <div class="math-formula-box p-3 bg-light rounded border border-secondary border-opacity-25 text-center fs-5 text-navy mb-2">
             $$HR = N - \frac{e}{0.002\text{ mm}}$$
           </div>
           <div class="text-center small text-muted">
@@ -584,11 +584,11 @@
         <h3 class="fw-bold text-navy fs-4 mb-0">Step-by-Step Mathematical Calculation</h3>
       </div>
 
-      <div class="p-3 bg-light rounded border border-secondary border-opacity-25 font-mono small mb-3">
-        <div class="text-secondary mb-1">Example: Hardened Medium Carbon Steel on Rockwell Scale C (150 kgf total load):</div>
-        <div class="text-dark">1. Recorded Dial Reading: $HRC = 48.5$</div>
-        <div class="text-dark">2. Net permanent indentation depth: $e = (N - HRC) \cdot 0.002\text{ mm} = (100 - 48.5) \cdot 0.002 = 51.5 \cdot 0.002 = \mathbf{0.1030\text{ mm}}\ (103\ \mu\text{m})$</div>
-        <div class="text-dark">3. Minimum Specimen Thickness: $t_{min} = 10 \cdot e = 10 \cdot 0.1030 = \mathbf{1.03\text{ mm}}$</div>
+      <div class="p-3 bg-light rounded border border-secondary border-opacity-25 small mb-3">
+        <div class="text-secondary fw-semibold mb-2">Example: Hardened Medium Carbon Steel on Rockwell Scale C (150 kgf total load):</div>
+        <div class="text-dark mb-2">1. Recorded Dial Reading: $HRC = 48.5$</div>
+        <div class="text-dark mb-2">2. Net permanent indentation depth: $e = (N - HRC) \cdot 0.002\text{ mm} = (100 - 48.5) \cdot 0.002 = \mathbf{0.1030\text{ mm}} \ (103\ \mu\text{m})$</div>
+        <div class="text-dark mb-2">3. Minimum Specimen Thickness: $t_{min} = 10 \cdot e = 10 \cdot 0.1030 = \mathbf{1.03\text{ mm}}$</div>
         <div class="text-dark">4. Standard Designation: $\mathbf{48.5\text{ HRC}}$</div>
       </div>
     </div>
@@ -853,6 +853,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             rStartTestBtn.disabled = false;
             rSaveBtn.disabled = false;
+            if (typeof window.renderMath === 'function') window.renderMath();
             showToast('Rockwell simulation complete!', 'success');
           });
       }, 1400);
@@ -1013,6 +1014,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       const meanD = depths.reduce((a,b) => a+b, 0) / depths.length;
       document.getElementById('rmMeanDepth').textContent = `${meanD.toFixed(4)} mm`;
+      if (typeof window.renderMath === 'function') window.renderMath();
     }
   }
 
@@ -1109,6 +1111,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         }
         if (expBox) expBox.classList.remove('d-none');
+        if (typeof window.renderMath === 'function') window.renderMath(card);
       });
 
       const pct = Math.round((score / total) * 100);
@@ -1131,6 +1134,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (res.success) showToast(`Quiz submitted! Your score: ${score}/${total}`, 'success');
       });
     });
+  }
+
+  // Ensure MathJax renders when user clicks quick navigation anchors
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', () => {
+      setTimeout(() => {
+        if (typeof window.renderMath === 'function') window.renderMath();
+      }, 50);
+    });
+  });
+
+  // Explicitly trigger MathJax typesetting for Rockwell formulas
+  if (typeof window.renderMath === 'function') {
+    window.renderMath();
   }
 
 });

@@ -105,7 +105,7 @@
           <p class="text-secondary small leading-relaxed">
             After the load is released, a spherical cap indentation remains. The curved contact surface area ($A$) of this impression is:
           </p>
-          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 font-mono text-center fs-5 text-navy mb-3">
+          <div class="math-formula-box p-3 bg-light rounded border border-secondary border-opacity-25 text-center fs-5 text-navy mb-3">
             $$HBW = \frac{2P}{\pi D \left(D - \sqrt{D^2 - d^2}\right)}$$
           </div>
           <div class="small text-muted mb-2">
@@ -626,13 +626,13 @@
         <h3 class="fw-bold text-navy fs-4 mb-0">Step-by-Step Mathematical Calculation</h3>
       </div>
 
-      <div class="p-3 bg-light rounded border border-secondary border-opacity-25 font-mono small mb-3">
-        <div class="text-secondary mb-1">Example Evaluation for Mild Steel under 3000 kgf load ($D = 10\text{ mm}$, $d = 5.18\text{ mm}$):</div>
-        <div class="text-dark">1. Calculate term: $\sqrt{D^2 - d^2} = \sqrt{10.0^2 - 5.18^2} = \sqrt{100 - 26.8324} = \sqrt{73.1676} = 8.5538\text{ mm}$</div>
-        <div class="text-dark">2. Denominator: $\pi \cdot D \cdot (D - \sqrt{D^2 - d^2}) = 3.14159 \cdot 10.0 \cdot (10.0 - 8.5538) = 31.4159 \cdot 1.4462 = 45.4338\text{ mm}^2$</div>
-        <div class="text-dark">3. Brinell Hardness: $HBW = \frac{2 \cdot 3000}{45.4338} = \frac{6000}{45.4338} = \mathbf{132.1\text{ HBW}}$</div>
-        <div class="text-dark">4. Indentation Depth: $h = \frac{D - \sqrt{D^2 - d^2}}{2} = \frac{10.0 - 8.5538}{2} = \mathbf{0.7231\text{ mm}}$</div>
-        <div class="text-dark">5. Minimum Specimen Thickness: $t_{min} = 8 \cdot h = 8 \cdot 0.7231 = \mathbf{5.78\text{ mm}}$</div>
+      <div class="p-3 bg-light rounded border border-secondary border-opacity-25 small mb-3">
+        <div class="text-secondary fw-semibold mb-2">Example Evaluation for Mild Steel under 3000 kgf load ($D = 10\text{ mm}$, $d = 5.18\text{ mm}$):</div>
+        <div class="text-dark mb-2">1. Geometric parameter: $\sqrt{D^2 - d^2} = \sqrt{10.0^2 - 5.18^2} = \sqrt{100 - 26.8324} = \sqrt{73.1676} = 8.5538\text{ mm}$</div>
+        <div class="text-dark mb-2">2. Spherical cap denominator: $\pi \cdot D \cdot (D - \sqrt{D^2 - d^2}) = 3.14159 \cdot 10.0 \cdot (10.0 - 8.5538) = 31.4159 \cdot 1.4462 = 45.4338\text{ mm}^2$</div>
+        <div class="text-dark mb-2">3. Brinell Hardness: $HBW = \frac{2 \cdot 3000}{45.4338} = \frac{6000}{45.4338} = \mathbf{132.1\text{ HBW}}$</div>
+        <div class="text-dark mb-2">4. Indentation Depth: $h = \frac{D - \sqrt{D^2 - d^2}}{2} = \frac{10.0 - 8.5538}{2} = \mathbf{0.7231\text{ mm}}$</div>
+        <div class="text-dark mb-2">5. Minimum Specimen Thickness: $t_{min} = 8 \cdot h = 8 \cdot 0.7231 = \mathbf{5.78\text{ mm}}$</div>
         <div class="text-dark">6. Tensile Strength Estimation: $\sigma_{uts} \approx 3.45 \cdot 132.1 = \mathbf{455.7\text{ MPa}}$</div>
       </div>
     </div>
@@ -883,6 +883,7 @@ document.addEventListener('DOMContentLoaded', function() {
         vStatusBadge.textContent = 'Test Completed';
         vStartBtn.disabled = false;
         vSaveBtn.disabled = false;
+        if (typeof window.renderMath === 'function') window.renderMath();
         showToast('Brinell simulation completed successfully!', 'success');
       })
       .catch(err => {
@@ -1046,6 +1047,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
 
       document.getElementById('mUTS').textContent = `~ ${(3.45 * mean).toFixed(0)} MPa`;
+      if (typeof window.renderMath === 'function') window.renderMath();
     }
   }
 
@@ -1157,6 +1159,7 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         }
         if (expBox) expBox.classList.remove('d-none');
+        if (typeof window.renderMath === 'function') window.renderMath(card);
       });
 
       const pct = Math.round((score / total) * 100);
@@ -1182,6 +1185,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
     });
+  }
+
+  // Ensure MathJax renders when user clicks quick navigation anchors
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', () => {
+      setTimeout(() => {
+        if (typeof window.renderMath === 'function') window.renderMath();
+      }, 50);
+    });
+  });
+
+  // Explicitly trigger MathJax typesetting for Brinell formulas
+  if (typeof window.renderMath === 'function') {
+    window.renderMath();
   }
 
 });

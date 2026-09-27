@@ -308,6 +308,9 @@ function updateComparison() {
     `;
     tbody.appendChild(tr);
   });
+  if (typeof window.renderMath === 'function') {
+    window.renderMath(tbody);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

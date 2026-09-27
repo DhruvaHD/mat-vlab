@@ -25,7 +25,8 @@ from models.database import (
     validate_student_id, get_student_by_id, get_student_stats,
     get_student_dashboard_stats, get_all_students, get_admin_stats,
     get_admin_dashboard_data, delete_student_account, log_activity,
-    get_admin_credentials, verify_admin_login, update_admin_credentials
+    get_admin_credentials, verify_admin_login, update_admin_credentials,
+    get_admin_usage_stats, get_admin_usage_records, get_admin_record_by_id
 )
 from calculations.tensile import (
     analyze_tensile_data, generate_simulation_data, calculate_cross_sectional_area
@@ -67,9 +68,9 @@ with app.app_context():
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not session.get('student_id'):
-            flash("Please log in to access the MAT-VLAB laboratory.", "info")
-            return redirect(url_for('login', next=request.path))
+        if not session.get('student_name'):
+            flash("Please enter your name and institution to access the laboratory.", "info")
+            return redirect(url_for('index', next=request.path))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -81,18 +82,18 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Context processor to make student & admin details available globally in all templates
+# Context processor to make student session & admin status available globally
 @app.context_processor
 def inject_student_context():
-    student_id = session.get('student_id')
+    name = session.get('student_name')
+    university = session.get('university')
     student = None
-    if student_id:
-        student = get_student_by_id(student_id)
-        if not student:
-            session.pop('student_id', None)
-            session.pop('student_name', None)
-            session.pop('course', None)
-            session.pop('university', None)
+    if name:
+        student = {
+            'name': name,
+            'university': university or 'Engineering Institution',
+            'session_id': session.get('session_id')
+        }
     return {
         'current_student': student,
         'is_logged_in': bool(student),
@@ -100,133 +101,93 @@ def inject_student_context():
     }
 
 # ==========================================
-# FIRST PAGE & STUDENT AUTHENTICATION ROUTES
+# FIRST SCREEN & STUDENT IDENTIFICATION FLOW
 # ==========================================
 
 @app.route('/')
 def index():
     """
-    First Landing Page:
-    If student is already logged in, redirect to Dashboard.
-    If unauthenticated, show professional MAT-VLAB authentication landing page.
+    First Screen:
+    If student has active session, open Home page directly.
+    If unauthenticated, show simple 2-field Student Information form.
     """
-    if session.get('student_id'):
-        return redirect(url_for('dashboard'))
-    return render_template('auth_landing.html', active_page='landing')
+    if session.get('student_name') and session.get('university'):
+        return redirect(url_for('home'))
+    return render_template('student_info.html', active_page='landing')
+
+@app.route('/start-session', methods=['POST'])
+def start_session():
+    """
+    Direct Student Identification Gateway:
+    Receives Student Name and University / College Name.
+    Stores in current session and redirects directly to Home.
+    """
+    import secrets
+    student_name = request.form.get('student_name', '').strip()
+    university = request.form.get('university', '').strip()
+
+    if not student_name or not university:
+        flash("Please provide both your Student Name and University / College Name.", "danger")
+        return render_template('student_info.html', active_page='landing')
+
+    session['student_name'] = student_name
+    session['university'] = university
+    session['session_id'] = secrets.token_hex(16)
+
+    log_activity(
+        activity_type='SESSION_START',
+        details='Entered MAT-VLAB laboratory session',
+        student_name=student_name,
+        university=university,
+        session_id=session['session_id']
+    )
+
+    next_page = request.args.get('next') or request.form.get('next')
+    if next_page and next_page.startswith('/') and not next_page.startswith('//'):
+        return redirect(next_page)
+    return redirect(url_for('home'))
 
 @app.route('/home')
 @login_required
 def home():
-    """Main Laboratory Home page — accessible after login."""
+    """Main Laboratory Home page — directly accessible after entering identification."""
     return render_template('index.html', active_page='home')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    """
-    Student Registration:
-    Fields: Name, Course (Dropdown), University, Student ID, PIN (4-6 digits).
-    Shows privacy notice and post-registration confirmation screen.
-    """
-    if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        course = request.form.get('course', '').strip()
-        university = request.form.get('university', '').strip()
-        student_id = request.form.get('student_id', '').strip()
-        pin = request.form.get('pin', '').strip()
-
-        try:
-            student = register_student(name, course, university, student_id, pin)
-            # Display confirmation screen with Name, Student ID, Course, University and [ LOGIN ] button
-            return render_template('register_success.html', student=student, active_page='register')
-        except ValueError as e:
-            flash(str(e), 'danger')
-            return render_template(
-                'register.html',
-                active_page='register',
-                form_data={'name': name, 'course': course, 'university': university, 'student_id': student_id}
-            )
-
-    # If already logged in, redirect to dashboard
-    if session.get('student_id'):
-        return redirect(url_for('dashboard'))
-    return render_template('register.html', active_page='register', form_data={})
+    """Student registration deprecated; redirect cleanly to first identification screen."""
+    return redirect(url_for('index'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """
-    Student Login:
-    Fields: Student ID, PIN (4-6 digits).
-    Does NOT require student name during login.
-    """
-    if request.method == 'POST':
-        student_id = request.form.get('student_id', '').strip()
-        pin = request.form.get('pin', '').strip()
-        university = request.form.get('university', '').strip()
-
-        try:
-            student = authenticate_student(
-                student_id=student_id,
-                pin=pin if pin else None,
-                university=university if not pin else None,
-                ip_address=request.remote_addr,
-                user_agent=request.user_agent.string
-            )
-            session['student_id'] = student['student_id']
-            session['student_name'] = student['name']
-            session['course'] = student['course']
-            session['university'] = student['university']
-            flash(f"Welcome back, {student['name']}!", 'success')
-            next_page = request.args.get('next') or request.form.get('next')
-            if next_page and next_page.startswith('/') and not next_page.startswith('//'):
-                return redirect(next_page)
-            return redirect(url_for('dashboard'))
-        except ValueError as e:
-            flash(str(e), 'danger')
-            return render_template(
-                'login.html',
-                active_page='login',
-                form_data={'student_id': student_id}
-            )
-
-    if session.get('student_id'):
-        return redirect(url_for('dashboard'))
-    prefill_id = request.args.get('student_id', '')
-    return render_template('login.html', active_page='login', form_data={'student_id': prefill_id})
+    """Student login deprecated; redirect cleanly to first identification screen."""
+    return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
+    """Ends the current student session."""
     name = session.get('student_name')
-    session.pop('student_id', None)
+    sess_id = session.get('session_id')
+    uni = session.get('university')
+    if name:
+        log_activity(
+            activity_type='SESSION_END',
+            details='Ended laboratory session',
+            student_name=name,
+            university=uni,
+            session_id=sess_id
+        )
     session.pop('student_name', None)
-    session.pop('course', None)
     session.pop('university', None)
-    flash(f"You have been successfully logged out. Have a productive day{', ' + name if name else ''}!", 'info')
-    return redirect(url_for('login'))
+    session.pop('session_id', None)
+    session.pop('student_id', None)
+    flash(f"Your laboratory session has ended. Have a productive day{', ' + name if name else ''}!", 'info')
+    return redirect(url_for('index'))
 
 @app.route('/dashboard')
-@login_required
 def dashboard():
-    """
-    Student Dashboard:
-    Welcome [Student Name], Course, University, Student ID.
-    Stats: Experiments Completed, Virtual Experiments, Manual Experiments, Quiz Attempts, Saved Experiments.
-    5 buttons: [ START VIRTUAL LAB ], [ EXPERIMENTS ], [ MATERIALS ], [ QUIZZES ], [ MY EXPERIMENTS ].
-    """
-    student_id = session.get('student_id')
-    student = get_student_by_id(student_id)
-    if not student:
-        session.clear()
-        return redirect(url_for('login'))
-
-    stats = get_student_dashboard_stats(student_id)
-    student_exps = get_all_experiments(student_id=student_id)
-    return render_template(
-        'dashboard.html',
-        active_page='dashboard',
-        student=student,
-        stats=stats,
-        experiments=student_exps
-    )
+    """Direct route to laboratory home as per UX simplification specification."""
+    return redirect(url_for('home'))
 
 # ==========================================
 # PRIVATE ADMIN SYSTEM (NON-OBVIOUS ROUTE)
@@ -265,20 +226,24 @@ def admin_logout():
     return redirect(url_for('admin_login'))
 
 @app.route('/portal-admin')
-@app.route('/portal-admin/students')
+@app.route('/portal-admin/records')
 @app.route('/admin')
-@app.route('/admin/students')
+@app.route('/admin/records')
 @admin_required
 def admin_dashboard():
-    """Private Admin Dashboard with system telemetry and student roster."""
+    """Private Admin Dashboard with system telemetry and experiment usage records."""
     search_q = request.args.get('q', '').strip()
     selected_uni = request.args.get('university', '').strip()
-    selected_course = request.args.get('course', '').strip()
+    selected_type = request.args.get('type', '').strip()
+    selected_mode = request.args.get('mode', '').strip()
+    selected_date = request.args.get('date', '').strip()
 
     data = get_admin_dashboard_data(
         search_query=search_q if search_q else None,
         university=selected_uni if selected_uni and selected_uni != 'ALL' else None,
-        course=selected_course if selected_course and selected_course != 'ALL' else None
+        exp_type=selected_type if selected_type and selected_type != 'ALL' else None,
+        mode=selected_mode if selected_mode and selected_mode != 'ALL' else None,
+        date_query=selected_date if selected_date else None
     )
 
     admin_creds = get_admin_credentials()
@@ -287,14 +252,25 @@ def admin_dashboard():
         'admin.html',
         active_page='admin',
         stats=data,
-        students=data['students'],
-        total_students=len(data['students']),
-        all_students_count=data['total_students'],
+        records=data['records'],
+        total_records=data['total_records_count'],
         search_q=search_q,
         selected_uni=selected_uni,
-        selected_course=selected_course,
+        selected_type=selected_type,
+        selected_mode=selected_mode,
+        selected_date=selected_date,
         admin_creds=admin_creds
     )
+
+@app.route('/portal-admin/record/<table_type>/<int:record_id>')
+@app.route('/admin/record/<table_type>/<int:record_id>')
+@admin_required
+def admin_record_detail_json(table_type, record_id):
+    """Returns experiment record JSON for admin modal inspection."""
+    rec = get_admin_record_by_id(table_type, record_id)
+    if not rec:
+        return jsonify({'error': 'Record not found'}), 404
+    return jsonify(rec)
 
 @app.route('/portal-admin/update-credentials', methods=['POST'])
 @app.route('/admin/update-credentials', methods=['POST'])
@@ -327,26 +303,27 @@ def admin_update_credentials_route():
 
     return redirect(url_for('admin_dashboard'))
 
-
 @app.route('/portal-admin/export-csv')
 @app.route('/admin/export-csv')
 @admin_required
 def admin_export_csv():
-    """Exports full student roster to CSV."""
-    students = get_all_students()
+    """Exports full experiment usage records to CSV."""
+    records = get_admin_usage_records()
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(['Student ID', 'Name', 'Course', 'University', 'Registration Date', 'Experiments Count', 'Quiz Count', 'Last Login'])
-    for s in students:
+    writer.writerow(['Record ID', 'Experiment Type', 'Title', 'Mode', 'Material', 'Student Name', 'University', 'Created At', 'Key Result', 'Readings Count'])
+    for r in records:
         writer.writerow([
-            s.get('student_id', ''),
-            s.get('name', ''),
-            s.get('course', ''),
-            s.get('university', ''),
-            s.get('created_at', ''),
-            s.get('experiment_count', 0),
-            s.get('quiz_count', 0),
-            s.get('last_login_at', '')
+            r.get('id', ''),
+            r.get('exp_type', ''),
+            r.get('title', ''),
+            r.get('mode', ''),
+            r.get('material_name', ''),
+            r.get('student_name', ''),
+            r.get('university', ''),
+            r.get('created_at', ''),
+            r.get('key_result', ''),
+            r.get('readings_count', 0)
         ])
 
     mem = io.BytesIO()
@@ -358,7 +335,7 @@ def admin_export_csv():
         mem,
         mimetype='text/csv',
         as_attachment=True,
-        download_name='mat_vlab_students_roster.csv'
+        download_name='mat_vlab_experiment_usage_records.csv'
     )
 
 @app.route('/portal-admin/student/<student_id>/delete', methods=['POST'])
@@ -453,16 +430,18 @@ def materials():
 @login_required
 def compare():
     mat_list = get_all_materials()
-    sid = session.get('student_id')
-    saved_list = get_all_experiments(student_id=sid)
+    sess_id = session.get('session_id')
+    s_name = session.get('student_name')
+    saved_list = get_all_experiments(session_id=sess_id, student_name=s_name)
     return render_template('compare.html', active_page='compare', materials=mat_list, saved_experiments=saved_list)
 
 @app.route('/my-experiments')
 @login_required
 def my_experiments():
-    sid = session.get('student_id')
-    exp_list = get_all_experiments(student_id=sid)
-    hardness_list = get_all_hardness_experiments(student_id=sid)
+    sess_id = session.get('session_id')
+    s_name = session.get('student_name')
+    exp_list = get_all_experiments(session_id=sess_id, student_name=s_name)
+    hardness_list = get_all_hardness_experiments(session_id=sess_id, student_name=s_name)
     return render_template(
         'my_experiments.html',
         active_page='my_experiments',
@@ -613,10 +592,26 @@ def api_save():
         if not data:
             return jsonify({'error': 'Missing payload to save.'}), 400
 
-        student_id = session.get('student_id') or data.get('student_id')
-        experiment_id = save_experiment(data, student_id=student_id)
-        if student_id:
-            log_activity(student_id, 'EXPERIMENT_SAVE', f"Experiment #{experiment_id} saved ({data.get('material_name', 'Tensile')})")
+        student_id = data.get('student_id') or session.get('student_id')
+        student_name = data.get('student_name') or session.get('student_name')
+        university = data.get('university') or session.get('university')
+        session_id = data.get('session_id') or session.get('session_id')
+
+        experiment_id = save_experiment(
+            data,
+            student_id=student_id,
+            student_name=student_name,
+            university=university,
+            session_id=session_id
+        )
+        log_activity(
+            student_id=student_id,
+            activity_type='EXPERIMENT_SAVE',
+            details=f"Experiment #{experiment_id} saved ({data.get('material_name', 'Tensile')})",
+            student_name=student_name,
+            university=university,
+            session_id=session_id
+        )
         return jsonify({'success': True, 'experiment_id': experiment_id})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -643,10 +638,25 @@ def api_quiz_submit():
         total = int(data.get('total_questions', 10))
         exp_id = data.get('experiment_id')
         sid = session.get('student_id')
+        s_name = session.get('student_name') or data.get('student_name')
+        uni = session.get('university') or data.get('university')
+        sess_id = session.get('session_id') or data.get('session_id')
 
-        res_id = save_quiz_result(exp_id, exp_type, score, total, student_id=sid)
-        if sid:
-            log_activity(sid, 'QUIZ_ATTEMPT', f"Quiz {exp_type}: Score {score}/{total}")
+        res_id = save_quiz_result(
+            exp_id, exp_type, score, total,
+            student_id=sid,
+            student_name=s_name,
+            university=uni,
+            session_id=sess_id
+        )
+        log_activity(
+            student_id=sid,
+            activity_type='QUIZ_ATTEMPT',
+            details=f"Quiz {exp_type}: Score {score}/{total}",
+            student_name=s_name,
+            university=uni,
+            session_id=sess_id
+        )
         return jsonify({'success': True, 'result_id': res_id})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -719,16 +729,24 @@ def api_hardness_calculate():
 
 @app.route('/api/hardness/save', methods=['POST'])
 def api_hardness_save():
-    """Persists a Brinell or Rockwell experiment to SQLite."""
+    """Persists a Brinell or Rockwell experiment to the database."""
     try:
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Missing payload to save.'}), 400
 
-        student_id = session.get('student_id') or data.get('student_id')
-        exp_id = save_hardness_experiment(data, student_id=student_id)
-        if student_id:
-            log_activity(student_id, 'EXPERIMENT_SAVE', f"Hardness Exp #{exp_id} ({data.get('method')}) - {data.get('material_name')}")
+        student_id = data.get('student_id') or session.get('student_id')
+        student_name = data.get('student_name') or session.get('student_name')
+        university = data.get('university') or session.get('university')
+        session_id = data.get('session_id') or session.get('session_id')
+
+        exp_id = save_hardness_experiment(
+            data,
+            student_id=student_id,
+            student_name=student_name,
+            university=university,
+            session_id=session_id
+        )
         return jsonify({'success': True, 'experiment_id': exp_id})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -754,15 +772,19 @@ def download_hardness_report_by_id(experiment_id):
     if not exp:
         return "Hardness experiment not found", 404
 
-    sid = exp.get('student_id') or session.get('student_id')
-    if sid:
-        st = get_student_by_id(sid)
-        if st:
-            exp['student_name'] = st['name']
-            exp['student_id'] = st['student_id']
-            exp['student_course'] = st['course']
-            exp['student_university'] = st['university']
-        log_activity(sid, 'REPORT_DOWNLOAD', f"Downloaded PDF for Hardness Exp #{experiment_id}")
+    exp['student_name'] = exp.get('student_name') or session.get('student_name') or 'Materials Science Student'
+    exp['student_university'] = exp.get('university') or session.get('university') or 'Engineering Institute'
+    exp['student_course'] = exp.get('course') or session.get('course') or 'Materials Testing Laboratory'
+    exp['student_id'] = exp.get('student_id') or 'Session'
+
+    log_activity(
+        student_id=exp.get('student_id'),
+        activity_type='REPORT_DOWNLOAD',
+        details=f"Downloaded PDF for Hardness Exp #{experiment_id}",
+        student_name=exp['student_name'],
+        university=exp['student_university'],
+        session_id=session.get('session_id')
+    )
 
     pdf_buffer = generate_hardness_pdf(exp)
     clean_mat = (exp.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
@@ -782,15 +804,19 @@ def api_hardness_generate_pdf():
         if not data:
             return jsonify({'error': 'Missing data for PDF generation'}), 400
 
-        sid = data.get('student_id') or session.get('student_id')
-        if sid:
-            st = get_student_by_id(sid)
-            if st:
-                data['student_name'] = st['name']
-                data['student_id'] = st['student_id']
-                data['student_course'] = st['course']
-                data['student_university'] = st['university']
-            log_activity(sid, 'REPORT_DOWNLOAD', f"Generated Hardness PDF report for {data.get('material_name', 'Metal')}")
+        data['student_name'] = data.get('student_name') or session.get('student_name') or 'Materials Science Student'
+        data['student_university'] = data.get('university') or session.get('university') or 'Engineering Institute'
+        data['student_course'] = data.get('course') or session.get('course') or 'Materials Testing Laboratory'
+        data['student_id'] = data.get('student_id') or 'Session'
+
+        log_activity(
+            student_id=data.get('student_id'),
+            activity_type='REPORT_DOWNLOAD',
+            details=f"Generated Hardness PDF report for {data.get('material_name', 'Metal')}",
+            student_name=data['student_name'],
+            university=data['student_university'],
+            session_id=session.get('session_id')
+        )
 
         pdf_buffer = generate_hardness_pdf(data)
         clean_mat = (data.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
@@ -810,16 +836,19 @@ def download_report_by_id(experiment_id):
     if not exp:
         return "Experiment not found", 404
 
-    # Attach student profile if available
-    sid = exp.get('student_id') or session.get('student_id')
-    if sid:
-        st = get_student_by_id(sid)
-        if st:
-            exp['student_name'] = st['name']
-            exp['student_id'] = st['student_id']
-            exp['student_course'] = st['course']
-            exp['student_university'] = st['university']
-        log_activity(sid, 'REPORT_DOWNLOAD', f"Downloaded PDF for Exp #{experiment_id}")
+    exp['student_name'] = exp.get('student_name') or session.get('student_name') or 'Materials Science Student'
+    exp['student_university'] = exp.get('university') or session.get('university') or 'Engineering Institute'
+    exp['student_course'] = exp.get('course') or session.get('course') or 'Materials Testing Laboratory'
+    exp['student_id'] = exp.get('student_id') or 'Session'
+
+    log_activity(
+        student_id=exp.get('student_id'),
+        activity_type='REPORT_DOWNLOAD',
+        details=f"Downloaded PDF for Exp #{experiment_id}",
+        student_name=exp['student_name'],
+        university=exp['student_university'],
+        session_id=session.get('session_id')
+    )
 
     pdf_buffer = generate_tensile_pdf(exp)
     filename = f"MAT_VLAB_Report_Exp{experiment_id}_{(exp.get('material_name', 'tensile')).replace(' ', '_')}.pdf"
@@ -837,15 +866,19 @@ def api_generate_pdf():
         if not data:
             return jsonify({'error': 'Missing data for PDF generation'}), 400
 
-        sid = data.get('student_id') or session.get('student_id')
-        if sid:
-            st = get_student_by_id(sid)
-            if st:
-                data['student_name'] = st['name']
-                data['student_id'] = st['student_id']
-                data['student_course'] = st['course']
-                data['student_university'] = st['university']
-            log_activity(sid, 'REPORT_DOWNLOAD', f"Generated PDF report for {data.get('material_name', 'Tensile')}")
+        data['student_name'] = data.get('student_name') or session.get('student_name') or 'Materials Science Student'
+        data['student_university'] = data.get('university') or session.get('university') or 'Engineering Institute'
+        data['student_course'] = data.get('course') or session.get('course') or 'Materials Testing Laboratory'
+        data['student_id'] = data.get('student_id') or 'Session'
+
+        log_activity(
+            student_id=data.get('student_id'),
+            activity_type='REPORT_DOWNLOAD',
+            details=f"Generated PDF report for {data.get('material_name', 'Tensile')}",
+            student_name=data['student_name'],
+            university=data['student_university'],
+            session_id=session.get('session_id')
+        )
 
         pdf_buffer = generate_tensile_pdf(data)
         filename = f"MAT_VLAB_Report_{(data.get('material_name', 'tensile')).replace(' ', '_')}.pdf"

@@ -165,4 +165,9 @@
 
 {% block extra_scripts %}
 <script src="{{ url_for('static', filename='js/tensile.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof window.renderMath === 'function') window.renderMath();
+});
+</script>
 {% endblock %}

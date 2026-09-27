@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}MAT-VLAB ADMIN — Total Students: {{ all_students_count }}{% endblock %}
+{% block title %}MAT-VLAB ADMIN — Central Laboratory Monitoring{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -17,12 +17,12 @@
             <i class="fas fa-user-shield me-1"></i> Admin User: <strong>{{ session.get('admin_username') or (admin_creds.username if admin_creds else 'admin') }}</strong>
           </span>
           <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-2 py-1">
-            <i class="fas fa-database me-1"></i> Live SQLite Sync
+            <i class="fas fa-database me-1"></i> Live Database Sync
           </span>
         </div>
         <h1 class="fw-bold text-navy fs-2 mb-1">MAT-VLAB ADMIN</h1>
         <p class="text-secondary small mb-0">
-          Central student directory, institutional cohort monitoring, and laboratory experiment logs.
+          Central laboratory usage monitoring and experiment records
         </p>
       </div>
 
@@ -31,10 +31,7 @@
           <i class="fas fa-key me-1"></i> Change Admin Details
         </button>
         <a href="{{ url_for('admin_export_csv') }}" class="btn btn-sm btn-outline-success">
-          <i class="fas fa-file-csv me-1"></i> Export Roster (CSV)
-        </a>
-        <a href="{{ url_for('register') }}" class="btn btn-sm btn-lab-primary">
-          <i class="fas fa-user-plus me-1"></i> Register Student
+          <i class="fas fa-file-csv me-1"></i> Export Usage Records (CSV)
         </a>
         <a href="{{ url_for('admin_logout') }}" class="btn btn-sm btn-outline-danger">
           <i class="fas fa-sign-out-alt me-1"></i> Admin Logout
@@ -43,175 +40,134 @@
     </div>
   </div>
 
-  <!-- 2. Overview Stats (Total Students: 247) -->
+  <!-- 2. Summary Cards -->
   <div class="row g-3 mb-4">
-    <!-- Total Students Card -->
-    <div class="col-sm-6 col-lg-3">
-      <div class="lab-card p-4 border border-primary border-opacity-25 shadow-sm text-center bg-light">
+    <!-- Total Experiments Conducted -->
+    <div class="col-sm-6 col-lg">
+      <div class="lab-card p-3 border border-primary border-opacity-25 shadow-sm text-center bg-light h-100">
         <div class="text-secondary small fw-bold text-uppercase mb-1 tracking-wider">
-          <i class="fas fa-users me-1 text-primary"></i> Total Students
+          <i class="fas fa-vial me-1 text-primary"></i> Total Experiments
         </div>
-        <div class="fs-1 fw-bold text-navy font-mono mb-1" id="totalStudentsStat">
-          {{ all_students_count }}
-        </div>
-        <div class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 small">
-          Active Registered Cohort
-        </div>
-      </div>
-    </div>
-
-    <!-- Universities Count -->
-    <div class="col-sm-6 col-lg-3">
-      <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm text-center">
-        <div class="text-secondary small fw-bold text-uppercase mb-1 tracking-wider">
-          <i class="fas fa-university me-1 text-steel"></i> Universities &amp; Colleges
-        </div>
-        <div class="fs-1 fw-bold text-steel font-mono mb-1">
-          {{ stats.total_universities }}
-        </div>
-        <div class="small text-muted">Affiliated Institutions</div>
-      </div>
-    </div>
-
-    <!-- Courses Count -->
-    <div class="col-sm-6 col-lg-3">
-      <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm text-center">
-        <div class="text-secondary small fw-bold text-uppercase mb-1 tracking-wider">
-          <i class="fas fa-graduation-cap me-1 text-cyan"></i> Degree Programs
-        </div>
-        <div class="fs-1 fw-bold text-cyan font-mono mb-1">
-          {{ stats.total_courses }}
-        </div>
-        <div class="small text-muted">B.Tech &amp; M.Tech Disciplines</div>
-      </div>
-    </div>
-
-    <!-- Total Experiments Count -->
-    <div class="col-sm-6 col-lg-3">
-      <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm text-center">
-        <div class="text-secondary small fw-bold text-uppercase mb-1 tracking-wider">
-          <i class="fas fa-vial me-1 text-success"></i> Lab Experiments
-        </div>
-        <div class="fs-1 fw-bold text-success font-mono mb-1">
+        <div class="fs-1 fw-bold text-navy font-mono mb-1">
           {{ stats.total_experiments }}
         </div>
-        <div class="small text-muted">{{ stats.sim_count }} Sim • {{ stats.manual_count }} Manual</div>
+        <div class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-2 py-1 small">
+          {{ stats.total_sim }} Sim • {{ stats.total_manual }} Manual
+        </div>
+      </div>
+    </div>
+
+    <!-- Tensile Tests Conducted -->
+    <div class="col-sm-6 col-lg">
+      <div class="lab-card p-3 border border-secondary border-opacity-25 shadow-sm text-center h-100">
+        <div class="text-secondary small fw-bold text-uppercase mb-1 tracking-wider">
+          <i class="fas fa-compress-arrows-alt me-1 text-steel"></i> Tensile Tests
+        </div>
+        <div class="fs-1 fw-bold text-steel font-mono mb-1">
+          {{ stats.total_tensile }}
+        </div>
+        <div class="small text-muted">ASTM E8 UTM Runs</div>
+      </div>
+    </div>
+
+    <!-- Hardness Tests Conducted -->
+    <div class="col-sm-6 col-lg">
+      <div class="lab-card p-3 border border-secondary border-opacity-25 shadow-sm text-center h-100">
+        <div class="text-secondary small fw-bold text-uppercase mb-1 tracking-wider">
+          <i class="fas fa-bullseye me-1 text-warning"></i> Hardness Tests
+        </div>
+        <div class="fs-1 fw-bold text-warning font-mono mb-1">
+          {{ stats.total_hardness }}
+        </div>
+        <div class="small text-muted">Brinell &amp; Rockwell</div>
+      </div>
+    </div>
+
+    <!-- Participating Students -->
+    <div class="col-sm-6 col-lg">
+      <div class="lab-card p-3 border border-secondary border-opacity-25 shadow-sm text-center h-100">
+        <div class="text-secondary small fw-bold text-uppercase mb-1 tracking-wider">
+          <i class="fas fa-users me-1 text-success"></i> Students
+        </div>
+        <div class="fs-1 fw-bold text-success font-mono mb-1">
+          {{ stats.unique_students }}
+        </div>
+        <div class="small text-muted">Participating Students</div>
+      </div>
+    </div>
+
+    <!-- Universities Represented -->
+    <div class="col-sm-6 col-lg">
+      <div class="lab-card p-3 border border-secondary border-opacity-25 shadow-sm text-center h-100">
+        <div class="text-secondary small fw-bold text-uppercase mb-1 tracking-wider">
+          <i class="fas fa-university me-1 text-info"></i> Institutions
+        </div>
+        <div class="fs-1 fw-bold text-info font-mono mb-1">
+          {{ stats.unique_universities }}
+        </div>
+        <div class="small text-muted">Colleges &amp; Universities</div>
       </div>
     </div>
   </div>
 
-  <!-- Institutional & Activity Row -->
-  <div class="row g-3 mb-4">
-    <!-- University & Course Cohorts -->
-    <div class="col-lg-6">
-      <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm h-100">
-        <h5 class="fw-bold text-navy mb-3">
-          <i class="fas fa-university me-2 text-primary"></i>Institution &amp; Degree Cohorts
-        </h5>
-        
-        <div class="mb-3">
-          <div class="small text-muted fw-bold text-uppercase mb-2">Universities &amp; Colleges</div>
-          <div class="list-group list-group-flush border rounded small" style="max-height: 150px; overflow-y: auto;">
-            {% for u in stats.university_distribution %}
-            <div class="list-group-item d-flex justify-content-between align-items-center py-2">
-              <span class="text-truncate fw-semibold text-dark">{{ u.university }}</span>
-              <span class="badge bg-primary rounded-pill font-mono">{{ u.count }}</span>
-            </div>
-            {% else %}
-            <div class="list-group-item text-muted text-center py-2">No institutions yet</div>
-            {% endfor %}
-          </div>
-        </div>
-
-        <div>
-          <div class="small text-muted fw-bold text-uppercase mb-2">Academic Programs</div>
-          <div class="list-group list-group-flush border rounded small" style="max-height: 150px; overflow-y: auto;">
-            {% for c in stats.course_distribution %}
-            <div class="list-group-item d-flex justify-content-between align-items-center py-2">
-              <span class="text-truncate fw-semibold text-dark">{{ c.course }}</span>
-              <span class="badge bg-cyan text-navy rounded-pill font-mono">{{ c.count }}</span>
-            </div>
-            {% else %}
-            <div class="list-group-item text-muted text-center py-2">No programs yet</div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recent Login Activity -->
-    <div class="col-lg-6">
-      <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm h-100">
-        <h5 class="fw-bold text-navy mb-3">
-          <i class="fas fa-history me-2 text-success"></i>Recent Student Login Activity
-        </h5>
-        <div class="table-responsive rounded border border-secondary border-opacity-25" style="max-height: 335px; overflow-y: auto;">
-          <table class="table table-sm table-hover align-middle mb-0 small">
-            <thead class="table-light">
-              <tr>
-                <th>Student ID</th>
-                <th>Name</th>
-                <th>Login Time</th>
-                <th>IP Address</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for l in stats.recent_login_activity %}
-              <tr>
-                <td><span class="badge bg-cyan text-navy font-mono">{{ l.student_id }}</span></td>
-                <td class="text-truncate" style="max-width: 140px;">{{ l.name or '—' }}</td>
-                <td class="text-muted font-mono">{{ l.login_time[:16] if l.login_time else '—' }}</td>
-                <td class="text-muted font-mono">{{ l.ip_address or '127.0.0.1' }}</td>
-              </tr>
-              {% else %}
-              <tr><td colspan="4" class="text-center text-muted py-4">No login activity recorded yet</td></tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3. Students Table Section -->
+  <!-- 3. Main Table: EXPERIMENT USAGE RECORDS -->
   <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm mb-4">
     
-    <!-- Title & Controls Header -->
+    <!-- Title & Showing Count Header -->
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 pb-3 mb-3 border-bottom">
       <div>
-        <h3 class="fw-bold text-navy fs-4 mb-0">Students</h3>
+        <h3 class="fw-bold text-navy fs-4 mb-0">EXPERIMENT USAGE RECORDS</h3>
         <p class="text-secondary small mb-0">
-          Complete enrolled roster showing Name, Student ID, Course, and University.
+          Complete logs of all student tensile and hardness simulations and physical laboratory entries.
         </p>
       </div>
       <div>
         <span class="badge bg-light text-navy border px-3 py-2 fs-6 font-mono" id="showingCountBadge">
-          Showing {{ students|length }} of {{ all_students_count }} Students
+          Showing {{ records|length }} of {{ total_records }} Records
         </span>
       </div>
     </div>
 
-    <!-- Filter & Search Bar -->
+    <!-- Filter & Search Controls -->
     <div class="row g-2 mb-3">
       <!-- Search Input -->
-      <div class="col-md-5">
-        <div class="input-group">
-          <span class="input-group-text bg-white border-end-0 text-muted">
+      <div class="col-md-3">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white text-muted">
             <i class="fas fa-search"></i>
           </span>
           <input 
             type="text" 
-            class="form-control border-start-0" 
-            id="studentSearchInput" 
-            placeholder="Search by Name, Student ID, Course, University..." 
+            class="form-control" 
+            id="recordSearchInput" 
+            placeholder="Search student, university, specimen..." 
             value="{{ search_q }}"
           >
         </div>
       </div>
 
-      <!-- University Filter Dropdown -->
+      <!-- Experiment Type Dropdown -->
+      <div class="col-md-2">
+        <select class="form-select form-select-sm" id="typeFilter">
+          <option value="">All Experiments</option>
+          <option value="tensile" {% if selected_type == 'tensile' %}selected{% endif %}>Tensile Test (UTM)</option>
+          <option value="brinell" {% if selected_type == 'brinell' %}selected{% endif %}>Brinell Hardness</option>
+          <option value="rockwell" {% if selected_type == 'rockwell' %}selected{% endif %}>Rockwell Hardness</option>
+        </select>
+      </div>
+
+      <!-- Mode Dropdown -->
+      <div class="col-md-2">
+        <select class="form-select form-select-sm" id="modeFilter">
+          <option value="">All Modes</option>
+          <option value="VIRTUAL_SIMULATION" {% if selected_mode == 'VIRTUAL_SIMULATION' %}selected{% endif %}>Simulation</option>
+          <option value="MANUAL" {% if selected_mode == 'MANUAL' or selected_mode == 'MANUAL_ENTRY' %}selected{% endif %}>Manual Lab</option>
+        </select>
+      </div>
+
+      <!-- University Dropdown -->
       <div class="col-md-3">
-        <select class="form-select" id="universityFilter">
+        <select class="form-select form-select-sm" id="universityFilter">
           <option value="">All Universities ({{ stats.universities|length }})</option>
           {% for uni in stats.universities %}
           <option value="{{ uni }}" {% if selected_uni == uni %}selected{% endif %}>{{ uni }}</option>
@@ -219,97 +175,105 @@
         </select>
       </div>
 
-      <!-- Course Filter Dropdown -->
-      <div class="col-md-3">
-        <select class="form-select" id="courseFilter">
-          <option value="">All Courses ({{ stats.courses|length }})</option>
-          {% for c in stats.courses %}
-          <option value="{{ c }}" {% if selected_course == c %}selected{% endif %}>{{ c }}</option>
-          {% endfor %}
-        </select>
+      <!-- Date Filter -->
+      <div class="col-md-1">
+        <input type="date" class="form-control form-control-sm" id="dateFilter" value="{{ selected_date }}" title="Filter by date">
       </div>
 
       <!-- Reset Button -->
       <div class="col-md-1">
-        <button class="btn btn-outline-secondary w-100" id="resetFiltersBtn" title="Reset all filters">
-          <i class="fas fa-undo"></i>
+        <button class="btn btn-sm btn-outline-secondary w-100" id="resetFiltersBtn" title="Reset all filters">
+          <i class="fas fa-undo me-1"></i> Reset
         </button>
       </div>
     </div>
 
-    <!-- Students Roster Table -->
+    <!-- Usage Records Table -->
     <div class="table-responsive rounded border border-secondary border-opacity-25">
-      <table class="table table-lab table-hover align-middle mb-0" id="studentsRosterTable">
+      <table class="table table-lab table-hover align-middle mb-0" id="usageRecordsTable">
         <thead>
           <tr>
             <th style="width: 50px;">#</th>
-            <th>Name</th>
-            <th>Student ID</th>
-            <th>Course</th>
-            <th>University</th>
-            <th class="text-center">Experiments</th>
-            <th class="text-center" style="width: 120px;">Actions</th>
+            <th>Student Name</th>
+            <th>University / College</th>
+            <th>Experiment</th>
+            <th>Mode</th>
+            <th>Date &amp; Time</th>
+            <th>Key Result</th>
+            <th class="text-center" style="width: 170px;">Actions</th>
           </tr>
         </thead>
-        <tbody id="studentsTableBody">
-          {% for student in students %}
-          <tr class="student-row" 
-              data-name="{{ student.name|lower }}" 
-              data-id="{{ student.student_id|lower }}" 
-              data-course="{{ student.course|lower }}" 
-              data-uni="{{ student.university|lower }}">
+        <tbody id="recordsTableBody">
+          {% for r in records %}
+          <tr class="record-row"
+              data-student="{{ r.student_name|lower }}"
+              data-uni="{{ r.university|lower }}"
+              data-type="{% if 'tensile' in r.exp_type|lower %}tensile{% elif 'brinell' in r.exp_type|lower %}brinell{% elif 'rockwell' in r.exp_type|lower %}rockwell{% else %}other{% endif %}"
+              data-mode="{% if 'simulation' in r.mode|lower %}simulation{% else %}manual{% endif %}"
+              data-date="{{ r.created_at[:10] if r.created_at else '' }}"
+              data-material="{{ r.material_name|lower if r.material_name else '' }}">
             <td class="font-mono text-muted small">{{ loop.index }}</td>
             <td>
-              <div class="fw-bold text-navy student-name-cell">{{ student.name }}</div>
-              <div class="small text-muted d-sm-none font-mono">{{ student.student_id }}</div>
+              <div class="fw-bold text-navy">{{ r.student_name }}</div>
+              <div class="small text-muted font-mono">{{ r.material_name }}</div>
             </td>
             <td>
-              <span class="badge bg-cyan text-navy font-mono fw-bold px-2 py-1">
-                {{ student.student_id }}
+              <div class="text-dark small fw-semibold">{{ r.university }}</div>
+            </td>
+            <td>
+              {% if 'tensile' in r.exp_type|lower %}
+              <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50">
+                <i class="fas fa-compress-arrows-alt me-1"></i> Tensile (UTM)
               </span>
-            </td>
-            <td>
-              <span class="badge bg-light text-dark border">{{ student.course }}</span>
-            </td>
-            <td>
-              <div class="text-dark small fw-semibold">{{ student.university }}</div>
-            </td>
-            <td class="text-center">
-              {% if student.experiment_count > 0 %}
-              <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 font-mono">
-                {{ student.experiment_count }} runs
+              {% elif 'brinell' in r.exp_type|lower %}
+              <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50">
+                <i class="fas fa-circle me-1"></i> Brinell
               </span>
               {% else %}
-              <span class="text-muted small font-mono">0 runs</span>
+              <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50">
+                <i class="fas fa-gem me-1"></i> Rockwell
+              </span>
               {% endif %}
+            </td>
+            <td>
+              {% if 'simulation' in r.mode|lower %}
+              <span class="badge bg-light text-secondary border font-mono small">
+                <i class="fas fa-desktop me-1"></i> Simulation
+              </span>
+              {% else %}
+              <span class="badge bg-light text-success border font-mono small">
+                <i class="fas fa-edit me-1"></i> Manual Lab
+              </span>
+              {% endif %}
+            </td>
+            <td class="text-secondary small font-mono">
+              {{ r.created_at }}
+            </td>
+            <td>
+              <span class="fw-bold font-mono text-navy">{{ r.key_result }}</span>
             </td>
             <td class="text-center">
               <div class="btn-group btn-group-sm">
-                <button type="button" class="btn btn-outline-info" title="View Student Info" onclick="showStudentModal('{{ student.name }}', '{{ student.student_id }}', '{{ student.course }}', '{{ student.university }}', '{{ student.experiment_count }}', '{{ student.created_at }}')">
-                  <i class="fas fa-eye"></i>
+                <button type="button" class="btn btn-outline-info" title="View Detailed Record" onclick="viewRecordDetails('{{ r.table }}', {{ r.id }})">
+                  <i class="fas fa-eye me-1"></i> View Details
                 </button>
-                <form action="{{ url_for('admin_delete_student', student_id=student.student_id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete student account {{ student.student_id }}?');">
-                  <button type="submit" class="btn btn-outline-danger" title="Remove Student">
-                    <i class="fas fa-trash-alt"></i>
-                  </button>
-                </form>
+                <a href="{{ r.report_url }}" target="_blank" class="btn btn-outline-success" title="Download Official PDF Report">
+                  <i class="fas fa-file-pdf"></i> PDF
+                </a>
               </div>
             </td>
           </tr>
           {% endfor %}
-          {% if not students or students|length == 0 %}
+          {% if not records or records|length == 0 %}
           <tr>
-            <td colspan="7" class="text-center py-5">
+            <td colspan="8" class="text-center py-5">
               <div class="mode-card-icon mx-auto mb-3" style="width: 54px; height: 54px;">
-                <i class="fas fa-user-graduate text-muted"></i>
+                <i class="fas fa-vial text-muted"></i>
               </div>
-              <h5 class="fw-bold text-navy mb-1">No Students Registered Yet</h5>
-              <p class="text-secondary small mb-3">
-                Only students who actually register with their custom Student ID will appear in this administrative roster.
+              <h5 class="fw-bold text-navy mb-1">No Experiment Records Found</h5>
+              <p class="text-secondary small mb-0">
+                Students will appear here automatically when they perform simulations or enter physical laboratory data.
               </p>
-              <a href="{{ url_for('register') }}" class="btn btn-sm btn-lab-primary">
-                <i class="fas fa-user-plus me-1"></i> Register Student
-              </a>
             </td>
           </tr>
           {% endif %}
@@ -317,10 +281,10 @@
       </table>
     </div>
 
-    <!-- Table Pagination / Navigation Controls -->
+    <!-- Table Pagination Summary -->
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-3 mt-2 border-top">
       <div class="small text-muted" id="paginationSummary">
-        Showing 1 to 25 of {{ students|length }} entries
+        Showing 1 to {{ records|length }} of {{ records|length }} records
       </div>
       <div class="d-flex align-items-center gap-2">
         <label for="perPageSelect" class="small text-muted mb-0">Show:</label>
@@ -330,63 +294,86 @@
           <option value="100">100</option>
           <option value="all">All</option>
         </select>
-        <nav aria-label="Student roster pagination">
-          <ul class="pagination pagination-sm mb-0" id="paginationUl">
-            <!-- Dynamic pagination links populated by JavaScript -->
-          </ul>
+        <nav aria-label="Usage records pagination">
+          <ul class="pagination pagination-sm mb-0" id="paginationUl"></ul>
         </nav>
       </div>
     </div>
 
   </div>
 
+  <!-- 4. Telemetry Row: Recent Activity Logs -->
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+        <h5 class="fw-bold text-navy mb-3">
+          <i class="fas fa-history me-2 text-primary"></i>Recent Educational Activity Logs
+        </h5>
+        <div class="table-responsive rounded border border-secondary border-opacity-25" style="max-height: 280px; overflow-y: auto;">
+          <table class="table table-sm table-hover align-middle mb-0 small">
+            <thead class="table-light">
+              <tr>
+                <th>Time</th>
+                <th>Student</th>
+                <th>Institution</th>
+                <th>Action</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for act in stats.recent_activity_logs %}
+              <tr>
+                <td class="text-muted font-mono" style="white-space: nowrap;">{{ act.created_at[:19] if act.created_at else '—' }}</td>
+                <td class="fw-bold text-navy">{{ act.name }}</td>
+                <td class="text-secondary">{{ act.university }}</td>
+                <td>
+                  <span class="badge bg-light text-primary border font-mono">{{ act.activity_type }}</span>
+                </td>
+                <td class="text-muted font-mono small">{{ act.details }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="5" class="text-center text-muted py-3">No activity recorded yet</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<!-- Student Detail Modal -->
-<div class="modal fade" id="studentDetailModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
+<!-- Modal: View Record Details -->
+<div class="modal fade" id="recordDetailModal" tabindex="-1" aria-labelledby="recordDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content lab-card border">
       <div class="modal-header border-bottom">
-        <h5 class="modal-title fw-bold text-navy" id="studentModalLabel">
-          <i class="fas fa-user-graduate me-2 text-primary"></i>Student Profile Details
-        </h5>
+        <div>
+          <h5 class="modal-title fw-bold text-navy" id="recordDetailModalLabel">
+            <i class="fas fa-file-invoice me-2 text-primary"></i>Laboratory Experiment Details
+          </h5>
+          <div class="small text-muted font-mono" id="modalRecordSubtitle">Loading...</div>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body p-4">
-        <div class="text-center mb-3">
-          <div class="brand-icon mx-auto mb-2" style="width: 52px; height: 52px; font-size: 1.4rem;">
-            <i class="fas fa-user"></i>
-          </div>
-          <h4 class="fw-bold text-navy mb-1" id="modalStudentName">—</h4>
-          <span class="badge bg-cyan text-navy font-mono px-3 py-1 fw-bold fs-6" id="modalStudentID">—</span>
-        </div>
-        <div class="list-group list-group-flush border rounded">
-          <div class="list-group-item d-flex justify-content-between align-items-center py-2">
-            <span class="text-secondary small fw-bold text-uppercase">Course / Branch:</span>
-            <span class="fw-semibold text-dark text-end" id="modalStudentCourse">—</span>
-          </div>
-          <div class="list-group-item d-flex justify-content-between align-items-center py-2">
-            <span class="text-secondary small fw-bold text-uppercase">University / College:</span>
-            <span class="fw-semibold text-dark text-end" id="modalStudentUniversity">—</span>
-          </div>
-          <div class="list-group-item d-flex justify-content-between align-items-center py-2">
-            <span class="text-secondary small fw-bold text-uppercase">Experiments Completed:</span>
-            <span class="badge bg-success font-mono" id="modalStudentExps">0</span>
-          </div>
-          <div class="list-group-item d-flex justify-content-between align-items-center py-2">
-            <span class="text-secondary small fw-bold text-uppercase">Account Registered:</span>
-            <span class="small text-muted" id="modalStudentDate">—</span>
+      <div class="modal-body p-4" id="modalRecordContent">
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
           </div>
         </div>
       </div>
-      <div class="modal-footer border-top">
+      <div class="modal-footer border-top bg-light">
         <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+        <a id="modalDownloadPdfBtn" href="#" target="_blank" class="btn btn-sm btn-success">
+          <i class="fas fa-file-pdf me-1"></i> Download Certified PDF
+        </a>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Admin Credentials Modal -->
+<!-- Modal: Change Admin Credentials -->
 <div class="modal fade" id="adminCredentialsModal" tabindex="-1" aria-labelledby="adminCredentialsModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content lab-card border">
@@ -439,13 +426,15 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const searchInput = document.getElementById('studentSearchInput');
+  const searchInput = document.getElementById('recordSearchInput');
+  const typeFilter = document.getElementById('typeFilter');
+  const modeFilter = document.getElementById('modeFilter');
   const uniFilter = document.getElementById('universityFilter');
-  const courseFilter = document.getElementById('courseFilter');
+  const dateFilter = document.getElementById('dateFilter');
   const resetBtn = document.getElementById('resetFiltersBtn');
   const perPageSelect = document.getElementById('perPageSelect');
-  const tbody = document.getElementById('studentsTableBody');
-  const allRows = Array.from(tbody.querySelectorAll('.student-row'));
+  const tbody = document.getElementById('recordsTableBody');
+  const allRows = Array.from(tbody.querySelectorAll('.record-row'));
   const showingBadge = document.getElementById('showingCountBadge');
   const paginationSummary = document.getElementById('paginationSummary');
   const paginationUl = document.getElementById('paginationUl');
@@ -456,24 +445,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function filterAndPaginate() {
     const q = (searchInput.value || '').trim().toLowerCase();
+    const selectedType = (typeFilter.value || '').trim().toLowerCase();
+    const selectedMode = (modeFilter.value || '').trim().toLowerCase();
     const selectedUni = (uniFilter.value || '').trim().toLowerCase();
-    const selectedCourse = (courseFilter.value || '').trim().toLowerCase();
+    const selectedDate = (dateFilter.value || '').trim();
 
     // 1. Filter rows
     filteredRows = allRows.filter(row => {
-      const name = row.getAttribute('data-name');
-      const id = row.getAttribute('data-id');
-      const course = row.getAttribute('data-course');
-      const uni = row.getAttribute('data-uni');
+      const student = row.getAttribute('data-student') || '';
+      const uni = row.getAttribute('data-uni') || '';
+      const rtype = row.getAttribute('data-type') || '';
+      const rmode = row.getAttribute('data-mode') || '';
+      const rdate = row.getAttribute('data-date') || '';
+      const rmat = row.getAttribute('data-material') || '';
 
-      const matchesQ = !q || name.includes(q) || id.includes(q) || course.includes(q) || uni.includes(q);
+      const matchesQ = !q || student.includes(q) || uni.includes(q) || rmat.includes(q);
+      const matchesType = !selectedType || rtype === selectedType;
+      const matchesMode = !selectedMode || rmode.includes(selectedMode);
       const matchesUni = !selectedUni || uni === selectedUni;
-      const matchesCourse = !selectedCourse || course === selectedCourse;
+      const matchesDate = !selectedDate || rdate.startsWith(selectedDate);
 
-      return matchesQ && matchesUni && matchesCourse;
+      return matchesQ && matchesType && matchesMode && matchesUni && matchesDate;
     });
 
-    showingBadge.textContent = `Showing ${filteredRows.length} of ${allRows.length} Students`;
+    showingBadge.textContent = `Showing ${filteredRows.length} of ${allRows.length} Records`;
 
     // 2. Paginate
     const totalItems = filteredRows.length;
@@ -486,22 +481,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const startIdx = (currentPage - 1) * effectivePerPage;
     const endIdx = effectivePerPage === 'all' ? totalItems : Math.min(startIdx + effectivePerPage, totalItems);
 
-    // Hide all rows first
     allRows.forEach(row => row.style.display = 'none');
-
-    // Show only the page subset of filtered rows
     filteredRows.slice(startIdx, endIdx).forEach(row => {
       row.style.display = '';
     });
 
-    // Update pagination summary
     if (totalItems === 0) {
-      paginationSummary.textContent = 'No matching students found';
+      paginationSummary.textContent = 'No matching records found';
     } else {
-      paginationSummary.textContent = `Showing ${startIdx + 1} to ${endIdx} of ${totalItems} entries`;
+      paginationSummary.textContent = `Showing ${startIdx + 1} to ${endIdx} of ${totalItems} records`;
     }
 
-    // Build pagination links
     renderPagination(totalPages);
   }
 
@@ -522,7 +512,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     paginationUl.appendChild(prevLi);
 
-    // Page Numbers (sliding window)
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, startPage + 4);
     if (endPage - startPage < 4) {
@@ -556,21 +545,11 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Event Listeners
-  searchInput.addEventListener('input', function() {
-    currentPage = 1;
-    filterAndPaginate();
-  });
-
-  uniFilter.addEventListener('change', function() {
-    currentPage = 1;
-    filterAndPaginate();
-  });
-
-  courseFilter.addEventListener('change', function() {
-    currentPage = 1;
-    filterAndPaginate();
-  });
-
+  searchInput.addEventListener('input', () => { currentPage = 1; filterAndPaginate(); });
+  typeFilter.addEventListener('change', () => { currentPage = 1; filterAndPaginate(); });
+  modeFilter.addEventListener('change', () => { currentPage = 1; filterAndPaginate(); });
+  uniFilter.addEventListener('change', () => { currentPage = 1; filterAndPaginate(); });
+  dateFilter.addEventListener('change', () => { currentPage = 1; filterAndPaginate(); });
   perPageSelect.addEventListener('change', function() {
     perPage = this.value;
     currentPage = 1;
@@ -579,29 +558,193 @@ document.addEventListener('DOMContentLoaded', function() {
 
   resetBtn.addEventListener('click', function() {
     searchInput.value = '';
+    typeFilter.value = '';
+    modeFilter.value = '';
     uniFilter.value = '';
-    courseFilter.value = '';
+    dateFilter.value = '';
     perPageSelect.value = '25';
     perPage = 25;
     currentPage = 1;
     filterAndPaginate();
   });
 
-  // Initial call
   filterAndPaginate();
 });
 
-// Modal function
-function showStudentModal(name, id, course, uni, exps, date) {
-  document.getElementById('modalStudentName').textContent = name;
-  document.getElementById('modalStudentID').textContent = id;
-  document.getElementById('modalStudentCourse').textContent = course;
-  document.getElementById('modalStudentUniversity').textContent = uni;
-  document.getElementById('modalStudentExps').textContent = `${exps} tests`;
-  document.getElementById('modalStudentDate').textContent = date || 'N/A';
+// View Details Modal Loader
+function viewRecordDetails(tableType, recordId) {
+  const modalEl = document.getElementById('recordDetailModal');
+  const subtitleEl = document.getElementById('modalRecordSubtitle');
+  const contentEl = document.getElementById('modalRecordContent');
+  const pdfBtn = document.getElementById('modalDownloadPdfBtn');
 
-  const modal = new bootstrap.Modal(document.getElementById('studentDetailModal'));
+  subtitleEl.textContent = `Loading ${tableType.toUpperCase()} Record #${recordId}...`;
+  contentEl.innerHTML = `
+    <div class="text-center py-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>`;
+
+  const modal = new bootstrap.Modal(modalEl);
   modal.show();
+
+  fetch(`/portal-admin/record/${tableType}/${recordId}`)
+    .then(r => {
+      if (!r.ok) throw new Error('Record not found');
+      return r.json();
+    })
+    .then(data => {
+      subtitleEl.textContent = `${data.title || 'Experiment'} — Recorded on ${data.created_at || 'N/A'}`;
+      if (tableType === 'tensile') {
+        pdfBtn.href = `/report/${data.id}`;
+        contentEl.innerHTML = renderTensileDetails(data);
+      } else {
+        pdfBtn.href = `/hardness/report/${data.id}`;
+        contentEl.innerHTML = renderHardnessDetails(data);
+      }
+      if (window.renderMath) window.renderMath(contentEl);
+    })
+    .catch(err => {
+      contentEl.innerHTML = `
+        <div class="alert alert-danger mb-0">
+          <i class="fas fa-exclamation-triangle me-2"></i> Error loading experiment record: ${err.message}
+        </div>`;
+    });
+}
+
+function renderTensileDetails(d) {
+  const student = d.student_name || d.student_id || 'Student';
+  const uni = d.university || 'General Session';
+  const readings = d.readings || [];
+
+  return `
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <div class="p-3 bg-light rounded border">
+          <div class="small text-muted fw-bold text-uppercase">Student & Institution</div>
+          <div class="fs-5 fw-bold text-navy">${student}</div>
+          <div class="small text-secondary">${uni}</div>
+          <div class="small font-mono text-muted mt-1">Session ID: ${d.session_id || 'N/A'}</div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="p-3 bg-light rounded border">
+          <div class="small text-muted fw-bold text-uppercase">Specimen & Mode</div>
+          <div class="fs-5 fw-bold text-primary">${d.material_name || 'Specimen'}</div>
+          <div class="small text-secondary">Mode: ${d.mode || 'VIRTUAL_SIMULATION'} • Standard: ASTM E8</div>
+          <div class="small font-mono text-muted mt-1">Gauge Length: ${d.specimen_length || '50'} mm • Diameter: ${d.specimen_diameter || '12.5'} mm</div>
+        </div>
+      </div>
+    </div>
+
+    <h6 class="fw-bold text-navy mb-2"><i class="fas fa-calculator me-1 text-primary"></i> Calculated Mechanical Properties</h6>
+    <div class="row g-2 mb-3">
+      <div class="col-6 col-sm-3">
+        <div class="p-2 border rounded text-center">
+          <div class="small text-muted">Young's Modulus</div>
+          <div class="fw-bold font-mono text-navy">${d.youngs_modulus_gpa ? d.youngs_modulus_gpa + ' GPa' : '—'}</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="p-2 border rounded text-center">
+          <div class="small text-muted">Yield Strength</div>
+          <div class="fw-bold font-mono text-navy">${d.yield_strength_mpa ? d.yield_strength_mpa + ' MPa' : '—'}</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="p-2 border rounded text-center">
+          <div class="small text-muted">UTS</div>
+          <div class="fw-bold font-mono text-danger">${d.uts_mpa ? d.uts_mpa + ' MPa' : '—'}</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="p-2 border rounded text-center">
+          <div class="small text-muted">% Elongation</div>
+          <div class="fw-bold font-mono text-success">${d.elongation_pct ? d.elongation_pct + ' %' : '—'}</div>
+        </div>
+      </div>
+    </div>
+
+    <h6 class="fw-bold text-navy mb-2"><i class="fas fa-table me-1 text-steel"></i> Recorded Observations (${readings.length} points)</h6>
+    <div class="table-responsive rounded border" style="max-height: 200px; overflow-y: auto;">
+      <table class="table table-sm table-striped font-mono small mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Load (kN)</th>
+            <th>Elongation (mm)</th>
+            <th>Stress (MPa)</th>
+            <th>Strain (mm/mm)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${readings.map((r, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td>${r.load_kn !== undefined ? r.load_kn : '—'}</td>
+              <td>${r.elongation_mm !== undefined ? r.elongation_mm : '—'}</td>
+              <td>${r.stress_mpa !== undefined ? r.stress_mpa : '—'}</td>
+              <td>${r.strain !== undefined ? r.strain : '—'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderHardnessDetails(d) {
+  const student = d.student_name || d.student_id || 'Student';
+  const uni = d.university || 'General Session';
+  const readings = d.readings || [];
+
+  return `
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <div class="p-3 bg-light rounded border">
+          <div class="small text-muted fw-bold text-uppercase">Student & Institution</div>
+          <div class="fs-5 fw-bold text-navy">${student}</div>
+          <div class="small text-secondary">${uni}</div>
+          <div class="small font-mono text-muted mt-1">Session ID: ${d.session_id || 'N/A'}</div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="p-3 bg-light rounded border">
+          <div class="small text-muted fw-bold text-uppercase">Test Method & Specimen</div>
+          <div class="fs-5 fw-bold text-primary">${d.method} Hardness Test</div>
+          <div class="small text-secondary">Material: <strong>${d.material_name}</strong> • Mode: ${d.mode}</div>
+          <div class="small font-mono text-muted mt-1">Mean Hardness: <strong>${d.mean_hardness ? d.mean_hardness.toFixed(1) : '—'} ${d.hardness_unit}</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <h6 class="fw-bold text-navy mb-2"><i class="fas fa-list-ol me-1 text-primary"></i> Indentation Readings (${readings.length} Trials)</h6>
+    <div class="table-responsive rounded border" style="max-height: 220px; overflow-y: auto;">
+      <table class="table table-sm table-striped font-mono small mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Trial #</th>
+            <th>${d.method === 'BRINELL' ? 'd1 (mm)' : 'Scale'}</th>
+            <th>${d.method === 'BRINELL' ? 'd2 (mm)' : 'Indenter'}</th>
+            <th>${d.method === 'BRINELL' ? 'Mean d (mm)' : 'Load (kgf)'}</th>
+            <th>Hardness Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${readings.map((r, i) => `
+            <tr>
+              <td>Trial ${r.trial_number || (i + 1)}</td>
+              <td>${d.method === 'BRINELL' ? (r.d1_mm || '—') : (r.scale || d.scale || '—')}</td>
+              <td>${d.method === 'BRINELL' ? (r.d2_mm || '—') : (r.indenter_type || d.indenter_type || '—')}</td>
+              <td>${d.method === 'BRINELL' ? (r.mean_d_mm || '—') : (r.total_load_kgf || d.total_load_kgf || '—')}</td>
+              <td class="fw-bold text-primary">${r.hardness_value ? r.hardness_value.toFixed(1) : '—'} ${d.hardness_unit}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
 }
 </script>
 {% endblock %}

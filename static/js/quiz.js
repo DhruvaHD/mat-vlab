@@ -64,10 +64,10 @@ function submitQuiz() {
 
       if (optVal === q.correct_option) {
         btn.classList.add('btn-success', 'text-white');
-        btn.innerHTML += ' <i class="fas fa-check-circle ms-2"></i> (Correct)';
+        btn.insertAdjacentHTML('beforeend', ' <i class="fas fa-check-circle ms-2"></i> (Correct)');
       } else if (optVal === userChoice && !isCorrect) {
         btn.classList.add('btn-danger', 'text-white');
-        btn.innerHTML += ' <i class="fas fa-times-circle ms-2"></i> (Your Choice)';
+        btn.insertAdjacentHTML('beforeend', ' <i class="fas fa-times-circle ms-2"></i> (Your Choice)');
       }
     });
 
@@ -75,6 +75,9 @@ function submitQuiz() {
     const expDiv = document.getElementById(`explanation-${q.id}`);
     if (expDiv) {
       expDiv.classList.remove('d-none');
+    }
+    if (typeof window.renderMath === 'function') {
+      window.renderMath(card);
     }
   });
 

@@ -8,9 +8,13 @@ import unittest
 import tempfile
 import shutil
 
-# Ensure scratch/lib is on sys.path
-sys.path.insert(0, '/home/hd/.gemini/antigravity/scratch/lib')
-sys.path.insert(0, '/home/hd/.gemini/antigravity/scratch/mat-vlab')
+# Ensure paths are configured
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+for lib_path in ['/home/hd/.gemini/antigravity/scratch/lib', os.path.abspath(os.path.join(BASE_DIR, '..', 'lib'))]:
+    if os.path.exists(lib_path) and lib_path not in sys.path:
+        sys.path.insert(0, lib_path)
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
 class TestProductionDeployment(unittest.TestCase):
 
@@ -26,7 +30,10 @@ class TestProductionDeployment(unittest.TestCase):
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_dynamic_config_loading(self):
-        from config import Config
+        import importlib
+        import config
+        importlib.reload(config)
+        Config = config.Config
         self.assertEqual(Config.DATABASE, self.test_db_path)
         self.assertEqual(Config.SECRET_KEY, 'test-production-secret-987654321')
         self.assertEqual(Config.FLASK_ENV, 'production')

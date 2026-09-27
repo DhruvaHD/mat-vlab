@@ -24,16 +24,19 @@
         </p>
         <div class="d-flex flex-wrap gap-3">
           <a href="{{ url_for('experiments') }}" class="btn btn-lab-primary btn-lg">
-            <i class="fas fa-compass me-2"></i> Explore Experiments
+            <i class="fas fa-compass me-2"></i> Explore All Experiments
           </a>
-          <a href="{{ url_for('simulation') }}" class="btn btn-lab-secondary btn-lg">
-            <i class="fas fa-desktop text-info me-2"></i> Start Virtual Lab
+          <a href="{{ url_for('tensile_hub') }}" class="btn btn-lab-secondary btn-lg">
+            <i class="fas fa-compress-arrows-alt text-primary me-2"></i> Tensile Test (UTM)
+          </a>
+          <a href="{{ url_for('hardness_hub') }}" class="btn btn-lab-secondary btn-lg">
+            <i class="fas fa-bullseye text-warning me-2"></i> Hardness Test (Brinell &amp; Rockwell)
           </a>
         </div>
-        <div class="mt-4 pt-3 border-top border-secondary border-opacity-25 d-flex gap-4 text-muted small">
-          <div><i class="fas fa-check-circle text-success me-1"></i> ASTM E8 Proportional Tensile</div>
-          <div><i class="fas fa-check-circle text-success me-1"></i> Dual Mode (Sim + Manual)</div>
-          <div><i class="fas fa-check-circle text-success me-1"></i> Downloadable PDF Reports</div>
+        <div class="mt-4 pt-3 border-top border-secondary border-opacity-25 d-flex gap-4 text-muted small flex-wrap">
+          <div><i class="fas fa-check-circle text-success me-1"></i> Tensile &amp; Hardness Laboratories</div>
+          <div><i class="fas fa-check-circle text-success me-1"></i> Dual Mode (Simulation + Manual Entry)</div>
+          <div><i class="fas fa-check-circle text-success me-1"></i> Certified PDF Reports</div>
         </div>
       </div>
       <div class="col-lg-6">
@@ -223,6 +226,69 @@
           <img src="{{ url_for('static', filename='images/specimen_diagram.svg') }}" alt="ASTM Tensile Specimen" class="img-fluid rounded w-100 mb-3">
           <div class="text-center">
             <span class="badge bg-light text-primary border">ASTM E8 / ISO 6892 Standard Specimen Model</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Flagship Experiment Showcase: Hardness Testing (Brinell & Rockwell) -->
+<section class="py-5" style="background-color: var(--bg-primary); border-bottom: 1px solid var(--border-color);">
+  <div class="container py-3">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6 order-lg-2">
+        <div class="badge-lab mb-2">
+          <span class="badge-pulse"></span> Complete Module: ASTM Standards
+        </div>
+        <h2 class="fw-bold text-navy fs-1 mb-3">Hardness Testing Laboratory</h2>
+        <p class="text-secondary mb-4">
+          Characterize material resistance to localized plastic deformation using industrial Brinell and Rockwell methodologies. Explore complete machine anatomy, standard indenter geometries, load sequences, step-by-step mathematical calculations, and instant PDF report generation.
+        </p>
+
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6">
+            <div class="p-3 rounded border border-secondary border-opacity-25" style="background: var(--bg-card);">
+              <div class="fw-bold text-primary fs-5 mb-1"><i class="fas fa-circle me-1"></i> Brinell (ASTM E10)</div>
+              <p class="text-secondary small mb-0">Tungsten carbide ball indentation, optical impression diameter micrometer readings, and HBW calculations.</p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="p-3 rounded border border-secondary border-opacity-25" style="background: var(--bg-card);">
+              <div class="fw-bold text-danger fs-5 mb-1"><i class="fas fa-gem me-1"></i> Rockwell (ASTM E18)</div>
+              <p class="text-secondary small mb-0">Direct dial depth measurement across HRA, HRB, HRC, HRD, HRF scales with diamond brale and steel ball indenters.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-3">
+          <a href="{{ url_for('hardness_hub') }}" class="btn btn-lab-primary">
+            <i class="fas fa-microscope me-2"></i> Open Hardness Testing Lab
+          </a>
+          <a href="{{ url_for('hardness_brinell') }}" class="btn btn-outline-primary">
+            <i class="fas fa-circle me-1"></i> Brinell Test
+          </a>
+          <a href="{{ url_for('hardness_rockwell') }}" class="btn btn-outline-danger">
+            <i class="fas fa-gem me-1"></i> Rockwell Test
+          </a>
+        </div>
+      </div>
+
+      <div class="col-lg-6 order-lg-1">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="lab-card p-3 text-center h-100 shadow-sm border border-primary border-opacity-25">
+              <img src="{{ url_for('static', filename='images/brinell_tester.svg') }}" alt="Brinell Hardness Tester" class="img-fluid rounded mb-2" style="max-height: 180px;">
+              <div class="fw-bold text-navy small">Brinell Machine</div>
+              <span class="badge bg-light text-primary border font-mono small">ASTM E10</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="lab-card p-3 text-center h-100 shadow-sm border border-danger border-opacity-25">
+              <img src="{{ url_for('static', filename='images/rockwell_tester.svg') }}" alt="Rockwell Hardness Tester" class="img-fluid rounded mb-2" style="max-height: 180px;">
+              <div class="fw-bold text-navy small">Rockwell Machine</div>
+              <span class="badge bg-light text-danger border font-mono small">ASTM E18</span>
+            </div>
           </div>
         </div>
       </div>

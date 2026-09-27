@@ -14,228 +14,770 @@ def get_database_path():
 
 DATABASE_PATH = get_database_path()
 
+def get_database_url():
+    """
+    Returns normalized PostgreSQL DATABASE_URL if configured.
+    Normalizes 'postgres://' to 'postgresql://' for SQLAlchemy/psycopg compatibility.
+    """
+    url = os.environ.get('DATABASE_URL')
+    if url:
+        url = url.strip()
+        if url.startswith('postgres://'):
+            url = 'postgresql://' + url[len('postgres://'):]
+        if url:
+            return url
+    return None
+
+def is_postgres():
+    """Returns True if a PostgreSQL DATABASE_URL is configured."""
+    return bool(get_database_url())
+
+def convert_sql_placeholders(query: str) -> str:
+    """
+    Safely converts SQLite '?' parameter placeholders to PostgreSQL '%s'
+    while preserving literal question marks inside single-quoted strings.
+    """
+    parts = []
+    in_quote = False
+    for char in query:
+        if char == "'":
+            in_quote = not in_quote
+            parts.append(char)
+        elif char == '?' and not in_quote:
+            parts.append('%s')
+        else:
+            parts.append(char)
+    return ''.join(parts)
+
+
+class PgRow(dict):
+    """
+    Row wrapper that supports:
+    - Case-insensitive string access: row['column_name']
+    - Tuple/integer indexing: row[0], row[1]
+    - Direct dict conversion: dict(row)
+    - Dictionary methods: get(), keys(), values(), items()
+    - Key containment check: 'col' in row
+    """
+    def __init__(self, description, tuple_row):
+        self._col_names = [d[0].lower() if isinstance(d, (list, tuple)) else d.name.lower() for d in description] if description else []
+        self._values = tuple_row
+        d = {name: val for name, val in zip(self._col_names, tuple_row)} if description else {}
+        super().__init__(d)
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self._values[key]
+        return super().__getitem__(str(key).lower())
+
+    def get(self, key, default=None):
+        if isinstance(key, int):
+            try:
+                return self._values[key]
+            except IndexError:
+                return default
+        return super().get(str(key).lower(), default)
+
+    def __contains__(self, key):
+        if isinstance(key, int):
+            return 0 <= key < len(self._values)
+        return super().__contains__(str(key).lower())
+
+    def keys(self):
+        return self._col_names
+
+
+class PgCursor:
+    """
+    Cursor adapter for PostgreSQL wrapping a raw psycopg2 cursor.
+    Translates '?' placeholders to '%s' and intercepts INSERT queries to populate lastrowid via RETURNING id.
+    """
+    def __init__(self, raw_cursor):
+        self._cursor = raw_cursor
+        self.lastrowid = None
+
+    @property
+    def description(self):
+        return self._cursor.description
+
+    @property
+    def rowcount(self):
+        return self._cursor.rowcount
+
+    def execute(self, sql, params=None):
+        adapted_sql = convert_sql_placeholders(sql)
+        stripped = adapted_sql.strip()
+        is_insert = stripped.upper().startswith("INSERT INTO")
+        has_returning = "RETURNING" in stripped.upper()
+        
+        auto_returning = False
+        if is_insert and not has_returning:
+            adapted_sql = adapted_sql.rstrip().rstrip(';') + " RETURNING id"
+            auto_returning = True
+
+        if params is None:
+            self._cursor.execute(adapted_sql)
+        else:
+            if isinstance(params, (list, tuple)):
+                self._cursor.execute(adapted_sql, tuple(params))
+            else:
+                self._cursor.execute(adapted_sql, params)
+
+        if auto_returning:
+            try:
+                ret = self._cursor.fetchone()
+                if ret is not None:
+                    self.lastrowid = ret[0]
+            except Exception:
+                self.lastrowid = None
+        else:
+            self.lastrowid = None
+
+        return self
+
+    def executemany(self, sql, seq_of_parameters):
+        adapted_sql = convert_sql_placeholders(sql)
+        return self._cursor.executemany(adapted_sql, seq_of_parameters)
+
+    def fetchone(self):
+        row = self._cursor.fetchone()
+        if row is None:
+            return None
+        return PgRow(self._cursor.description, row)
+
+    def fetchall(self):
+        rows = self._cursor.fetchall()
+        if not rows:
+            return []
+        desc = self._cursor.description
+        return [PgRow(desc, r) for r in rows]
+
+    def fetchmany(self, size=None):
+        rows = self._cursor.fetchmany(size) if size is not None else self._cursor.fetchmany()
+        if not rows:
+            return []
+        desc = self._cursor.description
+        return [PgRow(desc, r) for r in rows]
+
+    def __iter__(self):
+        desc = self._cursor.description
+        for r in self._cursor:
+            yield PgRow(desc, r)
+
+    def close(self):
+        return self._cursor.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+
+class PgConnection:
+    """
+    Connection adapter for PostgreSQL wrapping a raw psycopg2 connection.
+    Implements conn.execute(), conn.cursor(), conn.commit(), conn.rollback(), and conn.close().
+    """
+    def __init__(self, raw_conn):
+        self._conn = raw_conn
+
+    def cursor(self):
+        return PgCursor(self._conn.cursor())
+
+    def execute(self, sql, params=None):
+        cur = self.cursor()
+        cur.execute(sql, params)
+        return cur
+
+    def commit(self):
+        return self._conn.commit()
+
+    def rollback(self):
+        return self._conn.rollback()
+
+    def close(self):
+        return self._conn.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            self.rollback()
+        else:
+            self.commit()
+
+
 def get_db_connection():
-    db_path = get_database_path()
-    parent_dir = os.path.dirname(db_path)
-    if parent_dir and not os.path.exists(parent_dir):
-        os.makedirs(parent_dir, exist_ok=True)
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
-    return conn
+    """
+    Returns an active database connection.
+    Connects to PostgreSQL if DATABASE_URL is set; otherwise falls back to SQLite.
+    """
+    pg_url = get_database_url()
+    if pg_url:
+        try:
+            import psycopg2
+        except ImportError:
+            try:
+                import psycopg as psycopg2
+            except ImportError:
+                raise ImportError(
+                    "PostgreSQL DATABASE_URL is configured, but 'psycopg2' (or 'psycopg') is not installed. "
+                    "Please ensure 'psycopg2-binary' is in requirements.txt and installed."
+                )
+        raw_conn = psycopg2.connect(pg_url)
+        return PgConnection(raw_conn)
+    else:
+        db_path = get_database_path()
+        parent_dir = os.path.dirname(db_path)
+        if parent_dir and not os.path.exists(parent_dir):
+            os.makedirs(parent_dir, exist_ok=True)
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        return conn
+
+
+def sync_all_postgres_sequences(pg_conn):
+    """
+    Synchronizes PostgreSQL auto-increment sequences (SERIAL) to COALESCE(MAX(id), 1)
+    to prevent unique key constraint violations after inserting records with explicit IDs.
+    """
+    tables = [
+        'materials', 'students', 'admin_credentials', 'quiz_questions',
+        'experiments', 'experiment_readings', 'experiment_results',
+        'hardness_experiments', 'hardness_readings', 'quiz_results',
+        'login_activity', 'activity_logs'
+    ]
+    cur = pg_conn.cursor()
+    for table in tables:
+        try:
+            sql = f"""
+            SELECT setval(
+                pg_get_serial_sequence('{table}', 'id'),
+                COALESCE((SELECT MAX(id) FROM {table}), 1)
+            )
+            """
+            cur.execute(sql)
+        except Exception:
+            pass
+
+
+def auto_migrate_sqlite_to_postgres_if_empty(pg_conn):
+    """
+    If PostgreSQL is connected and 'students' table has 0 rows, checks if a local
+    SQLite materials.db exists with existing student records.
+    If so, automatically copies all existing records into PostgreSQL and synchronizes
+    sequences so that production deployments on Render never lose previous student data.
+    """
+    try:
+        cur = pg_conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM students")
+        pg_student_count = cur.fetchone()[0]
+        if pg_student_count > 0:
+            return  # Already populated in PostgreSQL; do not overwrite.
+
+        # Look for local SQLite database
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        candidate_paths = [
+            os.environ.get('DATABASE_PATH'),
+            os.path.join(base_dir, 'materials.db'),
+            os.path.join(base_dir, 'materials_backup.db'),
+            '/home/hd/.gemini/antigravity/scratch/materials_backup.db'
+        ]
+        sqlite_path = None
+        for p in candidate_paths:
+            if p and os.path.exists(p) and os.path.isfile(p):
+                sqlite_path = p
+                break
+
+        if not sqlite_path:
+            return
+
+        src_conn = sqlite3.connect(sqlite_path)
+        src_conn.row_factory = sqlite3.Row
+        src_cur = src_conn.cursor()
+
+        src_cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='students'")
+        if not src_cur.fetchone():
+            src_conn.close()
+            return
+        
+        src_cur.execute("SELECT COUNT(*) FROM students")
+        src_student_count = src_cur.fetchone()[0]
+        if src_student_count == 0:
+            src_conn.close()
+            return
+
+        print(f"[*] MAT-VLAB Auto-Migration: Migrating {src_student_count} students and experiment data from {sqlite_path} to PostgreSQL...")
+        
+        tables = [
+            'materials', 'students', 'admin_credentials', 'quiz_questions',
+            'experiments', 'experiment_readings', 'experiment_results',
+            'hardness_experiments', 'hardness_readings', 'quiz_results',
+            'login_activity', 'activity_logs'
+        ]
+
+        for table in tables:
+            src_cur.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}'")
+            if not src_cur.fetchone():
+                continue
+            
+            src_cur.execute(f"SELECT * FROM {table}")
+            rows = src_cur.fetchall()
+            if not rows:
+                continue
+
+            cols = [d[0] for d in src_cur.description]
+            col_str = ', '.join([f'"{c}"' for c in cols])
+            val_placeholders = ', '.join(['%s' for _ in cols])
+            
+            for row in rows:
+                val_tuple = tuple(row[c] for c in cols)
+                cur.execute(f"INSERT INTO {table} ({col_str}) VALUES ({val_placeholders}) ON CONFLICT DO NOTHING", val_tuple)
+
+        sync_all_postgres_sequences(pg_conn)
+        pg_conn.commit()
+        src_conn.close()
+        print("[+] MAT-VLAB Auto-Migration: Successfully migrated student accounts to PostgreSQL!")
+    except Exception as e:
+        print(f"[!] Warning: Auto-migration to PostgreSQL encountered an issue: {e}")
+
 
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Materials table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS materials (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        slug TEXT UNIQUE NOT NULL,
-        category TEXT NOT NULL,
-        density_g_cm3 REAL NOT NULL,
-        youngs_modulus_gpa REAL NOT NULL,
-        yield_strength_mpa REAL NOT NULL,
-        uts_mpa REAL NOT NULL,
-        elongation_pct REAL NOT NULL,
-        reduction_area_pct REAL,
-        poisson_ratio REAL,
-        standard_ref TEXT,
-        description TEXT,
-        applications TEXT,
-        is_reference INTEGER DEFAULT 1
-    )
-    ''')
+    if is_postgres():
+        # PostgreSQL Schema Initialization
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS materials (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            slug TEXT UNIQUE NOT NULL,
+            category TEXT NOT NULL,
+            density_g_cm3 DOUBLE PRECISION NOT NULL,
+            youngs_modulus_gpa DOUBLE PRECISION NOT NULL,
+            yield_strength_mpa DOUBLE PRECISION NOT NULL,
+            uts_mpa DOUBLE PRECISION NOT NULL,
+            elongation_pct DOUBLE PRECISION NOT NULL,
+            reduction_area_pct DOUBLE PRECISION,
+            poisson_ratio DOUBLE PRECISION,
+            standard_ref TEXT,
+            description TEXT,
+            applications TEXT,
+            is_reference INTEGER DEFAULT 1
+        )
+        ''')
 
-    # Experiments table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS experiments (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        experiment_type TEXT NOT NULL,
-        mode TEXT NOT NULL, -- 'VIRTUAL_SIMULATION' or 'MANUAL_ENTRY'
-        material_name TEXT NOT NULL,
-        original_diameter REAL NOT NULL,
-        original_gauge_length REAL NOT NULL,
-        final_gauge_length REAL,
-        final_diameter REAL,
-        notes TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-    ''')
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS experiments (
+            id SERIAL PRIMARY KEY,
+            title TEXT NOT NULL,
+            experiment_type TEXT NOT NULL,
+            mode TEXT NOT NULL,
+            material_name TEXT NOT NULL,
+            original_diameter DOUBLE PRECISION NOT NULL,
+            original_gauge_length DOUBLE PRECISION NOT NULL,
+            final_gauge_length DOUBLE PRECISION,
+            final_diameter DOUBLE PRECISION,
+            notes TEXT,
+            student_id TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
 
-    # Experiment readings table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS experiment_readings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        experiment_id INTEGER NOT NULL,
-        reading_number INTEGER NOT NULL,
-        load_n REAL NOT NULL,
-        extension_mm REAL NOT NULL,
-        stress_mpa REAL,
-        strain REAL,
-        FOREIGN KEY (experiment_id) REFERENCES experiments (id) ON DELETE CASCADE
-    )
-    ''')
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS experiment_readings (
+            id SERIAL PRIMARY KEY,
+            experiment_id INTEGER NOT NULL REFERENCES experiments (id) ON DELETE CASCADE,
+            reading_number INTEGER NOT NULL,
+            load_n DOUBLE PRECISION NOT NULL,
+            extension_mm DOUBLE PRECISION NOT NULL,
+            stress_mpa DOUBLE PRECISION,
+            strain DOUBLE PRECISION
+        )
+        ''')
 
-    # Experiment results table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS experiment_results (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        experiment_id INTEGER UNIQUE NOT NULL,
-        cross_sectional_area REAL NOT NULL,
-        youngs_modulus_gpa REAL,
-        yield_strength_mpa REAL,
-        uts_mpa REAL,
-        max_load_n REAL,
-        elongation_pct REAL,
-        reduction_area_pct REAL,
-        modulus_of_resilience_mj_m3 REAL,
-        toughness_mj_m3 REAL,
-        conclusion TEXT,
-        FOREIGN KEY (experiment_id) REFERENCES experiments (id) ON DELETE CASCADE
-    )
-    ''')
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS experiment_results (
+            id SERIAL PRIMARY KEY,
+            experiment_id INTEGER UNIQUE NOT NULL REFERENCES experiments (id) ON DELETE CASCADE,
+            cross_sectional_area DOUBLE PRECISION NOT NULL,
+            youngs_modulus_gpa DOUBLE PRECISION,
+            yield_strength_mpa DOUBLE PRECISION,
+            uts_mpa DOUBLE PRECISION,
+            max_load_n DOUBLE PRECISION,
+            elongation_pct DOUBLE PRECISION,
+            reduction_area_pct DOUBLE PRECISION,
+            modulus_of_resilience_mj_m3 DOUBLE PRECISION,
+            toughness_mj_m3 DOUBLE PRECISION,
+            conclusion TEXT
+        )
+        ''')
 
-    # Quiz questions table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS quiz_questions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        experiment_type TEXT NOT NULL,
-        question TEXT NOT NULL,
-        option_a TEXT NOT NULL,
-        option_b TEXT NOT NULL,
-        option_c TEXT NOT NULL,
-        option_d TEXT NOT NULL,
-        correct_option TEXT NOT NULL, -- 'A', 'B', 'C', or 'D'
-        explanation TEXT NOT NULL,
-        difficulty TEXT DEFAULT 'Intermediate'
-    )
-    ''')
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS quiz_questions (
+            id SERIAL PRIMARY KEY,
+            experiment_type TEXT NOT NULL,
+            question TEXT NOT NULL,
+            option_a TEXT NOT NULL,
+            option_b TEXT NOT NULL,
+            option_c TEXT NOT NULL,
+            option_d TEXT NOT NULL,
+            correct_option TEXT NOT NULL,
+            explanation TEXT NOT NULL,
+            difficulty TEXT DEFAULT 'Intermediate'
+        )
+        ''')
 
-    # Quiz results table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS quiz_results (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        experiment_id INTEGER,
-        experiment_type TEXT NOT NULL,
-        score INTEGER NOT NULL,
-        total_questions INTEGER NOT NULL,
-        percentage REAL NOT NULL,
-        student_id TEXT,
-        completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (experiment_id) REFERENCES experiments (id) ON DELETE SET NULL
-    )
-    ''')
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS quiz_results (
+            id SERIAL PRIMARY KEY,
+            experiment_id INTEGER REFERENCES experiments (id) ON DELETE SET NULL,
+            experiment_type TEXT NOT NULL,
+            score INTEGER NOT NULL,
+            total_questions INTEGER NOT NULL,
+            percentage DOUBLE PRECISION NOT NULL,
+            student_id TEXT,
+            completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
 
-    # Students table (unique student_id with COLLATE NOCASE, name, course, university, pin_hash, last_login_at)
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS students (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_id TEXT UNIQUE NOT NULL COLLATE NOCASE,
-        name TEXT NOT NULL,
-        course TEXT NOT NULL,
-        university TEXT NOT NULL,
-        pin_hash TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        last_login_at TIMESTAMP
-    )
-    ''')
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS students (
+            id SERIAL PRIMARY KEY,
+            student_id TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            course TEXT NOT NULL,
+            university TEXT NOT NULL,
+            pin_hash TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_login_at TIMESTAMP
+        )
+        ''')
 
-    # Migrate columns if existing students table lacks pin_hash or last_login_at
-    cursor.execute("PRAGMA table_info(students)")
-    student_cols = [col['name'] for col in cursor.fetchall()]
-    if 'pin_hash' not in student_cols:
-        cursor.execute("ALTER TABLE students ADD COLUMN pin_hash TEXT")
-    if 'last_login_at' not in student_cols:
-        cursor.execute("ALTER TABLE students ADD COLUMN last_login_at TIMESTAMP")
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS login_activity (
+            id SERIAL PRIMARY KEY,
+            student_id TEXT NOT NULL,
+            ip_address TEXT,
+            user_agent TEXT,
+            login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
 
-    # Login activity table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS login_activity (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_id TEXT NOT NULL,
-        ip_address TEXT,
-        user_agent TEXT,
-        login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-    ''')
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS activity_logs (
+            id SERIAL PRIMARY KEY,
+            student_id TEXT,
+            activity_type TEXT NOT NULL,
+            details TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
 
-    # Activity logs table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS activity_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_id TEXT,
-        activity_type TEXT NOT NULL, -- 'EXPERIMENT_START', 'EXPERIMENT_SAVE', 'QUIZ_ATTEMPT', 'REPORT_DOWNLOAD'
-        details TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-    ''')
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS admin_credentials (
+            id SERIAL PRIMARY KEY,
+            username TEXT NOT NULL,
+            password_hash TEXT NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
 
-    # Ensure student_id column exists in experiments table
-    cursor.execute("PRAGMA table_info(experiments)")
-    columns = [col['name'] for col in cursor.fetchall()]
-    if 'student_id' not in columns:
-        cursor.execute("ALTER TABLE experiments ADD COLUMN student_id TEXT")
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS hardness_experiments (
+            id SERIAL PRIMARY KEY,
+            student_id TEXT NOT NULL,
+            title TEXT NOT NULL,
+            method TEXT NOT NULL,
+            mode TEXT NOT NULL,
+            material_name TEXT NOT NULL,
+            data_origin TEXT NOT NULL,
+            parameters_json TEXT,
+            mean_hardness DOUBLE PRECISION NOT NULL,
+            hardness_unit TEXT NOT NULL,
+            num_readings INTEGER NOT NULL,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
 
-    # Ensure student_id column exists in quiz_results table
-    cursor.execute("PRAGMA table_info(quiz_results)")
-    quiz_cols = [col['name'] for col in cursor.fetchall()]
-    if 'student_id' not in quiz_cols:
-        cursor.execute("ALTER TABLE quiz_results ADD COLUMN student_id TEXT")
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS hardness_readings (
+            id SERIAL PRIMARY KEY,
+            experiment_id INTEGER NOT NULL REFERENCES hardness_experiments (id) ON DELETE CASCADE,
+            trial_number INTEGER NOT NULL,
+            d1_mm DOUBLE PRECISION,
+            d2_mm DOUBLE PRECISION,
+            mean_d_mm DOUBLE PRECISION,
+            depth_mm DOUBLE PRECISION,
+            hardness_value DOUBLE PRECISION NOT NULL
+        )
+        ''')
 
-    # Admin credentials table
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS admin_credentials (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL,
-        password_hash TEXT NOT NULL,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-    ''')
+        cursor.execute("ALTER TABLE students ADD COLUMN IF NOT EXISTS pin_hash TEXT")
+        cursor.execute("ALTER TABLE students ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP")
+        cursor.execute("ALTER TABLE experiments ADD COLUMN IF NOT EXISTS student_id TEXT")
+        cursor.execute("ALTER TABLE experiments ADD COLUMN IF NOT EXISTS student_name TEXT")
+        cursor.execute("ALTER TABLE experiments ADD COLUMN IF NOT EXISTS university TEXT")
+        cursor.execute("ALTER TABLE experiments ADD COLUMN IF NOT EXISTS session_id TEXT")
+        cursor.execute("ALTER TABLE quiz_results ADD COLUMN IF NOT EXISTS student_id TEXT")
+        cursor.execute("ALTER TABLE quiz_results ADD COLUMN IF NOT EXISTS student_name TEXT")
+        cursor.execute("ALTER TABLE quiz_results ADD COLUMN IF NOT EXISTS university TEXT")
+        cursor.execute("ALTER TABLE quiz_results ADD COLUMN IF NOT EXISTS session_id TEXT")
+        cursor.execute("ALTER TABLE hardness_experiments ADD COLUMN IF NOT EXISTS student_name TEXT")
+        cursor.execute("ALTER TABLE hardness_experiments ADD COLUMN IF NOT EXISTS university TEXT")
+        cursor.execute("ALTER TABLE hardness_experiments ADD COLUMN IF NOT EXISTS session_id TEXT")
+        cursor.execute("ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS student_name TEXT")
+        cursor.execute("ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS university TEXT")
+        cursor.execute("ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS session_id TEXT")
+
+        # Auto-migrate SQLite data if this is a fresh PostgreSQL instance
+        auto_migrate_sqlite_to_postgres_if_empty(conn)
+
+    else:
+        # SQLite Schema Initialization
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS materials (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            slug TEXT UNIQUE NOT NULL,
+            category TEXT NOT NULL,
+            density_g_cm3 REAL NOT NULL,
+            youngs_modulus_gpa REAL NOT NULL,
+            yield_strength_mpa REAL NOT NULL,
+            uts_mpa REAL NOT NULL,
+            elongation_pct REAL NOT NULL,
+            reduction_area_pct REAL,
+            poisson_ratio REAL,
+            standard_ref TEXT,
+            description TEXT,
+            applications TEXT,
+            is_reference INTEGER DEFAULT 1
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS experiments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            experiment_type TEXT NOT NULL,
+            mode TEXT NOT NULL, -- 'VIRTUAL_SIMULATION' or 'MANUAL_ENTRY'
+            material_name TEXT NOT NULL,
+            original_diameter REAL NOT NULL,
+            original_gauge_length REAL NOT NULL,
+            final_gauge_length REAL,
+            final_diameter REAL,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS experiment_readings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            experiment_id INTEGER NOT NULL,
+            reading_number INTEGER NOT NULL,
+            load_n REAL NOT NULL,
+            extension_mm REAL NOT NULL,
+            stress_mpa REAL,
+            strain REAL,
+            FOREIGN KEY (experiment_id) REFERENCES experiments (id) ON DELETE CASCADE
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS experiment_results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            experiment_id INTEGER UNIQUE NOT NULL,
+            cross_sectional_area REAL NOT NULL,
+            youngs_modulus_gpa REAL,
+            yield_strength_mpa REAL,
+            uts_mpa REAL,
+            max_load_n REAL,
+            elongation_pct REAL,
+            reduction_area_pct REAL,
+            modulus_of_resilience_mj_m3 REAL,
+            toughness_mj_m3 REAL,
+            conclusion TEXT,
+            FOREIGN KEY (experiment_id) REFERENCES experiments (id) ON DELETE CASCADE
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS quiz_questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            experiment_type TEXT NOT NULL,
+            question TEXT NOT NULL,
+            option_a TEXT NOT NULL,
+            option_b TEXT NOT NULL,
+            option_c TEXT NOT NULL,
+            option_d TEXT NOT NULL,
+            correct_option TEXT NOT NULL, -- 'A', 'B', 'C', or 'D'
+            explanation TEXT NOT NULL,
+            difficulty TEXT DEFAULT 'Intermediate'
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS quiz_results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            experiment_id INTEGER,
+            experiment_type TEXT NOT NULL,
+            score INTEGER NOT NULL,
+            total_questions INTEGER NOT NULL,
+            percentage REAL NOT NULL,
+            student_id TEXT,
+            completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (experiment_id) REFERENCES experiments (id) ON DELETE SET NULL
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS students (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id TEXT UNIQUE NOT NULL COLLATE NOCASE,
+            name TEXT NOT NULL,
+            course TEXT NOT NULL,
+            university TEXT NOT NULL,
+            pin_hash TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_login_at TIMESTAMP
+        )
+        ''')
+
+        cursor.execute("PRAGMA table_info(students)")
+        student_cols = [col['name'] for col in cursor.fetchall()]
+        if 'pin_hash' not in student_cols:
+            cursor.execute("ALTER TABLE students ADD COLUMN pin_hash TEXT")
+        if 'last_login_at' not in student_cols:
+            cursor.execute("ALTER TABLE students ADD COLUMN last_login_at TIMESTAMP")
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS login_activity (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id TEXT NOT NULL,
+            ip_address TEXT,
+            user_agent TEXT,
+            login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS activity_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id TEXT,
+            activity_type TEXT NOT NULL, -- 'EXPERIMENT_START', 'EXPERIMENT_SAVE', 'QUIZ_ATTEMPT', 'REPORT_DOWNLOAD'
+            details TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute("PRAGMA table_info(experiments)")
+        columns = [col['name'] for col in cursor.fetchall()]
+        if 'student_id' not in columns:
+            cursor.execute("ALTER TABLE experiments ADD COLUMN student_id TEXT")
+        if 'student_name' not in columns:
+            cursor.execute("ALTER TABLE experiments ADD COLUMN student_name TEXT")
+        if 'university' not in columns:
+            cursor.execute("ALTER TABLE experiments ADD COLUMN university TEXT")
+        if 'session_id' not in columns:
+            cursor.execute("ALTER TABLE experiments ADD COLUMN session_id TEXT")
+
+        cursor.execute("PRAGMA table_info(quiz_results)")
+        quiz_cols = [col['name'] for col in cursor.fetchall()]
+        if 'student_id' not in quiz_cols:
+            cursor.execute("ALTER TABLE quiz_results ADD COLUMN student_id TEXT")
+        if 'student_name' not in quiz_cols:
+            cursor.execute("ALTER TABLE quiz_results ADD COLUMN student_name TEXT")
+        if 'university' not in quiz_cols:
+            cursor.execute("ALTER TABLE quiz_results ADD COLUMN university TEXT")
+        if 'session_id' not in quiz_cols:
+            cursor.execute("ALTER TABLE quiz_results ADD COLUMN session_id TEXT")
+
+        cursor.execute("PRAGMA table_info(activity_logs)")
+        act_cols = [col['name'] for col in cursor.fetchall()]
+        if 'student_name' not in act_cols:
+            cursor.execute("ALTER TABLE activity_logs ADD COLUMN student_name TEXT")
+        if 'university' not in act_cols:
+            cursor.execute("ALTER TABLE activity_logs ADD COLUMN university TEXT")
+        if 'session_id' not in act_cols:
+            cursor.execute("ALTER TABLE activity_logs ADD COLUMN session_id TEXT")
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS admin_credentials (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            password_hash TEXT NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS hardness_experiments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id TEXT,
+            student_name TEXT,
+            university TEXT,
+            session_id TEXT,
+            title TEXT NOT NULL,
+            method TEXT NOT NULL, -- 'BRINELL' or 'ROCKWELL'
+            mode TEXT NOT NULL, -- 'VIRTUAL_SIMULATION' or 'MANUAL_ENTRY'
+            material_name TEXT NOT NULL,
+            data_origin TEXT NOT NULL, -- 'SIMULATION / DEMONSTRATION DATA' or 'USER-ENTERED LABORATORY DATA'
+            parameters_json TEXT,
+            mean_hardness REAL NOT NULL,
+            hardness_unit TEXT NOT NULL, -- 'HBW', 'HRB', 'HRC', 'HRA'
+            num_readings INTEGER NOT NULL,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute("PRAGMA table_info(hardness_experiments)")
+        h_cols = [col['name'] for col in cursor.fetchall()]
+        if 'student_name' not in h_cols:
+            cursor.execute("ALTER TABLE hardness_experiments ADD COLUMN student_name TEXT")
+        if 'university' not in h_cols:
+            cursor.execute("ALTER TABLE hardness_experiments ADD COLUMN university TEXT")
+        if 'session_id' not in h_cols:
+            cursor.execute("ALTER TABLE hardness_experiments ADD COLUMN session_id TEXT")
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS hardness_readings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            experiment_id INTEGER NOT NULL,
+            trial_number INTEGER NOT NULL,
+            d1_mm REAL,
+            d2_mm REAL,
+            mean_d_mm REAL,
+            depth_mm REAL,
+            hardness_value REAL NOT NULL,
+            FOREIGN KEY (experiment_id) REFERENCES hardness_experiments (id) ON DELETE CASCADE
+        )
+        ''')
+
+    # Synchronize Administrator Credentials (works identically on SQLite & PostgreSQL)
+    env_user = os.environ.get('ADMIN_USERNAME')
+    env_hash = os.environ.get('ADMIN_PASSWORD_HASH')
+    env_pass = os.environ.get('ADMIN_PASSWORD')
+
     cursor.execute('SELECT COUNT(*) as count FROM admin_credentials')
-    if cursor.fetchone()['count'] == 0:
-        default_user = os.environ.get('ADMIN_USERNAME', 'admin')
-        default_pass = os.environ.get('ADMIN_PASSWORD', 'matvlab_admin_2024')
+    cred_count = cursor.fetchone()['count']
+
+    if env_user and (env_hash or env_pass):
+        final_hash = env_hash if env_hash else generate_password_hash(env_pass)
+        if cred_count == 0:
+            cursor.execute('INSERT INTO admin_credentials (username, password_hash) VALUES (?, ?)', (env_user.strip(), final_hash))
+        else:
+            cursor.execute('UPDATE admin_credentials SET username = ?, password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = (SELECT id FROM admin_credentials ORDER BY id ASC LIMIT 1)', (env_user.strip(), final_hash))
+    elif cred_count == 0:
         cursor.execute('''
         INSERT INTO admin_credentials (username, password_hash)
         VALUES (?, ?)
-        ''', (default_user, generate_password_hash(default_pass)))
-
-    # Hardness Experiments table (Brinell & Rockwell)
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS hardness_experiments (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_id TEXT NOT NULL,
-        title TEXT NOT NULL,
-        method TEXT NOT NULL, -- 'BRINELL' or 'ROCKWELL'
-        mode TEXT NOT NULL, -- 'VIRTUAL_SIMULATION' or 'MANUAL_ENTRY'
-        material_name TEXT NOT NULL,
-        data_origin TEXT NOT NULL, -- 'SIMULATION / DEMONSTRATION DATA' or 'USER-ENTERED LABORATORY DATA'
-        parameters_json TEXT,
-        mean_hardness REAL NOT NULL,
-        hardness_unit TEXT NOT NULL, -- 'HBW', 'HRB', 'HRC', 'HRA'
-        num_readings INTEGER NOT NULL,
-        notes TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-    ''')
-
-    # Hardness Readings table (Multiple trials)
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS hardness_readings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        experiment_id INTEGER NOT NULL,
-        trial_number INTEGER NOT NULL,
-        d1_mm REAL,
-        d2_mm REAL,
-        mean_d_mm REAL,
-        depth_mm REAL,
-        hardness_value REAL NOT NULL,
-        FOREIGN KEY (experiment_id) REFERENCES hardness_experiments (id) ON DELETE CASCADE
-    )
-    ''')
+        ''', ('admin', generate_password_hash('matvlab_admin_2024')))
 
     conn.commit()
 
@@ -567,18 +1109,22 @@ def get_material_by_id(material_id):
     return dict(material) if material else None
 
 # Experiment CRUD functions
-def save_experiment(data, student_id=None):
+def save_experiment(data, student_id=None, student_name=None, university=None, session_id=None):
     conn = get_db_connection()
     cursor = conn.cursor()
 
     sid = student_id or data.get('student_id')
+    s_name = student_name or data.get('student_name')
+    uni = university or data.get('university')
+    sess_id = session_id or data.get('session_id')
 
     cursor.execute('''
     INSERT INTO experiments (
         title, experiment_type, mode, material_name,
         original_diameter, original_gauge_length,
-        final_gauge_length, final_diameter, notes, student_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        final_gauge_length, final_diameter, notes,
+        student_id, student_name, university, session_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         data.get('title', 'Tensile Test Experiment'),
         data.get('experiment_type', 'tensile'),
@@ -589,7 +1135,7 @@ def save_experiment(data, student_id=None):
         float(data['final_gauge_length']) if data.get('final_gauge_length') else None,
         float(data['final_diameter']) if data.get('final_diameter') else None,
         data.get('notes', ''),
-        sid
+        sid, s_name, uni, sess_id
     ))
 
     experiment_id = cursor.lastrowid
@@ -656,25 +1202,28 @@ def get_experiment_by_id(experiment_id):
     conn.close()
     return exp_dict
 
-def get_all_experiments(student_id=None):
+def get_all_experiments(student_id=None, session_id=None, student_name=None):
     conn = get_db_connection()
-    if student_id:
-        experiments = conn.execute('''
-        SELECT e.*, r.uts_mpa, r.youngs_modulus_gpa, r.elongation_pct,
-               (SELECT COUNT(*) FROM experiment_readings WHERE experiment_id = e.id) as readings_count
-        FROM experiments e
-        LEFT JOIN experiment_results r ON e.id = r.experiment_id
-        WHERE LOWER(e.student_id) = LOWER(?)
-        ORDER BY e.created_at DESC
-        ''', (student_id.strip(),)).fetchall()
-    else:
-        experiments = conn.execute('''
-        SELECT e.*, r.uts_mpa, r.youngs_modulus_gpa, r.elongation_pct,
-               (SELECT COUNT(*) FROM experiment_readings WHERE experiment_id = e.id) as readings_count
-        FROM experiments e
-        LEFT JOIN experiment_results r ON e.id = r.experiment_id
-        ORDER BY e.created_at DESC
-        ''').fetchall()
+    query = '''
+    SELECT e.*, r.uts_mpa, r.youngs_modulus_gpa, r.elongation_pct,
+           (SELECT COUNT(*) FROM experiment_readings WHERE experiment_id = e.id) as readings_count
+    FROM experiments e
+    LEFT JOIN experiment_results r ON e.id = r.experiment_id
+    WHERE 1=1
+    '''
+    params = []
+    if session_id:
+        query += ' AND e.session_id = ?'
+        params.append(session_id.strip())
+    elif student_id:
+        query += ' AND LOWER(e.student_id) = LOWER(?)'
+        params.append(student_id.strip())
+    elif student_name:
+        query += ' AND LOWER(e.student_name) = LOWER(?)'
+        params.append(student_name.strip())
+
+    query += ' ORDER BY e.created_at DESC'
+    experiments = conn.execute(query, tuple(params)).fetchall()
     conn.close()
     return [dict(e) for e in experiments]
 
@@ -707,14 +1256,14 @@ def get_quiz_questions(experiment_type='tensile', limit=10):
     conn.close()
     return [dict(q) for q in questions]
 
-def save_quiz_result(experiment_id, experiment_type, score, total_questions, student_id=None):
+def save_quiz_result(experiment_id, experiment_type, score, total_questions, student_id=None, student_name=None, university=None, session_id=None):
     conn = get_db_connection()
     cursor = conn.cursor()
     pct = round((score / total_questions) * 100.0, 1) if total_questions > 0 else 0.0
     cursor.execute('''
-    INSERT INTO quiz_results (experiment_id, experiment_type, score, total_questions, percentage, student_id)
-    VALUES (?, ?, ?, ?, ?, ?)
-    ''', (experiment_id, experiment_type, score, total_questions, pct, student_id))
+    INSERT INTO quiz_results (experiment_id, experiment_type, score, total_questions, percentage, student_id, student_name, university, session_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (experiment_id, experiment_type, score, total_questions, pct, student_id, student_name, university, session_id))
     result_id = cursor.lastrowid
     conn.commit()
     conn.close()
@@ -819,9 +1368,12 @@ def register_student(name, course, university, student_id, pin=None):
         student = dict(cursor.fetchone())
         conn.close()
         return student
-    except sqlite3.IntegrityError:
+    except Exception as e:
         conn.close()
-        raise ValueError(f"The Student ID '{student_id}' is already taken. Please choose another ID.")
+        err_msg = str(e).lower()
+        if 'unique' in err_msg or 'integrity' in err_msg or 'already exists' in err_msg:
+            raise ValueError(f"The Student ID '{student_id}' is already taken. Please choose another ID.")
+        raise
 
 def authenticate_student(student_id, pin=None, university=None, ip_address=None, user_agent=None):
     """
@@ -883,7 +1435,7 @@ def authenticate_student(student_id, pin=None, university=None, ip_address=None,
 
     return student
 
-def log_activity(student_id, activity_type, details=None):
+def log_activity(student_id=None, activity_type='GENERAL', details=None, student_name=None, university=None, session_id=None):
     """
     Records student action in activity_logs table:
     EXPERIMENT_START, EXPERIMENT_SAVE, QUIZ_ATTEMPT, REPORT_DOWNLOAD
@@ -892,9 +1444,9 @@ def log_activity(student_id, activity_type, details=None):
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''
-        INSERT INTO activity_logs (student_id, activity_type, details)
-        VALUES (?, ?, ?)
-        ''', (student_id, activity_type, str(details) if details else None))
+        INSERT INTO activity_logs (student_id, activity_type, details, student_name, university, session_id)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ''', (student_id, activity_type, str(details) if details else None, student_name, university, session_id))
         conn.commit()
         conn.close()
     except Exception as e:
@@ -1067,67 +1619,40 @@ def get_admin_stats():
         'courses': courses
     }
 
-def get_admin_dashboard_data(search_query=None, university=None, course=None):
+def get_admin_dashboard_data(search_query=None, university=None, exp_type=None, mode=None, date_query=None):
     """
-    Returns full admin dashboard telemetry:
-    - Overview counts
-    - University & Course distributions
-    - Recent Registrations (last 10)
-    - Recent Login Activity (last 15)
-    - Recent Activity Logs (last 15)
-    - Filtered Student Roster
+    Returns full admin dashboard telemetry for experiment usage records:
+    - Overview counts (total experiments, total students, total universities, sim vs manual, total quizzes)
+    - Filtered experiment usage records (Tensile and Hardness)
+    - Recent Activity Logs (last 20)
+    - Available universities list for filtering
     """
-    stats = get_admin_stats()
+    stats = get_admin_usage_stats()
     conn = get_db_connection()
 
-    # University distribution
-    uni_dist = conn.execute('''
-    SELECT university, COUNT(*) as count 
-    FROM students 
-    GROUP BY university 
-    ORDER BY count DESC, university ASC
-    ''').fetchall()
-    stats['university_distribution'] = [dict(r) for r in uni_dist]
-
-    # Course distribution
-    course_dist = conn.execute('''
-    SELECT course, COUNT(*) as count 
-    FROM students 
-    GROUP BY course 
-    ORDER BY count DESC, course ASC
-    ''').fetchall()
-    stats['course_distribution'] = [dict(r) for r in course_dist]
-
-    # Recent registrations (last 10)
-    recent_reg = conn.execute('''
-    SELECT student_id, name, course, university, created_at, last_login_at
-    FROM students 
-    ORDER BY id DESC LIMIT 10
-    ''').fetchall()
-    stats['recent_registrations'] = [dict(r) for r in recent_reg]
-
-    # Recent login activity (last 15)
-    recent_logins = conn.execute('''
-    SELECT l.id, l.student_id, s.name, s.university, l.ip_address, l.user_agent, l.login_time
-    FROM login_activity l
-    LEFT JOIN students s ON LOWER(l.student_id) = LOWER(s.student_id)
-    ORDER BY l.id DESC LIMIT 15
-    ''').fetchall()
-    stats['recent_login_activity'] = [dict(r) for r in recent_logins]
-
-    # Recent activity logs (last 15)
+    # Recent activity logs (last 20)
     recent_act = conn.execute('''
-    SELECT a.id, a.student_id, s.name, a.activity_type, a.details, a.created_at
+    SELECT a.id, a.student_id, 
+           COALESCE(a.student_name, s.name, a.student_id, 'Anonymous Student') as name,
+           COALESCE(a.university, s.university, 'General Session') as university,
+           a.activity_type, a.details, a.created_at
     FROM activity_logs a
     LEFT JOIN students s ON LOWER(a.student_id) = LOWER(s.student_id)
-    ORDER BY a.id DESC LIMIT 15
+    ORDER BY a.id DESC LIMIT 20
     ''').fetchall()
     stats['recent_activity_logs'] = [dict(r) for r in recent_act]
-
     conn.close()
 
-    students = get_all_students(search_query=search_query, university=university, course=course)
-    stats['students'] = students
+    records = get_admin_usage_records(
+        search_query=search_query,
+        exp_type=exp_type,
+        mode=mode,
+        university=university,
+        date_query=date_query
+    )
+    stats['records'] = records
+    stats['total_records_count'] = len(records)
+    stats['students'] = []
     return stats
 
 def delete_student_account(student_id):
@@ -1142,6 +1667,22 @@ def delete_student_account(student_id):
     conn.close()
     return True
 
+def _sync_admin_record(username, password_hash):
+    """Internal helper to ensure the database admin_credentials row matches the active credentials."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT id FROM admin_credentials ORDER BY id DESC LIMIT 1')
+        existing = cursor.fetchone()
+        if existing:
+            cursor.execute('UPDATE admin_credentials SET username = ?, password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', (username, password_hash, existing['id']))
+        else:
+            cursor.execute('INSERT INTO admin_credentials (username, password_hash) VALUES (?, ?)', (username, password_hash))
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
 def get_admin_credentials():
     """
     Returns the active admin credentials dictionary or None.
@@ -1149,36 +1690,72 @@ def get_admin_credentials():
     conn = get_db_connection()
     row = conn.execute('SELECT id, username, password_hash, updated_at FROM admin_credentials ORDER BY id DESC LIMIT 1').fetchone()
     conn.close()
+    
     if row:
         return dict(row)
+    
+    # Fallback to env or defaults if database table is empty
+    env_user = os.environ.get('ADMIN_USERNAME')
+    if env_user:
+        env_hash = os.environ.get('ADMIN_PASSWORD_HASH')
+        env_pass = os.environ.get('ADMIN_PASSWORD', 'matvlab_admin_2024')
+        return {
+            'id': 1,
+            'username': env_user.strip(),
+            'password_hash': env_hash or generate_password_hash(env_pass),
+            'updated_at': datetime.utcnow()
+        }
     return None
 
 def verify_admin_login(username, password):
     """
-    Verifies admin credentials against the admin_credentials table.
-    Falls back to environment variables if table is empty.
+    Verifies administrator credentials.
+    Priority:
+    1. Database record in admin_credentials
+    2. Environment variables ADMIN_USERNAME + (ADMIN_PASSWORD_HASH or ADMIN_PASSWORD)
+       (Enables instant recovery of forgotten administrator passwords via Render Environment tab)
+    3. Default fallback (admin / matvlab_admin_2024) if no custom settings exist
     Returns (True, "success") or (False, "error message").
     """
     if not username or not password:
         return False, "Username and password are required."
     
+    clean_user = username.strip().lower()
+    env_user = os.environ.get('ADMIN_USERNAME')
+    env_hash = os.environ.get('ADMIN_PASSWORD_HASH')
+    env_pass = os.environ.get('ADMIN_PASSWORD')
+
+    # 1. Database Record Match
     cred = get_admin_credentials()
     if cred:
-        if cred['username'].strip().lower() == username.strip().lower() and check_password_hash(cred['password_hash'], password):
+        if clean_user == cred['username'].strip().lower() and check_password_hash(cred['password_hash'], password):
+            return True, "Login successful."
+        # If database record didn't match, check if ADMIN_PASSWORD_HASH is set to override:
+        if env_hash and clean_user == (env_user or 'admin').strip().lower() and check_password_hash(env_hash, password):
+            _sync_admin_record(env_user or 'admin', env_hash)
             return True, "Login successful."
         return False, "Invalid administrator credentials."
-    
-    # Fallback to env
-    env_user = os.environ.get('ADMIN_USERNAME', 'admin')
-    env_pass = os.environ.get('ADMIN_PASSWORD', 'matvlab_admin_2024')
-    if username.strip() == env_user and password == env_pass:
+
+    # 2. Environment Variable Match (when database table has no credentials)
+    if env_user and clean_user == env_user.strip().lower():
+        if env_hash and check_password_hash(env_hash, password):
+            _sync_admin_record(env_user.strip(), env_hash)
+            return True, "Login successful."
+        if env_pass and (password == env_pass or check_password_hash(generate_password_hash(env_pass), password)):
+            _sync_admin_record(env_user.strip(), generate_password_hash(env_pass))
+            return True, "Login successful."
+        return False, "Invalid administrator credentials."
+
+    # 3. Default Fallback
+    if clean_user == 'admin' and password == 'matvlab_admin_2024':
         return True, "Login successful."
+
     return False, "Invalid administrator credentials."
 
 def update_admin_credentials(new_username, new_password, current_password=None):
     """
-    Updates the admin username and password.
-    If current_password is provided, verifies it first against existing credentials.
+    Updates the admin username and password from the Admin Portal.
+    If current_password is provided, verifies it first against active credentials.
     Returns (True, "Success message") or (False, "Error message").
     """
     if not new_username or not new_username.strip():
@@ -1189,23 +1766,32 @@ def update_admin_credentials(new_username, new_password, current_password=None):
     new_username = new_username.strip()
     cred = get_admin_credentials()
     
-    if cred and current_password is not None:
-        if not check_password_hash(cred['password_hash'], current_password):
-            return False, "Current administrator password is incorrect."
-    elif not cred and current_password is not None:
-        env_pass = os.environ.get('ADMIN_PASSWORD', 'matvlab_admin_2024')
-        if current_password != env_pass:
+    if current_password is not None:
+        valid_current = False
+        if cred and check_password_hash(cred['password_hash'], current_password):
+            valid_current = True
+        else:
+            env_pass = os.environ.get('ADMIN_PASSWORD', 'matvlab_admin_2024')
+            env_hash = os.environ.get('ADMIN_PASSWORD_HASH')
+            if env_hash and check_password_hash(env_hash, current_password):
+                valid_current = True
+            elif current_password == env_pass:
+                valid_current = True
+        if not valid_current:
             return False, "Current administrator password is incorrect."
 
     conn = get_db_connection()
     cursor = conn.cursor()
     new_hash = generate_password_hash(new_password)
-    if cred:
+    
+    cursor.execute('SELECT id FROM admin_credentials ORDER BY id DESC LIMIT 1')
+    existing = cursor.fetchone()
+    if existing:
         cursor.execute('''
         UPDATE admin_credentials 
         SET username = ?, password_hash = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-        ''', (new_username, new_hash, cred['id']))
+        ''', (new_username, new_hash, existing['id']))
     else:
         cursor.execute('''
         INSERT INTO admin_credentials (username, password_hash)
@@ -1213,13 +1799,14 @@ def update_admin_credentials(new_username, new_password, current_password=None):
         ''', (new_username, new_hash))
     conn.commit()
     conn.close()
+
     return True, "Administrator credentials successfully updated."
 
 # ==========================================
 # HARDNESS EXPERIMENTS OPERATIONS (BRINELL & ROCKWELL)
 # ==========================================
 
-def save_hardness_experiment(data, student_id=None):
+def save_hardness_experiment(data, student_id=None, student_name=None, university=None, session_id=None):
     """
     Saves a completed Brinell or Rockwell hardness experiment.
     Parameters in data:
@@ -1239,6 +1826,10 @@ def save_hardness_experiment(data, student_id=None):
     cursor = conn.cursor()
 
     sid = student_id or data.get('student_id')
+    s_name = student_name or data.get('student_name')
+    uni = university or data.get('university')
+    sess_id = session_id or data.get('session_id')
+
     method = (data.get('method') or 'BRINELL').upper().strip()
     mode = data.get('mode', 'MANUAL_ENTRY')
     data_origin = data.get('data_origin')
@@ -1257,11 +1848,13 @@ def save_hardness_experiment(data, student_id=None):
     cursor.execute('''
     INSERT INTO hardness_experiments (
         student_id, title, method, mode, material_name, data_origin,
-        parameters_json, mean_hardness, hardness_unit, num_readings, notes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        parameters_json, mean_hardness, hardness_unit, num_readings, notes,
+        student_name, university, session_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         sid, title, method, mode, data.get('material_name', 'Unknown Material'),
-        data_origin, params_json, mean_h, h_unit, num_readings, data.get('notes', '')
+        data_origin, params_json, mean_h, h_unit, num_readings, data.get('notes', ''),
+        s_name, uni, sess_id
     ))
 
     exp_id = cursor.lastrowid
@@ -1285,8 +1878,14 @@ def save_hardness_experiment(data, student_id=None):
     conn.close()
 
     # Log activity
-    if sid:
-        log_activity(sid, 'EXPERIMENT_SAVE', f"Hardness {method} experiment #{exp_id} saved ({mode})")
+    log_activity(
+        student_id=sid,
+        activity_type='EXPERIMENT_SAVE',
+        details=f"Hardness {method} experiment #{exp_id} saved ({mode})",
+        student_name=s_name,
+        university=uni,
+        session_id=sess_id
+    )
 
     return exp_id
 
@@ -1313,27 +1912,35 @@ def get_hardness_experiment_by_id(exp_id):
 
     quiz_res = conn.execute('''
     SELECT * FROM quiz_results 
-    WHERE experiment_id = ? OR (experiment_type = LOWER(?) AND student_id = ?)
+    WHERE experiment_id = ? OR (experiment_type = LOWER(?) AND (student_id = ? OR student_name = ?))
     ORDER BY completed_at DESC LIMIT 1
-    ''', (exp_id, exp['method'], exp['student_id'])).fetchone()
+    ''', (exp_id, exp['method'], exp.get('student_id'), exp.get('student_name'))).fetchone()
     exp['quiz'] = dict(quiz_res) if quiz_res else None
 
     conn.close()
     return exp
 
-def get_all_hardness_experiments(student_id=None, method=None):
+def get_all_hardness_experiments(student_id=None, method=None, session_id=None, student_name=None):
     """
-    Retrieves all hardness experiments, optionally filtered by student_id and/or method ('BRINELL' or 'ROCKWELL').
+    Retrieves all hardness experiments, optionally filtered by session_id, student_id, student_name, and/or method.
     """
     conn = get_db_connection()
     query = 'SELECT * FROM hardness_experiments WHERE 1=1'
     params = []
-    if student_id:
+    if session_id:
+        query += ' AND session_id = ?'
+        params.append(session_id.strip())
+    elif student_id:
         query += ' AND LOWER(student_id) = LOWER(?)'
         params.append(student_id.strip())
+    elif student_name:
+        query += ' AND LOWER(student_name) = LOWER(?)'
+        params.append(student_name.strip())
+
     if method:
         query += ' AND UPPER(method) = UPPER(?)'
         params.append(method.strip())
+
     query += ' ORDER BY created_at DESC'
     rows = conn.execute(query, tuple(params)).fetchall()
     conn.close()
@@ -1366,5 +1973,199 @@ def delete_hardness_experiment(exp_id, student_id=None):
     conn.close()
     return True
 
+# ==========================================
+# ADMIN EXPERIMENT USAGE TELEMETRY & RECORDS
+# ==========================================
 
+def get_admin_usage_stats():
+    """
+    Returns administrative summary statistics for MAT-VLAB ADMIN:
+    - total_experiments (Tensile + Hardness)
+    - total_students (unique user names across experiments and registered students)
+    - total_universities (unique institutions)
+    - sim_count (Virtual Simulation count across all experiments)
+    - manual_count (Manual Data Entry count across all experiments)
+    - total_quizzes
+    - universities list for filtering
+    """
+    conn = get_db_connection()
+    t_count = conn.execute('SELECT COUNT(*) FROM experiments').fetchone()[0]
+    h_count = conn.execute('SELECT COUNT(*) FROM hardness_experiments').fetchone()[0]
+    total_experiments = t_count + h_count
 
+    t_sim = conn.execute("SELECT COUNT(*) FROM experiments WHERE mode = 'VIRTUAL_SIMULATION'").fetchone()[0]
+    h_sim = conn.execute("SELECT COUNT(*) FROM hardness_experiments WHERE mode = 'VIRTUAL_SIMULATION'").fetchone()[0]
+    sim_count = t_sim + h_sim
+
+    t_man = conn.execute("SELECT COUNT(*) FROM experiments WHERE mode = 'MANUAL_ENTRY'").fetchone()[0]
+    h_man = conn.execute("SELECT COUNT(*) FROM hardness_experiments WHERE mode = 'MANUAL_ENTRY'").fetchone()[0]
+    manual_count = t_man + h_man
+
+    total_quizzes = conn.execute('SELECT COUNT(*) FROM quiz_results').fetchone()[0]
+
+    names_query = '''
+    SELECT DISTINCT name FROM (
+        SELECT student_name as name FROM experiments WHERE student_name IS NOT NULL AND student_name != ''
+        UNION
+        SELECT student_name as name FROM hardness_experiments WHERE student_name IS NOT NULL AND student_name != ''
+        UNION
+        SELECT name FROM students WHERE name IS NOT NULL AND name != ''
+    )
+    '''
+    student_names = [r[0] for r in conn.execute(names_query).fetchall() if r[0]]
+    total_students = len(student_names)
+
+    uni_query = '''
+    SELECT DISTINCT university FROM (
+        SELECT university FROM experiments WHERE university IS NOT NULL AND university != ''
+        UNION
+        SELECT university FROM hardness_experiments WHERE university IS NOT NULL AND university != ''
+        UNION
+        SELECT university FROM students WHERE university IS NOT NULL AND university != ''
+    ) ORDER BY university ASC
+    '''
+    universities = [r[0] for r in conn.execute(uni_query).fetchall() if r[0]]
+    total_universities = len(universities)
+
+    conn.close()
+    return {
+        'total_experiments': total_experiments,
+        'total_students': total_students,
+        'total_universities': total_universities,
+        'sim_count': sim_count,
+        'manual_count': manual_count,
+        'total_quizzes': total_quizzes,
+        'universities': universities
+    }
+
+def get_admin_usage_records(search_query=None, exp_type=None, mode=None, university=None, date_query=None):
+    """
+    Returns aggregated experiment usage records from both Tensile and Hardness experiments
+    with flexible filtering for the admin dashboard.
+    """
+    conn = get_db_connection()
+    records = []
+
+    # 1. Fetch Tensile Experiments
+    if not exp_type or exp_type.upper() in ['ALL', 'TENSILE']:
+        t_query = '''
+        SELECT e.id, 'tensile' as exp_table, 'TENSILE' as exp_type,
+               e.title, e.mode, e.material_name,
+               COALESCE(e.student_name, s.name, e.student_id, 'Anonymous Student') as student_name,
+               COALESCE(e.university, s.university, 'General Session') as university,
+               e.session_id, e.created_at,
+               r.uts_mpa, r.youngs_modulus_gpa, r.yield_strength_mpa, r.elongation_pct,
+               (SELECT COUNT(*) FROM experiment_readings WHERE experiment_id = e.id) as readings_count
+        FROM experiments e
+        LEFT JOIN experiment_results r ON e.id = r.experiment_id
+        LEFT JOIN students s ON LOWER(e.student_id) = LOWER(s.student_id)
+        WHERE 1=1
+        '''
+        t_params = []
+        if mode and mode.upper() != 'ALL':
+            t_query += ' AND e.mode = ?'
+            t_params.append(mode)
+        if university and university.upper() != 'ALL':
+            t_query += ' AND (e.university = ? OR s.university = ?)'
+            t_params.extend([university, university])
+        if date_query:
+            t_query += ' AND e.created_at LIKE ?'
+            t_params.append(f"{date_query.strip()}%")
+
+        t_rows = conn.execute(t_query, tuple(t_params)).fetchall()
+        for r in t_rows:
+            d = dict(r)
+            uts = d.get('uts_mpa')
+            key_res = f"UTS: {round(uts, 1)} MPa" if uts is not None else "Completed"
+            records.append({
+                'id': d['id'],
+                'table': 'tensile',
+                'exp_type': 'Tensile (UTM)',
+                'title': d['title'],
+                'mode': d['mode'],
+                'material_name': d['material_name'],
+                'student_name': d['student_name'],
+                'university': d['university'],
+                'session_id': d.get('session_id'),
+                'created_at': str(d.get('created_at', ''))[:19],
+                'key_result': key_res,
+                'readings_count': d.get('readings_count', 0),
+                'report_url': f"/api/download-report/{d['id']}"
+            })
+
+    # 2. Fetch Hardness Experiments
+    if not exp_type or exp_type.upper() in ['ALL', 'BRINELL', 'ROCKWELL', 'HARDNESS']:
+        h_query = '''
+        SELECT h.id, 'hardness' as exp_table, UPPER(h.method) as method,
+               h.title, h.mode, h.material_name,
+               COALESCE(h.student_name, s.name, h.student_id, 'Anonymous Student') as student_name,
+               COALESCE(h.university, s.university, 'General Session') as university,
+               h.session_id, h.created_at,
+               h.mean_hardness, h.hardness_unit, h.num_readings
+        FROM hardness_experiments h
+        LEFT JOIN students s ON LOWER(h.student_id) = LOWER(s.student_id)
+        WHERE 1=1
+        '''
+        h_params = []
+        if exp_type and exp_type.upper() in ['BRINELL', 'ROCKWELL']:
+            h_query += ' AND UPPER(h.method) = ?'
+            h_params.append(exp_type.upper())
+        if mode and mode.upper() != 'ALL':
+            h_query += ' AND h.mode = ?'
+            h_params.append(mode)
+        if university and university.upper() != 'ALL':
+            h_query += ' AND (h.university = ? OR s.university = ?)'
+            h_params.extend([university, university])
+        if date_query:
+            h_query += ' AND h.created_at LIKE ?'
+            h_params.append(f"{date_query.strip()}%")
+
+        h_rows = conn.execute(h_query, tuple(h_params)).fetchall()
+        for r in h_rows:
+            d = dict(r)
+            m_val = d.get('mean_hardness')
+            m_unit = d.get('hardness_unit', '')
+            key_res = f"{round(m_val, 1)} {m_unit}" if m_val is not None else "Completed"
+            records.append({
+                'id': d['id'],
+                'table': 'hardness',
+                'exp_type': f"{d['method'].capitalize()} Hardness",
+                'title': d['title'],
+                'mode': d['mode'],
+                'material_name': d['material_name'],
+                'student_name': d['student_name'],
+                'university': d['university'],
+                'session_id': d.get('session_id'),
+                'created_at': str(d.get('created_at', ''))[:19],
+                'key_result': key_res,
+                'readings_count': d.get('num_readings', 0),
+                'report_url': f"/hardness/report/{d['id']}"
+            })
+
+    conn.close()
+
+    # Search filtering
+    if search_query:
+        sq = search_query.lower().strip()
+        records = [
+            r for r in records
+            if sq in (r['student_name'] or '').lower()
+            or sq in (r['university'] or '').lower()
+            or sq in (r['material_name'] or '').lower()
+            or sq in (r['title'] or '').lower()
+            or sq in (r['exp_type'] or '').lower()
+        ]
+
+    # Sort descending by created_at
+    records.sort(key=lambda x: x['created_at'], reverse=True)
+    return records
+
+def get_admin_record_by_id(table, record_id):
+    """
+    Fetches complete experiment record for admin modal inspection.
+    """
+    if table == 'tensile':
+        return get_experiment_by_id(record_id)
+    elif table == 'hardness':
+        return get_hardness_experiment_by_id(record_id)
+    return None

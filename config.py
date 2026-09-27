@@ -7,10 +7,17 @@ class Config:
     FLASK_ENV = os.environ.get('FLASK_ENV', 'production')
     SECRET_KEY = os.environ.get('SECRET_KEY', 'mat-vlab-materials-testing-laboratory-key-2026')
 
-    # Configurable Storage Paths
+    # Configurable Storage Paths & Database Backends
+    DATABASE_URL = os.environ.get('DATABASE_URL')
     DATABASE = os.environ.get('DATABASE_PATH', os.path.join(BASE_DIR, 'materials.db'))
     DATA_DIR = os.environ.get('DATA_DIR', os.path.join(BASE_DIR, 'data'))
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', os.path.join(BASE_DIR, 'data', 'uploads'))
+
+    # Private Admin Configuration
+    ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
+    ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
+    ADMIN_PASSWORD_HASH = os.environ.get('ADMIN_PASSWORD_HASH')
+    ADMIN_URL_PATH = os.environ.get('ADMIN_URL_PATH', '/portal-admin')
 
     # Upload & Security Limits
     MAX_CONTENT_LENGTH = int(os.environ.get('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16 MB max upload

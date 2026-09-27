@@ -6,3 +6,4 @@ numpy==2.5.3
 pandas==3.0.6
 matplotlib==3.11.2
 reportlab==5.0.1
+psycopg2-binary>=2.9.9

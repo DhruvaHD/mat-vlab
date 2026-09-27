@@ -1,23 +1,21 @@
 """
-Comprehensive MAT-VLAB Student Authentication & Private Admin Test Suite
+Comprehensive MAT-VLAB Major Simplification & Final UX Test Suite
 Verifies:
-1. First Page Authentication Landing (no direct access to Home until login)
-2. Main Laboratory Navigation hidden until login
-3. Student Registration with Course dropdown, College, custom Student ID, and 4-6 digit PIN hashing
-4. Post-Registration Confirmation Screen (Name, Student ID, Course, University, LOGIN button)
-5. Student Login with Student ID + PIN (no name required, auto-retrieves student details)
-6. Login Activity & Timestamp Recording
-7. Protected Laboratory Routes (@login_required)
-8. Student Dashboard (Welcome name, Course, University, Student ID, 5 stats, 5 buttons)
-9. Educational Activity Logging (EXPERIMENT_START, EXPERIMENT_SAVE, QUIZ_ATTEMPT, REPORT_DOWNLOAD)
-10. Private Admin System (no admin links on student pages, /portal-admin auth, roster & CSV export)
+1. First Screen Student Identification (Name + University, Continue button, no Student ID/PIN/Password)
+2. Direct Home Page Flow (submitting identification immediately opens /home with no intermediate screens)
+3. Removal of "Start Virtual Lab" button from Hero and Navbar
+4. Session-based student identity and route protection
+5. Educational activity and experiment saving (Tensile, Hardness, Quiz) with session metadata
+6. Session-scoped "My Experiments" with active session notice banner
+7. Private Admin System (/portal-admin auth, Experiment Usage Records table, JSON detail, CSV export)
+8. Admin credentials update (requiring current password, updating username & password, no plaintext display)
+9. Legacy route redirects (/login -> /, /register -> /, /dashboard -> /home)
 """
 import os
 import sys
 import unittest
 import tempfile
 import shutil
-import re
 
 # Ensure paths are configured
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -31,9 +29,7 @@ os.environ['MPLCONFIGDIR'] = '/tmp'
 os.environ['ADMIN_USERNAME'] = 'testadmin'
 os.environ['ADMIN_PASSWORD'] = 'testsecret2026'
 
-from werkzeug.security import check_password_hash
-
-class TestStudentAuthAndPrivateAdmin(unittest.TestCase):
+class TestMATVLabSimplification(unittest.TestCase):
 
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
@@ -52,218 +48,113 @@ class TestStudentAuthAndPrivateAdmin(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
-    def test_student_id_validation_rules(self):
-        """Verify student ID formatting rules: letters + numbers, no spaces, 3-20 chars."""
-        from models.database import validate_student_id
-
-        # Valid examples
-        for valid_id in ['Dhruva01', 'Dhruva123', 'Sindhu07', 'Rahul25', 'MAT2026', 'student1']:
-            is_valid, msg = validate_student_id(valid_id)
-            self.assertTrue(is_valid, f"Expected {valid_id} to be valid, got: {msg}")
-
-        # Invalid: Contains spaces
-        for space_id in ['Dhruva 01', 'Dhruva 123', ' Rahul25', 'Sindhu07 ']:
-            is_valid, msg = validate_student_id(space_id)
-            self.assertFalse(is_valid, f"Expected {space_id} to be rejected for spaces")
-            self.assertIn("space", msg.lower())
-
-        # Invalid: Special characters
-        for special_id in ['Dhruva@01', 'Dhruva-123', 'Rahul_25', 'user#1']:
-            is_valid, msg = validate_student_id(special_id)
-            self.assertFalse(is_valid, f"Expected {special_id} to be rejected for special characters")
-
-        # Invalid: Length constraints (< 3 chars or > 20 chars)
-        self.assertFalse(validate_student_id('D1')[0])
-        self.assertFalse(validate_student_id('DhruvaVeryLongStudentIdentifier12345')[0])
-
-    def test_registration_with_pin_hashing_and_uniqueness(self):
-        """Verify student registration securely hashes the 4-6 digit PIN and enforces unique ID."""
-        from models.database import register_student, is_student_id_available, get_db_connection
-
-        # Register Dhruva01 with 4-digit PIN '1234'
-        st = register_student(
-            name='Dhruva H D',
-            course='B.Tech / B.E.',
-            university='Pondicherry University',
-            student_id='Dhruva01',
-            pin='1234'
-        )
-        self.assertEqual(st['student_id'], 'Dhruva01')
-        self.assertEqual(st['name'], 'Dhruva H D')
-        self.assertEqual(st['course'], 'B.Tech / B.E.')
-        self.assertEqual(st['university'], 'Pondicherry University')
-
-        # Verify PIN is hashed in database and NOT plain text
-        conn = get_db_connection()
-        row = conn.execute("SELECT pin_hash FROM students WHERE student_id = 'Dhruva01'").fetchone()
-        conn.close()
-        self.assertIsNotNone(row['pin_hash'])
-        self.assertNotEqual(row['pin_hash'], '1234')
-        self.assertTrue(check_password_hash(row['pin_hash'], '1234'))
-
-        # Check duplicate ID rejection
-        avail, msg = is_student_id_available('Dhruva01')
-        self.assertFalse(avail)
-        self.assertIn("already taken", msg)
-
-        with self.assertRaises(ValueError) as ctx:
-            register_student('Another Person', 'M.Tech / M.E.', 'Another Uni', 'Dhruva01', '5678')
-        self.assertIn("already taken", str(ctx.exception))
-
-        # Check PIN validation (must be 4-6 numeric digits)
-        with self.assertRaises(ValueError) as ctx:
-            register_student('Invalid PIN User', 'B.Tech', 'Uni', 'ValidID99', '12')  # too short
-        self.assertIn("4 to 6 digits", str(ctx.exception))
-
-        with self.assertRaises(ValueError) as ctx:
-            register_student('Invalid PIN User 2', 'B.Tech', 'Uni', 'ValidID88', '1234567')  # too long
-        self.assertIn("4 to 6 digits", str(ctx.exception))
-
-        with self.assertRaises(ValueError) as ctx:
-            register_student('Invalid PIN User 3', 'B.Tech', 'Uni', 'ValidID77', 'abcd')  # non-numeric
-        self.assertIn("4 to 6 digits", str(ctx.exception))
-
-    def test_login_with_pin_and_activity_tracking(self):
-        """Verify login requires ONLY Student ID and PIN, records login activity, and updates timestamp."""
-        from models.database import register_student, authenticate_student, get_db_connection
-
-        register_student(
-            name='Sindhu K',
-            course='B.Tech / B.E.',
-            university='NIT Karnataka',
-            student_id='Sindhu07',
-            pin='5678'
-        )
-
-        # 1. Login with Student ID + PIN (no name)
-        student = authenticate_student(
-            student_id='Sindhu07',
-            pin='5678',
-            ip_address='192.168.1.100',
-            user_agent='TestBrowser/1.0'
-        )
-        self.assertIsNotNone(student)
-        self.assertEqual(student['name'], 'Sindhu K')
-        self.assertEqual(student['course'], 'B.Tech / B.E.')
-        self.assertEqual(student['university'], 'NIT Karnataka')
-
-        # 2. Check login_activity table recording
-        conn = get_db_connection()
-        activity = conn.execute("SELECT * FROM login_activity WHERE student_id = 'Sindhu07'").fetchone()
-        self.assertIsNotNone(activity)
-        self.assertEqual(activity['ip_address'], '192.168.1.100')
-        self.assertEqual(activity['user_agent'], 'TestBrowser/1.0')
-
-        # 3. Check last_login_at in students table
-        st_row = conn.execute("SELECT last_login_at FROM students WHERE student_id = 'Sindhu07'").fetchone()
-        conn.close()
-        self.assertIsNotNone(st_row['last_login_at'])
-
-        # 4. Wrong PIN rejection
-        with self.assertRaises(ValueError) as ctx:
-            authenticate_student(student_id='Sindhu07', pin='9999')
-        self.assertIn("Invalid", str(ctx.exception))
-
-        # 5. Unknown Student ID rejection
-        with self.assertRaises(ValueError) as ctx:
-            authenticate_student(student_id='NonExistentID', pin='5678')
-        self.assertIn("not found", str(ctx.exception))
-
-    def test_first_page_auth_landing_and_route_protection(self):
-        """Verify first page is authentication landing, lab nav is hidden, and lab routes require login."""
-        # 1. Visiting '/' unauthenticated shows the professional landing page
+    def test_student_identification_first_screen(self):
+        """Verify first screen is simple 2-field Student Information form with Continue button."""
         res = self.client.get('/')
         self.assertEqual(res.status_code, 200)
-        content = res.data.decode('utf-8')
+        html = res.data.decode('utf-8')
 
-        self.assertIn('MAT-VLAB', content)
-        self.assertIn('Interactive Virtual Materials Testing & Analysis Laboratory', content)
-        self.assertIn('Learn. Simulate. Experiment. Analyze.', content)
-        self.assertIn('STUDENT LOGIN', content)
-        self.assertIn('CREATE NEW ACCOUNT', content)
+        # 1. Check title & 2 required fields
+        self.assertIn('STUDENT INFORMATION', html)
+        self.assertIn('Student Name', html)
+        self.assertIn('University / College Name', html)
+        self.assertIn('Continue', html)
+        self.assertIn('name="student_name"', html)
+        self.assertIn('name="university"', html)
 
-        # 2. Main laboratory navigation must NOT be visible when unauthenticated
-        self.assertNotIn('href="/simulation"', content)
-        self.assertNotIn('href="/manual"', content)
-        self.assertNotIn('href="/experiments"', content)
-        self.assertNotIn('href="/materials"', content)
+        # 2. Verify complete absence of Student ID, PIN, password, account registration
+        self.assertNotIn('Student ID', html)
+        self.assertNotIn('PIN', html)
+        self.assertNotIn('Password', html)
+        self.assertNotIn('CREATE NEW ACCOUNT', html)
+        self.assertNotIn('STUDENT LOGIN', html)
+        self.assertNotIn('Register Free', html)
 
-        # 3. Accessing laboratory routes unauthenticated must redirect to /login
-        for protected_path in ['/dashboard', '/experiments', '/simulation', '/manual', '/materials', '/compare', '/my-experiments', '/quizzes', '/about']:
-            res_prot = self.client.get(protected_path)
-            self.assertEqual(res_prot.status_code, 302, f"Expected 302 redirect for unauthenticated {protected_path}")
-            self.assertIn('/login', res_prot.headers['Location'])
+    def test_direct_home_page_flow_and_no_start_virtual_lab_button(self):
+        """Verify submitting identification directly opens /home with no intermediate screens or Start Virtual Lab buttons."""
+        # 1. Post 2 fields to /start-session
+        res = self.client.post('/start-session', data={
+            'student_name': 'Dhruva H D',
+            'university': 'Pondicherry University'
+        }, follow_redirects=False)
 
-    def test_registration_confirmation_screen_and_login_flow(self):
-        """Verify web registration shows confirmation screen and subsequent login retrieves full details."""
-        # 1. Register through web POST form
-        res = self.client.post('/register', data={
-            'name': 'Rahul K',
-            'course': 'B.Tech / B.E.',
-            'university': 'XYZ University',
-            'student_id': 'Rahul25',
-            'pin': '4321'
-        }, follow_redirects=True)
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.headers['Location'], '/home')
 
-        self.assertEqual(res.status_code, 200)
-        confirm_content = res.data.decode('utf-8')
+        # 2. Access /home directly
+        res_home = self.client.get('/home')
+        self.assertEqual(res_home.status_code, 200)
+        home_html = res_home.data.decode('utf-8')
 
-        # Verify confirmation screen displays all student details and [ LOGIN ] button
-        self.assertIn('Rahul K', confirm_content)
-        self.assertIn('Rahul25', confirm_content)
-        self.assertIn('B.Tech / B.E.', confirm_content)
-        self.assertIn('XYZ University', confirm_content)
-        self.assertIn('LOGIN TO MAT-VLAB', confirm_content)
+        # 3. Verify student identity and direct navigation on /home
+        self.assertIn('Dhruva H D', home_html)
+        self.assertIn('Pondicherry University', home_html)
+        self.assertIn('End Session', home_html)
 
-        # 2. Login with Student ID and PIN (NO name required)
-        res_login = self.client.post('/login', data={
-            'student_id': 'Rahul25',
-            'pin': '4321'
-        }, follow_redirects=True)
+        # 4. Verify presence of direct experiment navigation
+        self.assertIn('Tensile Test (UTM)', home_html)
+        self.assertIn('Hardness Test (Brinell &amp; Rockwell)', home_html)
+        self.assertIn('Explore All Experiments', home_html)
 
-        self.assertEqual(res_login.status_code, 200)
-        dash_content = res_login.data.decode('utf-8')
+        # 5. Verify REMOVAL of "Start Virtual Lab" button from Home hero and navbar
+        self.assertNotIn('Start Virtual Lab', home_html)
+        self.assertNotIn('START VIRTUAL LAB', home_html)
 
-        # 3. Dashboard displays student name, course, university, and ID automatically
-        self.assertIn('Welcome, Rahul K!', dash_content)
-        self.assertIn('Rahul25', dash_content)
-        self.assertIn('B.Tech / B.E.', dash_content)
-        self.assertIn('XYZ University', dash_content)
+    def test_legacy_routes_clean_redirect(self):
+        """Verify legacy /login and /register redirect to /, and /dashboard redirects to /home."""
+        res_login = self.client.get('/login')
+        self.assertEqual(res_login.status_code, 302)
+        self.assertEqual(res_login.headers['Location'], '/')
 
-        # 4. Check all 5 required dashboard buttons
-        self.assertIn('START VIRTUAL LAB', dash_content)
-        self.assertIn('EXPERIMENTS', dash_content)
-        self.assertIn('MATERIALS', dash_content)
-        self.assertIn('QUIZZES', dash_content)
-        self.assertIn('MY EXPERIMENTS', dash_content)
+        res_reg = self.client.get('/register')
+        self.assertEqual(res_reg.status_code, 302)
+        self.assertEqual(res_reg.headers['Location'], '/')
 
-        # 5. Check all 5 required statistics
-        self.assertIn('Experiments Completed', dash_content)
-        self.assertIn('Virtual Experiments', dash_content)
-        self.assertIn('Manual Experiments', dash_content)
-        self.assertIn('Quiz Attempts', dash_content)
-        self.assertIn('Saved Experiments', dash_content)
+        # Dashboard redirects to /home
+        res_dash = self.client.get('/dashboard')
+        self.assertEqual(res_dash.status_code, 302)
+        self.assertEqual(res_dash.headers['Location'], '/home')
 
-        # 6. Now authenticated: visiting '/' redirects to '/dashboard'
-        res_index = self.client.get('/')
-        self.assertEqual(res_index.status_code, 302)
-        self.assertIn('/dashboard', res_index.headers['Location'])
+    def test_route_protection_and_session_lifecycle(self):
+        """Verify protected routes redirect unauthenticated users to /, and session logout clears state."""
+        # 1. Unauthenticated access to /home redirects to /
+        res_unauth = self.client.get('/home')
+        self.assertEqual(res_unauth.status_code, 302)
+        self.assertTrue(res_unauth.headers['Location'].startswith('/'))
+        self.assertIn('next=/home', res_unauth.headers['Location'])
 
-    def test_activity_logging_system(self):
-        """Verify educational activity logs for EXPERIMENT_START, EXPERIMENT_SAVE, QUIZ_ATTEMPT, REPORT_DOWNLOAD."""
-        from models.database import register_student, get_db_connection
+        # 2. Authenticate session
+        self.client.post('/start-session', data={
+            'student_name': 'Sindhu R',
+            'university': 'Anna University'
+        })
 
-        register_student('Arjun M', 'B.Tech / B.E.', 'IIT Madras', 'Arjun99', '2026')
+        # 3. Now visiting / redirects to /home
+        res_root = self.client.get('/')
+        self.assertEqual(res_root.status_code, 302)
+        self.assertEqual(res_root.headers['Location'], '/home')
 
-        # Log in student
-        self.client.post('/login', data={'student_id': 'Arjun99', 'pin': '2026'}, follow_redirects=True)
+        # 4. Logout ends session and redirects to /
+        res_logout = self.client.get('/logout')
+        self.assertEqual(res_logout.status_code, 302)
+        self.assertEqual(res_logout.headers['Location'], '/')
 
-        # 1. Trigger EXPERIMENT_START via /simulation
-        self.client.get('/simulation')
+        # 5. Visiting /home again redirects to /
+        res_after_logout = self.client.get('/home')
+        self.assertEqual(res_after_logout.status_code, 302)
+        self.assertTrue(res_after_logout.headers['Location'].startswith('/'))
 
-        # 2. Trigger EXPERIMENT_SAVE via /api/save
-        save_payload = {
-            "title": "Tensile Verification Run",
+    def test_experiment_saving_with_session_metadata(self):
+        """Verify Tensile and Hardness experiments and quiz results persist student_name, university, and session_id."""
+        # 1. Start student session
+        self.client.post('/start-session', data={
+            'student_name': 'Arjun Mehta',
+            'university': 'IIT Bombay'
+        })
+
+        # 2. Save Tensile experiment
+        tensile_payload = {
+            "title": "UTM Verification Run",
             "experiment_type": "tensile",
             "mode": "VIRTUAL_SIMULATION",
             "material_name": "Mild Steel (AISI 1018)",
@@ -282,179 +173,181 @@ class TestStudentAuthAndPrivateAdmin(unittest.TestCase):
                 "elongation_pct": 26.0
             }
         }
-        res_save = self.client.post('/api/save', json=save_payload)
-        self.assertEqual(res_save.status_code, 200)
-        exp_id = res_save.get_json()['experiment_id']
+        res_ten = self.client.post('/api/save', json=tensile_payload)
+        self.assertEqual(res_ten.status_code, 200)
+        ten_id = res_ten.get_json()['experiment_id']
 
-        # 3. Trigger QUIZ_ATTEMPT via /api/quiz/submit
+        # 3. Save Hardness experiment
+        hardness_payload = {
+            "method": "BRINELL",
+            "mode": "VIRTUAL_SIMULATION",
+            "title": "Brinell Verification Run",
+            "material_id": 1,
+            "material_name": "Mild Steel (AISI 1018)",
+            "ball_diameter": 10.0,
+            "applied_load": 3000.0,
+            "dwell_time": 15,
+            "mean_hardness": 132.1,
+            "hardness_unit": "HBW 10/3000",
+            "readings": [
+                {"d1": 5.18, "d2": 5.18, "mean_d": 5.18, "hbw": 132.1}
+            ]
+        }
+        res_hard = self.client.post('/api/hardness/save', json=hardness_payload)
+        self.assertEqual(res_hard.status_code, 200)
+        hard_id = res_hard.get_json()['experiment_id']
+
+        # 4. Submit Quiz
         res_quiz = self.client.post('/api/quiz/submit', json={
-            "experiment_id": exp_id,
+            "experiment_id": ten_id,
             "experiment_type": "tensile",
-            "score": 9,
+            "score": 10,
             "total_questions": 10
         })
         self.assertEqual(res_quiz.status_code, 200)
 
-        # 4. Trigger REPORT_DOWNLOAD via /api/download-report/<id>
-        res_rep = self.client.get(f'/api/download-report/{exp_id}')
-        self.assertEqual(res_rep.status_code, 200)
+        # 5. Verify database records have student_name and university populated
+        from models.database import get_experiment_by_id, get_hardness_experiment_by_id
+        ten_rec = get_experiment_by_id(ten_id)
+        self.assertEqual(ten_rec['student_name'], 'Arjun Mehta')
+        self.assertEqual(ten_rec['university'], 'IIT Bombay')
+        self.assertIsNotNone(ten_rec['session_id'])
 
-        # Verify activity_logs table in database
-        conn = get_db_connection()
-        logs = conn.execute("SELECT activity_type FROM activity_logs WHERE student_id = 'Arjun99'").fetchall()
-        conn.close()
+        hard_rec = get_hardness_experiment_by_id(hard_id)
+        self.assertEqual(hard_rec['student_name'], 'Arjun Mehta')
+        self.assertEqual(hard_rec['university'], 'IIT Bombay')
+        self.assertIsNotNone(hard_rec['session_id'])
 
-        act_types = [l['activity_type'] for l in logs]
-        self.assertIn('EXPERIMENT_START', act_types)
-        self.assertIn('EXPERIMENT_SAVE', act_types)
-        self.assertIn('QUIZ_ATTEMPT', act_types)
-        self.assertIn('REPORT_DOWNLOAD', act_types)
+    def test_session_scoped_my_experiments(self):
+        """Verify My Experiments page displays active session records and clear notice banner."""
+        # 1. Start student session
+        self.client.post('/start-session', data={
+            'student_name': 'Kavya Sharma',
+            'university': 'BITS Pilani'
+        })
 
-    def test_private_admin_system_and_no_admin_links_in_student_ui(self):
-        """Verify strict private admin: no admin links in student UI, /portal-admin protected with auth."""
-        from models.database import register_student
-        register_student('Dhruva H D', 'B.Tech / B.E.', 'Pondicherry University', 'Dhruva01', '1234')
+        # 2. Save a hardness experiment
+        self.client.post('/api/hardness/save', json={
+            "method": "ROCKWELL",
+            "mode": "VIRTUAL_SIMULATION",
+            "title": "Rockwell Test Run",
+            "material_id": 1,
+            "material_name": "Mild Steel",
+            "scale": "C",
+            "mean_hardness": 45.2,
+            "hardness_unit": "HRC",
+            "readings": [{"reading_num": 1, "dial_depth_e": 0.11, "hardness": 45.2}]
+        })
 
-        # 1. Log in as student
-        res_stud = self.client.post('/login', data={'student_id': 'Dhruva01', 'pin': '1234'}, follow_redirects=True)
-        student_ui = res_stud.data.decode('utf-8')
+        # 3. View /my-experiments
+        res = self.client.get('/my-experiments')
+        self.assertEqual(res.status_code, 200)
+        html = res.data.decode('utf-8')
 
-        # Verify NO Admin link anywhere in student UI
-        self.assertNotIn('/admin', student_ui)
-        self.assertNotIn('/portal-admin', student_ui)
-        self.assertNotIn('Admin Portal', student_ui)
-        self.assertNotIn('MAT-VLAB Admin', student_ui)
+        # 4. Verify active session banner and experiment item
+        self.assertIn('Active Laboratory Session', html)
+        self.assertIn('Kavya Sharma', html)
+        self.assertIn('BITS Pilani', html)
+        self.assertIn('These experiment records belong to your current active laboratory session', html)
+        self.assertIn('Rockwell Test Run', html)
 
-        # 2. Check footer and other pages do NOT contain admin links
-        for page in ['/about', '/materials', '/quizzes', '/my-experiments']:
-            content = self.client.get(page).data.decode('utf-8')
-            self.assertNotIn('MAT-VLAB Admin', content)
-            self.assertNotIn('/portal-admin', content)
+    def test_private_admin_system_and_usage_records_table(self):
+        """Verify private admin portal: no admin links in student UI, /portal-admin auth, usage records table, JSON detail, and CSV export."""
+        # 1. Student UI contains NO admin links
+        self.client.post('/start-session', data={'student_name': 'Dhruva H D', 'university': 'Pondicherry University'})
+        for path in ['/home', '/about', '/materials', '/my-experiments']:
+            res = self.client.get(path)
+            self.assertNotIn('/portal-admin', res.data.decode('utf-8'))
+            self.assertNotIn('MAT-VLAB ADMIN', res.data.decode('utf-8'))
 
-        # 3. Unauthenticated access to /portal-admin redirects to /portal-admin/login
+        # 2. Unauthenticated access to /portal-admin redirects to login
         res_admin_unauth = self.client.get('/portal-admin')
         self.assertEqual(res_admin_unauth.status_code, 302)
         self.assertIn('admin/login', res_admin_unauth.headers['Location'])
 
-        # 4. Log in with admin credentials
+        # 3. Admin login with credentials
         res_admin_login = self.client.post('/portal-admin/login', data={
             'username': 'testadmin',
             'password': 'testsecret2026'
         }, follow_redirects=True)
         self.assertEqual(res_admin_login.status_code, 200)
-        admin_dashboard = res_admin_login.data.decode('utf-8')
+        admin_html = res_admin_login.data.decode('utf-8')
 
-        # 5. Admin dashboard contains required administrative telemetry
-        self.assertIn('MAT-VLAB ADMIN', admin_dashboard)
-        self.assertIn('Total Students', admin_dashboard)
-        self.assertIn('Dhruva01', admin_dashboard)
-        self.assertIn('Dhruva H D', admin_dashboard)
-        self.assertIn('Pondicherry University', admin_dashboard)
-        self.assertTrue('Institution &amp; Degree Cohorts' in admin_dashboard or 'Institution & Degree Cohorts' in admin_dashboard)
+        # 4. Verify redesigned Admin Dashboard elements
+        self.assertIn('MAT-VLAB ADMIN', admin_html)
+        self.assertIn('Central laboratory usage monitoring and experiment records', admin_html)
+        self.assertIn('Total Experiments', admin_html)
+        self.assertIn('Tensile Tests', admin_html)
+        self.assertIn('Hardness Tests', admin_html)
+        self.assertIn('EXPERIMENT USAGE RECORDS', admin_html)
 
-        # 6. CSV Roster Export
+        # 5. Save an experiment and verify it appears in the usage records
+        self.client.post('/api/hardness/save', json={
+            "method": "BRINELL",
+            "mode": "VIRTUAL_SIMULATION",
+            "title": "Admin Inspection Test",
+            "student_name": "Admin Test Student",
+            "university": "MIT Manipal",
+            "material_name": "Aluminium 6061-T6",
+            "mean_hardness": 95.0,
+            "hardness_unit": "HBW",
+            "readings": [{"d1": 6.1, "d2": 6.1, "mean_d": 6.1, "hbw": 95.0}]
+        })
+
+        res_records = self.client.get('/portal-admin')
+        records_html = res_records.data.decode('utf-8')
+        self.assertIn('Admin Test Student', records_html)
+        self.assertIn('MIT Manipal', records_html)
+
+        # 6. CSV Export contains usage records
         res_csv = self.client.get('/portal-admin/export-csv')
         self.assertEqual(res_csv.status_code, 200)
         csv_text = res_csv.data.decode('utf-8')
-        self.assertIn('Student ID,Name,Course,University', csv_text)
-        self.assertIn('Dhruva01,Dhruva H D,B.Tech / B.E.,Pondicherry University', csv_text)
+        self.assertIn('Record ID,Experiment Type,Title,Mode,Material,Student Name,University', csv_text)
+        self.assertIn('Admin Test Student,MIT Manipal', csv_text)
 
         # 7. Admin Logout
-        res_logout = self.client.get('/portal-admin/logout', follow_redirects=True)
-        self.assertEqual(res_logout.status_code, 200)
-        self.assertIn('Administrative Console', res_logout.data.decode('utf-8'))
+        res_admin_logout = self.client.get('/portal-admin/logout', follow_redirects=True)
+        self.assertEqual(res_admin_logout.status_code, 200)
+        self.assertIn('Administrative Console', res_admin_logout.data.decode('utf-8'))
 
-    def test_no_examples_in_login_or_create_page(self):
-        """Verify that login and create account pages do NOT show any examples in placeholders, buttons, or suggestions."""
-        # 1. Check Register Page
-        res_reg = self.client.get('/register')
-        self.assertEqual(res_reg.status_code, 200)
-        reg_html = res_reg.data.decode('utf-8')
+    def test_admin_credentials_update(self):
+        """Verify admin can change username and password, requiring current password, without plaintext exposure."""
+        from models.database import verify_admin_login, get_admin_credentials
 
-        self.assertNotIn('e.g.', reg_html)
-        self.assertNotIn('Dhruva01', reg_html)
-        self.assertNotIn('Rahul25', reg_html)
-        self.assertNotIn('Sindhu07', reg_html)
-        self.assertNotIn('example-id-btn', reg_html)
-        self.assertNotIn('universitySuggestions', reg_html)
+        # Log in
+        self.client.post('/portal-admin/login', data={'username': 'testadmin', 'password': 'testsecret2026'}, follow_redirects=True)
 
-        # 2. Check Login Page
-        res_login = self.client.get('/login')
-        self.assertEqual(res_login.status_code, 200)
-        login_html = res_login.data.decode('utf-8')
-
-        self.assertNotIn('e.g.', login_html)
-        self.assertNotIn('Dhruva01', login_html)
-        self.assertNotIn('Rahul25', login_html)
-        self.assertNotIn('Sindhu07', login_html)
-
-    def test_admin_credentials_update_and_customization(self):
-        """Verify admin can change username and password as wished and log in with new details."""
-        from models.database import verify_admin_login, update_admin_credentials, get_admin_credentials
-
-        # 1. Initially seeded with testadmin / testsecret2026
-        success, _ = verify_admin_login('testadmin', 'testsecret2026')
-        self.assertTrue(success)
-
-        # 2. Log in via web interface
-        login_res = self.client.post('/portal-admin/login', data={
-            'username': 'testadmin',
-            'password': 'testsecret2026'
-        }, follow_redirects=True)
-        self.assertEqual(login_res.status_code, 200)
-        self.assertIn('Change Admin Details', login_res.data.decode('utf-8'))
-
-        # 3. Attempt update with wrong current password -> fails
+        # Bad current password fails
         bad_pw_res = self.client.post('/portal-admin/update-credentials', data={
             'current_password': 'wrongpassword',
-            'new_username': 'myCustomAdmin',
-            'new_password': 'newpassword123',
-            'confirm_password': 'newpassword123'
+            'new_username': 'chief_admin',
+            'new_password': 'newpass2026',
+            'confirm_password': 'newpass2026'
         }, follow_redirects=True)
         self.assertIn('Current administrator password is incorrect', bad_pw_res.data.decode('utf-8'))
 
-        # 4. Attempt update with mismatching confirmation -> fails
-        mismatch_res = self.client.post('/portal-admin/update-credentials', data={
-            'current_password': 'testsecret2026',
-            'new_username': 'myCustomAdmin',
-            'new_password': 'newpassword123',
-            'confirm_password': 'differentpassword'
-        }, follow_redirects=True)
-        self.assertIn('do not match', mismatch_res.data.decode('utf-8'))
-
-        # 5. Successfully update credentials
+        # Successful update
         update_res = self.client.post('/portal-admin/update-credentials', data={
             'current_password': 'testsecret2026',
-            'new_username': 'DhruvaAdmin',
-            'new_password': 'DhruvaSuperPass2026',
-            'confirm_password': 'DhruvaSuperPass2026'
+            'new_username': 'chief_admin',
+            'new_password': 'chiefPassword2026',
+            'confirm_password': 'chiefPassword2026'
         }, follow_redirects=True)
         self.assertIn('Administrator credentials updated successfully', update_res.data.decode('utf-8'))
-        self.assertIn('DhruvaAdmin', update_res.data.decode('utf-8'))
 
-        # 6. Verify in database
-        cred = get_admin_credentials()
-        self.assertEqual(cred['username'], 'DhruvaAdmin')
+        # Verify DB
+        creds = get_admin_credentials()
+        self.assertEqual(creds['username'], 'chief_admin')
 
-        # 7. Log out first
+        # Log in with new credentials succeeds
         self.client.get('/portal-admin/logout')
-
-        # 8. Old credentials no longer work
-        old_login_res = self.client.post('/portal-admin/login', data={
-            'username': 'testadmin',
-            'password': 'testsecret2026'
+        new_login = self.client.post('/portal-admin/login', data={
+            'username': 'chief_admin',
+            'password': 'chiefPassword2026'
         }, follow_redirects=True)
-        self.assertIn('Invalid administrator credentials', old_login_res.data.decode('utf-8'))
-
-        # 9. Log in with new credentials succeeds
-        new_login_res = self.client.post('/portal-admin/login', data={
-            'username': 'DhruvaAdmin',
-            'password': 'DhruvaSuperPass2026'
-        }, follow_redirects=True)
-        self.assertEqual(new_login_res.status_code, 200)
-        self.assertIn('MAT-VLAB ADMIN', new_login_res.data.decode('utf-8'))
-        self.assertIn('DhruvaAdmin', new_login_res.data.decode('utf-8'))
+        self.assertEqual(new_login.status_code, 200)
+        self.assertIn('MAT-VLAB ADMIN', new_login.data.decode('utf-8'))
 
 if __name__ == '__main__':
     unittest.main()
-

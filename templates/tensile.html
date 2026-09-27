@@ -361,7 +361,7 @@
           <div class="col-md-6">
             <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
               <h6 class="text-steel fw-bold">Original Cross-Sectional Area ($A_0$)</h6>
-              <div class="p-2 my-2 bg-white rounded border font-mono text-steel small fw-bold">A₀ = (π × d₀²) / 4</div>
+              <div class="math-formula-box p-2 my-2 bg-white rounded border text-steel small fw-bold text-center">$$A_0 = \frac{\pi d_0^2}{4}$$</div>
               <p class="text-secondary small mb-0">Used as the nominal reference area for all engineering stress calculations.</p>
             </div>
           </div>
@@ -369,7 +369,7 @@
           <div class="col-md-6">
             <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
               <h6 class="text-steel fw-bold">Engineering Stress ($\sigma$)</h6>
-              <div class="p-2 my-2 bg-white rounded border font-mono text-steel small fw-bold">σ = P / A₀  (N/mm² or MPa)</div>
+              <div class="math-formula-box p-2 my-2 bg-white rounded border text-steel small fw-bold text-center">$$\sigma = \frac{P}{A_0} \quad [\text{MPa or N/mm}^2]$$</div>
               <p class="text-secondary small mb-0">Ratio of instantaneous axial force to original undeformed cross-sectional area.</p>
             </div>
           </div>
@@ -377,7 +377,7 @@
           <div class="col-md-6">
             <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
               <h6 class="text-steel fw-bold">Engineering Strain ($\epsilon$)</h6>
-              <div class="p-2 my-2 bg-white rounded border font-mono text-steel small fw-bold">ε = ΔL / L₀ = (L - L₀) / L₀</div>
+              <div class="math-formula-box p-2 my-2 bg-white rounded border text-steel small fw-bold text-center">$$\epsilon = \frac{\Delta L}{L_0} = \frac{L - L_0}{L_0}$$</div>
               <p class="text-secondary small mb-0">Linear elongation relative to original gauge length (dimensionless or %).</p>
             </div>
           </div>
@@ -385,7 +385,7 @@
           <div class="col-md-6">
             <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
               <h6 class="text-steel fw-bold">Young's Modulus ($E$)</h6>
-              <div class="p-2 my-2 bg-white rounded border font-mono text-steel small fw-bold">E = Δσ / Δε  (in GPa)</div>
+              <div class="math-formula-box p-2 my-2 bg-white rounded border text-steel small fw-bold text-center">$$E = \frac{\Delta \sigma}{\Delta \epsilon} \quad [\text{GPa}]$$</div>
               <p class="text-secondary small mb-0">Slope of the linear elastic proportional limit region determined by linear regression.</p>
             </div>
           </div>
@@ -393,15 +393,15 @@
           <div class="col-md-6">
             <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
               <h6 class="text-steel fw-bold">0.2% Offset Proof Stress ($\sigma_{0.2\%}$)</h6>
-              <div class="p-2 my-2 bg-white rounded border font-mono text-steel small fw-bold">σ = E × (ε - 0.002)</div>
+              <div class="math-formula-box p-2 my-2 bg-white rounded border text-steel small fw-bold text-center">$$\sigma_{\text{offset}} = E \cdot (\epsilon - 0.002)$$</div>
               <p class="text-secondary small mb-0">Intersection of offset linear slope with the stress-strain curve for materials lacking sharp yield points.</p>
             </div>
           </div>
 
           <div class="col-md-6">
             <div class="p-3 rounded bg-light border border-secondary border-opacity-25 h-100">
-              <h6 class="text-steel fw-bold">Percentage Elongation (%EL) &amp; Reduction in Area (%RA)</h6>
-              <div class="p-2 my-2 bg-white rounded border font-mono text-steel small fw-bold">%EL = [(L_f - L₀) / L₀] × 100%<br>%RA = [(A₀ - A_f) / A₀] × 100%</div>
+              <h6 class="text-steel fw-bold">Ductility (%EL &amp; %RA)</h6>
+              <div class="math-formula-box p-2 my-2 bg-white rounded border text-steel small fw-bold text-center">$$\%EL = \left(\frac{L_f - L_0}{L_0}\right) \times 100\% \quad \%RA = \left(\frac{A_0 - A_f}{A_0}\right) \times 100\%$$</div>
               <p class="text-secondary small mb-0">Primary engineering measures of metallurgical ductility.</p>
             </div>
           </div>
@@ -476,4 +476,17 @@
 
 {% block extra_scripts %}
 <script src="{{ url_for('static', filename='js/apparatus.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof window.renderMath === 'function') {
+    window.renderMath();
+  }
+  const tabs = document.querySelectorAll('#tensileTabs button, #tensileTabs a');
+  tabs.forEach(tab => {
+    tab.addEventListener('shown.bs.tab', () => {
+      if (typeof window.renderMath === 'function') window.renderMath();
+    });
+  });
+});
+</script>
 {% endblock %}

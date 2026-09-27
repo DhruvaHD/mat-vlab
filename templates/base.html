@@ -19,6 +19,21 @@
   <!-- Plotly.js -->
   <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
 
+  <!-- MathJax 3 Global Configuration (MUST appear BEFORE MathJax script is loaded) -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)'], ['$', '$']],
+        displayMath: [['\\[', '\\]'], ['$$', '$$']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <!-- MathJax 3 Engine (CDN with fallback) -->
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js';"></script>
+
   <!-- Custom Laboratory Stylesheet -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   {% block extra_head %}{% endblock %}
@@ -28,7 +43,7 @@
   <!-- Navigation Bar -->
   <nav class="navbar navbar-expand-lg navbar-dark navbar-matvlab sticky-top">
     <div class="container-fluid px-2 px-sm-3 px-lg-4">
-      <a class="navbar-brand" href="{% if is_logged_in %}{{ url_for('dashboard') }}{% else %}{{ url_for('index') }}{% endif %}">
+      <a class="navbar-brand" href="{% if is_logged_in %}{{ url_for('home') }}{% else %}{{ url_for('index') }}{% endif %}">
         <div class="brand-icon">
           <i class="fas fa-atom"></i>
         </div>
@@ -162,43 +177,38 @@
           <div class="dropdown">
             <button class="btn btn-sm btn-outline-light dropdown-toggle d-flex align-items-center gap-2" type="button" id="studentMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="fas fa-user-graduate text-cyan"></i>
-              <span class="fw-semibold text-truncate d-none d-sm-inline" style="max-width: 140px;">{{ current_student.name }}</span>
-              <span class="badge bg-cyan text-navy font-mono">{{ current_student.student_id }}</span>
+              <span class="fw-semibold text-truncate d-none d-sm-inline" style="max-width: 150px;">{{ current_student.name }}</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow border" aria-labelledby="studentMenuDropdown">
               <li class="px-3 py-2 border-bottom bg-light">
                 <div class="fw-bold text-navy">{{ current_student.name }}</div>
-                <div class="small text-muted font-mono"><i class="fas fa-id-card me-1"></i>ID: <strong>{{ current_student.student_id }}</strong></div>
-                <div class="small text-muted text-truncate" style="max-width: 220px;" title="{{ current_student.course }}"><i class="fas fa-graduation-cap me-1"></i>{{ current_student.course }}</div>
                 <div class="small text-muted text-truncate" style="max-width: 220px;" title="{{ current_student.university }}"><i class="fas fa-university me-1"></i>{{ current_student.university }}</div>
+                <div class="small text-muted font-mono"><i class="fas fa-clock me-1"></i>Active Lab Session</div>
               </li>
               <li>
-                <a class="dropdown-item py-2 {% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
-                  <i class="fas fa-tachometer-alt text-primary me-2"></i> Student Dashboard
+                <a class="dropdown-item py-2 {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('home') }}">
+                  <i class="fas fa-home text-primary me-2"></i> Laboratory Home
                 </a>
               </li>
               <li>
                 <a class="dropdown-item py-2 {% if active_page == 'my_experiments' %}active{% endif %}" href="{{ url_for('my_experiments') }}">
-                  <i class="fas fa-folder-open text-info me-2"></i> My Experiments
+                  <i class="fas fa-folder-open text-info me-2"></i> My Experiments (Session)
                 </a>
               </li>
               <li><hr class="dropdown-divider"></li>
               <li>
                 <a class="dropdown-item py-2 text-danger" href="{{ url_for('logout') }}">
-                  <i class="fas fa-sign-out-alt me-2"></i> Log Out
+                  <i class="fas fa-sign-out-alt me-2"></i> End Session
                 </a>
               </li>
             </ul>
           </div>
-          <a href="{{ url_for('simulation') }}" class="btn btn-sm btn-nav-cta ms-lg-1">
-            <i class="fas fa-play me-1"></i> Start Virtual Lab
+          <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-light text-nowrap d-none d-md-inline-flex align-items-center gap-1">
+            <i class="fas fa-sign-out-alt"></i> End Session
           </a>
           {% else %}
-          <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-light d-inline-flex align-items-center gap-1 {% if active_page == 'login' %}active{% endif %}">
-            <i class="fas fa-sign-in-alt"></i> Login
-          </a>
-          <a href="{{ url_for('register') }}" class="btn btn-sm btn-light text-navy fw-semibold d-inline-flex align-items-center gap-1 {% if active_page == 'register' %}active{% endif %}">
-            <i class="fas fa-user-plus"></i> Register
+          <a href="{{ url_for('index') }}" class="btn btn-sm btn-lab-primary d-inline-flex align-items-center gap-1">
+            <i class="fas fa-user-graduate"></i> Student Identification
           </a>
           {% endif %}
         </div>
@@ -245,20 +255,20 @@
         <div class="col-lg-2 col-6">
           <h6 class="footer-heading">Testing Labs</h6>
           <ul class="list-unstyled small mb-0">
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('tensile_hub') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">Tensile Testing</a></li>
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('simulation') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">UTM Simulation</a></li>
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('manual_entry') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">Manual Data Entry</a></li>
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('experiments') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">All Experiments</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('tensile_hub') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">Tensile Testing</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('simulation') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">UTM Simulation</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('manual_entry') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">Manual Data Entry</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('experiments') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">All Experiments</a></li>
           </ul>
         </div>
 
         <div class="col-lg-3 col-6">
           <h6 class="footer-heading">Engineering Tools</h6>
           <ul class="list-unstyled small mb-0">
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('materials') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">Material Database</a></li>
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('compare') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">Material Comparison</a></li>
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('my_experiments') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">Saved Experiments</a></li>
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('quizzes') }}{% else %}{{ url_for('login') }}{% endif %}" class="footer-link">Knowledge Assessment</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('materials') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">Material Database</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('compare') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">Material Comparison</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('my_experiments') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">Saved Experiments</a></li>
+            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('quizzes') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">Knowledge Assessment</a></li>
           </ul>
         </div>
 
@@ -292,6 +302,9 @@
 
   <!-- Global App JS -->
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+  <!-- MathJax Dynamic Rendering Controller -->
+  <script src="{{ url_for('static', filename='js/math_render.js') }}"></script>
   {% block extra_scripts %}{% endblock %}
 </body>
 </html>

@@ -20,24 +20,47 @@ MAT-VLAB has been engineered following the **12-Factor App methodology**:
 
 Managed cloud platforms provide **free automatic SSL/HTTPS**, continuous deployment directly from Git, and zero server maintenance.
 
-### 🌐 Deploying to Render.com (Easiest & Free)
+### 🌐 Deploying to Render.com (Recommended for Production with PostgreSQL)
 
-1. Push your MAT-VLAB repository to GitHub or GitLab.
-2. Sign in to [Render.com](https://render.com) and click **New +** $\rightarrow$ **Web Service**.
-3. Connect your MAT-VLAB repository.
-4. Configure the service:
-   - **Name**: `mat-vlab` (or your choice)
-   - **Region**: Choose the closest region (e.g. Singapore, Frankfurt, Oregon)
+#### Step 1: Create a Persistent PostgreSQL Database on Render
+1. Sign in to [Render.com](https://render.com) and click **New +** $\rightarrow$ **PostgreSQL**.
+2. Configure your database:
+   - **Name**: `mat-vlab-db`
+   - **Database**: `materials`
+   - **User**: `matvlab_user`
+   - **Plan**: Free (or Starter)
+3. Click **Create Database**.
+4. Once provisioned, locate the **Internal Database URL** (or **External Database URL**). Copy the full connection string:
+   `postgresql://matvlab_user:PASSWORD@dpg-...-a.render.com/materials`
+
+#### Step 2: Deploy the MAT-VLAB Web Service
+1. In Render, click **New +** $\rightarrow$ **Web Service**.
+2. Connect your MAT-VLAB repository.
+3. Configure the service:
+   - **Name**: `mat-vlab`
    - **Environment**: `Python 3`
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `gunicorn -c gunicorn.conf.py wsgi:app`
-5. In the **Environment Variables** section, add:
-   - `SECRET_KEY`: *(Generate a 32-character random string)*
+4. In the **Environment Variables** section, configure the following:
+   - `DATABASE_URL`: *(Paste the PostgreSQL connection URL from Step 1)*
+   - `SECRET_KEY`: *(Generate a random 32-character string)*
    - `FLASK_ENV`: `production`
    - `ENABLE_PROXY_FIX`: `true`
-6. Click **Deploy Web Service**.
-7. Render will build and deploy the application, giving you an immediate public HTTPS URL:
-   `https://mat-vlab.onrender.com`
+   - `ADMIN_USERNAME`: *(Your custom admin username, e.g. `admin`)*
+   - `ADMIN_PASSWORD`: *(Your custom admin password)*
+     *(Or use `ADMIN_PASSWORD_HASH` for enhanced security)*
+5. Click **Deploy Web Service**.
+
+> [!IMPORTANT]
+> **Permanent Student Data Storage & Automatic Migration**:
+> - With `DATABASE_URL` configured, MAT-VLAB permanently stores all student accounts, experiment data, readings, and quiz attempts in PostgreSQL.
+> - On the first startup, MAT-VLAB automatically detects if PostgreSQL is fresh and seamlessly migrates any existing student accounts from `materials.db` into PostgreSQL with zero data loss.
+> - Future redeployments or container restarts on Render will never lose student accounts.
+
+#### Step 3: Admin Login & Password Recovery
+- Access the private administrator portal at: `https://your-app.onrender.com/portal-admin/login` (or `/admin/login`).
+- Log in using your configured `ADMIN_USERNAME` and `ADMIN_PASSWORD` (or `ADMIN_PASSWORD_HASH`).
+- **If you ever forget your password**: simply update `ADMIN_USERNAME` and `ADMIN_PASSWORD` (or `ADMIN_PASSWORD_HASH`) in your Render service's **Environment** tab. Render will restart the service and immediately update your admin login!
 
 ---
 
