@@ -114,48 +114,6 @@
               </li>
             </ul>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle {% if active_page in ['simulation', 'manual', 'impact', 'compression'] %}active{% endif %}" href="#" id="vlabDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="fas fa-microscope me-1"></i> Virtual Lab
-            </a>
-            <ul class="dropdown-menu dropdown-menu-matvlab shadow-sm border" aria-labelledby="vlabDropdown">
-              <li class="dropdown-header text-uppercase small fw-bold text-muted">Tensile Testing Station</li>
-              <li>
-                <a class="dropdown-item py-2" href="{{ url_for('simulation') }}">
-                  <i class="fas fa-desktop text-primary me-2"></i> UTM Virtual Simulation Mode
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item py-2" href="{{ url_for('manual_entry') }}">
-                  <i class="fas fa-keyboard text-success me-2"></i> Manual Laboratory Data Entry
-                </a>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li class="dropdown-header text-uppercase small fw-bold text-muted">Impact &amp; Compression Stations</li>
-              <li>
-                <a class="dropdown-item py-2" href="{{ url_for('impact_test') }}#virtual-lab">
-                  <i class="fas fa-hammer text-danger me-2"></i> Impact Virtual Machine &amp; DBTT
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item py-2" href="{{ url_for('compression_test') }}#virtual-lab">
-                  <i class="fas fa-arrows-alt-v text-success me-2"></i> Compression Virtual Machine &amp; Curve
-                </a>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li class="dropdown-header text-uppercase small fw-bold text-muted">Hardness Testing Station</li>
-              <li>
-                <a class="dropdown-item py-2" href="{{ url_for('hardness_brinell') }}#simulation">
-                  <i class="fas fa-circle text-primary me-2"></i> Brinell Virtual Machine
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item py-2" href="{{ url_for('hardness_rockwell') }}#simulation">
-                  <i class="fas fa-gem text-danger me-2"></i> Rockwell Virtual Machine
-                </a>
-              </li>
-            </ul>
-          </li>
           <li class="nav-item">
             <a class="nav-link {% if active_page == 'materials' %}active{% endif %}" href="{{ url_for('materials') }}">
               <i class="fas fa-cubes me-1"></i> Materials
