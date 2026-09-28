@@ -189,59 +189,7 @@
   </div>
 </section>
 
-<!-- ==========================================================================
-     APPARATUS PREVIEW & MACHINE ANATOMY SECTION
-     ========================================================================== -->
-<section class="py-5" style="background-color: var(--bg-primary);">
-  <div class="container py-3">
-    <div class="lab-card p-4 p-md-5 border border-secondary border-opacity-25 shadow-sm">
-      <div class="row align-items-center g-4">
-        <div class="col-lg-7">
-          <div class="badge-lab mb-2">
-            <i class="fas fa-hand-pointer text-steel me-1"></i> Interactive Component Schematics
-          </div>
-          <h2 class="fw-bold text-navy mb-3">Explore Real Machine Anatomy</h2>
-          <p class="text-secondary mb-3">
-            Every laboratory station includes an interactive SVG diagram of the testing apparatus. You can click or tap directly on the load cell, ball indenter, elevating screw, optical microscope, or dial indicators to inspect their internal mechanics and testing functions.
-          </p>
-          <div class="d-flex flex-wrap gap-2 mb-4">
-            <span class="badge bg-light text-navy border py-2 px-3"><i class="fas fa-check text-success me-1"></i> Touch &amp; Mobile Optimized</span>
-            <span class="badge bg-light text-navy border py-2 px-3"><i class="fas fa-check text-success me-1"></i> Mouse Hover &amp; Click</span>
-            <span class="badge bg-light text-navy border py-2 px-3"><i class="fas fa-check text-success me-1"></i> Detailed Specifications</span>
-          </div>
-          <div class="d-flex flex-wrap gap-3">
-            <a href="{{ url_for('tensile_hub') }}#content-apparatus" class="btn btn-lab-primary">
-              <i class="fas fa-compress-arrows-alt me-1"></i> Inspect UTM Machine
-            </a>
-            <a href="{{ url_for('hardness_brinell') }}#apparatus" class="btn btn-outline-primary">
-              <i class="fas fa-circle me-1"></i> Inspect Brinell Tester
-            </a>
-            <a href="{{ url_for('hardness_rockwell') }}#apparatus" class="btn btn-outline-danger">
-              <i class="fas fa-gem me-1"></i> Inspect Rockwell Tester
-            </a>
-          </div>
-        </div>
 
-        <div class="col-lg-5 text-center">
-          <div class="row g-2">
-            <div class="col-6">
-              <div class="p-2 bg-light rounded border border-secondary border-opacity-25 shadow-sm">
-                <img src="{{ url_for('static', filename='images/brinell_tester.svg') }}" alt="Brinell Apparatus" class="img-fluid rounded" style="max-height: 160px;">
-                <div class="fw-bold text-navy small mt-2">Brinell Tester</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-2 bg-light rounded border border-secondary border-opacity-25 shadow-sm">
-                <img src="{{ url_for('static', filename='images/rockwell_tester.svg') }}" alt="Rockwell Apparatus" class="img-fluid rounded" style="max-height: 160px;">
-                <div class="fw-bold text-navy small mt-2">Rockwell Tester</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- ==========================================================================
      PEDAGOGICAL SCOPE & ACADEMIC NOTICE
