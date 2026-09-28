@@ -178,74 +178,68 @@
         </div>
       </div>
 
-      <!-- 4. IMPACT TESTING (CHARPY / IZOD) — COMING SOON -->
+      <!-- 4. IMPACT TESTING (CHARPY / IZOD) (ACTIVE) -->
       <div class="col-lg-4 col-md-6">
-        <div class="experiment-card-modern opacity-85">
+        <div class="experiment-card-modern">
           <div class="card-img-wrapper">
-            <div class="text-center p-3">
-              <i class="fas fa-history text-secondary opacity-50" style="font-size: 3.5rem;"></i>
-              <div class="text-secondary small mt-2 fw-semibold">Pendulum Hammer &amp; V-Notch Anvil</div>
-            </div>
-            <span class="position-absolute top-0 end-0 m-2 badge-status-soon">
-              <i class="fas fa-clock"></i> Coming Soon
+            <img src="{{ url_for('static', filename='images/impact_tester.svg') }}" alt="Charpy and Izod Impact Tester Schematic">
+            <span class="position-absolute top-0 end-0 m-2 badge-status-available">
+              <i class="fas fa-check-circle"></i> Available
             </span>
-            <span class="position-absolute bottom-0 start-0 m-2 badge bg-white text-secondary border font-mono small">
-              ASTM E23 / ISO 148
+            <span class="position-absolute bottom-0 start-0 m-2 badge bg-white text-navy border font-mono small">
+              ASTM E23 / ISO 148-1
             </span>
           </div>
 
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 font-mono small">
-              Dynamic Toughness
+            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 font-mono small">
+              Dynamic Fracture
             </span>
-            <span class="text-muted small">Phase 2 Planned</span>
+            <span class="text-secondary small"><i class="fas fa-hammer text-danger me-1"></i> DBTT &amp; Toughness</span>
           </div>
 
           <h3 class="fw-bold text-navy fs-5 mb-2">Impact Testing (Charpy &amp; Izod)</h3>
           <p class="text-secondary small mb-4 flex-grow-1">
-            Evaluate notch toughness, impact fracture energy, and the Ductile-to-Brittle Transition Temperature (DBTT) of structural alloys using a 300 Joule swinging pendulum striker.
+            Evaluate dynamic fracture energy ($K_V$), notch toughness ($a_k$), and the sigmoidal Ductile-to-Brittle Transition Temperature (DBTT) of structural alloys using a 300 Joule swinging pendulum striker.
           </p>
 
           <div class="pt-3 border-top border-secondary border-opacity-25 mt-auto">
-            <button type="button" class="btn btn-outline-secondary w-100" disabled>
-              <i class="fas fa-clock me-1"></i> Coming Soon (In Development)
-            </button>
+            <a href="{{ url_for('impact_test') }}" class="btn btn-lab-primary w-100 d-flex align-items-center justify-content-center gap-2">
+              <span>Explore Experiment</span> <i class="fas fa-arrow-right small"></i>
+            </a>
           </div>
         </div>
       </div>
 
-      <!-- 5. COMPRESSION TESTING — COMING SOON -->
+      <!-- 5. COMPRESSION TESTING (ACTIVE) -->
       <div class="col-lg-4 col-md-6">
-        <div class="experiment-card-modern opacity-85">
+        <div class="experiment-card-modern">
           <div class="card-img-wrapper">
-            <div class="text-center p-3">
-              <i class="fas fa-compress-arrows-alt text-secondary opacity-50" style="font-size: 3.5rem;"></i>
-              <div class="text-secondary small mt-2 fw-semibold">Sub-press Platens &amp; Compression Cylinder</div>
-            </div>
-            <span class="position-absolute top-0 end-0 m-2 badge-status-soon">
-              <i class="fas fa-clock"></i> Coming Soon
+            <img src="{{ url_for('static', filename='images/compression_tester.svg') }}" alt="Compression Test Sub-press Machine Schematic">
+            <span class="position-absolute top-0 end-0 m-2 badge-status-available">
+              <i class="fas fa-check-circle"></i> Available
             </span>
-            <span class="position-absolute bottom-0 start-0 m-2 badge bg-white text-secondary border font-mono small">
-              ASTM E9
+            <span class="position-absolute bottom-0 start-0 m-2 badge bg-white text-navy border font-mono small">
+              ASTM E9 / ISO 13314
             </span>
           </div>
 
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 font-mono small">
+            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 font-mono small">
               Uniaxial Compression
             </span>
-            <span class="text-muted small">Phase 2 Planned</span>
+            <span class="text-secondary small"><i class="fas fa-arrows-alt-v text-success me-1"></i> Crushing &amp; Barreling</span>
           </div>
 
           <h3 class="fw-bold text-navy fs-5 mb-2">Compression Testing</h3>
           <p class="text-secondary small mb-4 flex-grow-1">
-            Determine compressive yield strength, crushing behavior, and lateral platen friction (barreling effect) in brittle cast irons, structural ceramics, and ductile bearing alloys.
+            Determine compressive yield strength ($\sigma_{cy}$ 0.2% offset), crushing fracture, and lateral platen friction (barreling effect) in brittle cast irons, structural ceramics, and ductile bearing alloys.
           </p>
 
           <div class="pt-3 border-top border-secondary border-opacity-25 mt-auto">
-            <button type="button" class="btn btn-outline-secondary w-100" disabled>
-              <i class="fas fa-clock me-1"></i> Coming Soon (In Development)
-            </button>
+            <a href="{{ url_for('compression_test') }}" class="btn btn-lab-primary w-100 d-flex align-items-center justify-content-center gap-2">
+              <span>Explore Experiment</span> <i class="fas fa-arrow-right small"></i>
+            </a>
           </div>
         </div>
       </div>
@@ -324,7 +318,7 @@
           </div>
           <h4 class="fw-bold text-navy fs-5 mb-2">2. Equipment Visualization</h4>
           <p class="text-secondary small mb-0">
-            Interactive, clickable SVG machine diagrams of the Universal Testing Machine, Brinell Tester, and Rockwell Machine detailing load cells, lead screws, indenters, and anvils.
+            Interactive, clickable SVG machine diagrams of the Universal Testing Machine, Pendulum Impact Tester, Compression Sub-press, Brinell Tester, and Rockwell Machine detailing load cells, strikers, platens, and indenters.
           </p>
         </div>
       </div>

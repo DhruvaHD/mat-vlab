@@ -238,6 +238,156 @@
     }
   };
 
+  const IMPACT_DATA = {
+    'pendulum-arm': {
+      title: 'Structural Pendulum Swing Arm',
+      badge: 'KINEMATICS SYSTEM',
+      category: 'Oscillating Arm Assembly',
+      specs: 'Length R = 750 mm to Center of Strike | High-modulus forged alloy steel | Aerodynamic drag-reduced profile.',
+      func: 'Swings freely from low-friction ball bearings to convert initial potential energy into high-velocity kinetic impact energy (5.24 m/s at strike).',
+      desc: 'Engineered with high torsional and flexural stiffness to minimize parasitic vibrational energy dissipation upon high-speed impact with the notched specimen.',
+      tip: 'Verify zero swing bearing friction loss (L_f < 0.5% full scale = 1.5 J) by conducting an unladen test swing prior to testing.'
+    },
+    'striker-hammer': {
+      title: 'Striking Hammer & Calibrated Tup',
+      badge: 'IMPACT ELEMENT',
+      category: 'Tup / Kinetic Striker',
+      specs: 'ASTM E23 8.0 mm radius striker tip (or ISO 148 2.0 mm radius) | Hardness ≥ 60 HRC | Total mass m = 20.4 kg.',
+      func: 'Delivers the concentrated kinetic blow directly behind the notch root of the specimen, inducing rapid multi-axial tensile fracture.',
+      desc: 'The striking knife edge is situated at the exact Center of Percussion (COP) of the pendulum assembly to eliminate reaction shock impulses at the pivot bearings.',
+      tip: 'Inspect striker blade profile regularly using optical profile projector templates; chipped or worn tups distort absorbed energy readings.'
+    },
+    'specimen-anvil': {
+      title: 'Hardened Specimen Support Anvils',
+      badge: 'REACTION BASE',
+      category: 'Specimen Restraints',
+      specs: 'Hardened tool steel (60–62 HRC) | Span L = 40.0 ± 0.2 mm | Anvil shoulder radius R = 1.0 ± 0.05 mm | 11° taper.',
+      func: 'Rigidly supports the ends of the Charpy specimen as a three-point simply supported beam under dynamic high-rate impact.',
+      desc: 'Anchored directly into a massive 1500 kg monolithic machine base to absorb elastic recoil and prevent kinetic energy loss into laboratory flooring.',
+      tip: 'Clean the 40 mm span seat meticulously between tests; shattered specimen fragments can prevent true horizontal seating of subsequent specimens.'
+    },
+    'charpy-specimen': {
+      title: 'Standard Charpy V-Notch Test Specimen',
+      badge: 'TEST SPECIMEN',
+      category: 'ASTM E23 Type A Specimen',
+      specs: '10.0 × 10.0 × 55.0 mm | 45° V-Notch, 2.0 mm depth, 0.25 mm root radius | Net Ligament A₀ = 80 mm² (0.80 cm²).',
+      func: 'The metallic alloy specimen evaluated for dynamic notch sensitivity, fracture toughness, and temperature-dependent DBTT transition.',
+      desc: 'The V-notch acts as a severe triaxial stress concentrator, inhibiting gross plastic yielding and promoting brittle cleavage crack initiation.',
+      tip: 'According to ASTM E23, specimens tested at non-ambient temperatures must be removed from bath and struck within 5 seconds to prevent thermal drift.'
+    },
+    'dial-indicator': {
+      title: 'Calibrated Energy Indicator Dial & Friction Pointer',
+      badge: 'METROLOGY CONSOLE',
+      category: 'Analogue / Digital Transducer',
+      specs: 'Capacity: 300 Joules (or 450 J) | Division: 1 Joule (or 0.5 J) | Maximum permissible calibration error < ±0.5%.',
+      func: 'Directly displays initial potential energy (E₀) and records net energy absorbed (KV = E₀ - E₁ - L_f) via a lazy follower needle.',
+      desc: 'Driven by the pendulum shaft via a one-way friction dog. The follower pointer remains stationed at the maximum swing angle after impact.',
+      tip: 'Reset the friction drag needle to the maximum scale mark (300 J) before every release; ensure needle friction is light enough to prevent tare dragging.'
+    },
+    'release-latch': {
+      title: 'Precision Release Latch & Solenoid Trigger',
+      badge: 'SAFETY ACTUATOR',
+      category: 'Release Mechanism',
+      specs: 'Fall angle β = 140° | Pneumatic / Solenoid release with manual mechanical safety backup latch.',
+      func: 'Securely locks the heavy pendulum at its prescribed release height (E₀ = 300 J) and releases it instantaneously without imparting initial velocity.',
+      desc: 'Interlocked with dual two-hand safety pushbuttons or enclosure door micro-switches to eliminate inadvertent premature release.',
+      tip: 'Never position hands or torso within the swing plane while the pendulum arm is latched in the cocked position.'
+    },
+    'brake-mechanism': {
+      title: 'Pendulum Friction Safety Brake',
+      badge: 'MOTION ARRESTER',
+      category: 'Kinetic Energy Absorber',
+      specs: 'Friction brake band with ergonomic hand lever or progressive foot pedal.',
+      func: 'Quickly halts the pendulum after specimen fracture has occurred, eliminating hazardous multi-cycle free oscillations.',
+      desc: 'Operated smoothly on the return swing to safely bring the pendulum to a dead stop without shock damage to the main pivot shaft.',
+      tip: 'Apply brake smoothly after the initial forward fracture swing completes; do not brake during the primary fracture impact event.'
+    },
+    'safety-housing': {
+      title: 'Interlocked Protective Enclosure Guard',
+      badge: 'SAFETY PERIMETER',
+      category: 'OSHA / ISO Compliant Guarding',
+      specs: 'Heavy steel wire mesh and 12 mm impact-resistant polycarbonate shielding with dual interlock switches.',
+      func: 'Contains high-velocity fractured specimen halves and isolates personnel from the high-energy pendulum swing path.',
+      desc: 'ASTM E23 mandates full mechanical shielding; electrical interlocks prevent release of the pendulum until the safety door is securely latched.',
+      tip: 'Inspect polycarbonate view windows periodically for pitting from high-velocity projectile impacts.'
+    }
+  };
+
+  const COMPRESSION_DATA = {
+    'upper-platen': {
+      title: 'Spherical-Seated Self-Aligning Upper Platen',
+      badge: 'ALIGNMENT SUB-PRESS',
+      category: 'Dynamic Loading Tool',
+      specs: 'ASTM E9 Self-aligning spherical seat | Tool steel platen hardness ≥ 60 HRC, Ra ≤ 0.2 µm, parallelism within 0.005 mm.',
+      func: 'Transmits pure axial compressive load onto the specimen while compensating for slight non-parallelism of specimen end faces.',
+      desc: 'The spherical seat swivels under initial preload (50–100 N) to establish 100% full-face planar contact, then friction-locks rigidly under high compressive force.',
+      tip: 'Apply light molybdenum disulfide (MoS₂) lubricant to the spherical seat socket periodically to guarantee smooth angular self-alignment.'
+    },
+    'lower-platen': {
+      title: 'Precision Hardened Rigid Base Platen',
+      badge: 'REACTION PLATEN',
+      category: 'Static Tooling Base',
+      specs: 'Case-hardened tool steel (62 HRC) | Concentric scribe circles for visual specimen centering | Diameter D = 100 mm.',
+      func: 'Provides an unyielding, flat reaction support surface for the bottom face of the compressive specimen.',
+      desc: 'Ground to mirror finish. Concentric centering grooves ensure the specimen is centered on the machine vertical load axis within 0.1 mm.',
+      tip: 'Platen end-face friction generates triaxial shear constraint (barreling); PTFE (Teflon) sheets or MoS₂ paste should be used for frictionless flow studies.'
+    },
+    'subpress-guide': {
+      title: 'ASTM E9 Compression Sub-Press Alignment Fixture',
+      badge: 'KINEMATIC FIXTURE',
+      category: 'Anti-Buckling Guidance',
+      specs: 'Precision hardened guide columns | Bushing clearance < 0.010 mm | Slenderness guidance up to h₀/d₀ = 3.0.',
+      func: 'Guides the upper loading ram along the strict vertical machine axis, eliminating eccentric lateral loads and crosshead tilting moments.',
+      desc: 'ASTM E9 strongly recommends the use of a sub-press for modulus and proof stress determination to prevent spurious bending strains.',
+      tip: 'Ensure sub-press guide pillars are wiped free of abrasive debris and lightly coated with clean machine oil before assembly.'
+    },
+    'compression-specimen': {
+      title: 'Standard Cylindrical Compression Specimen',
+      badge: 'TEST SPECIMEN',
+      category: 'ASTM E9 Medium Cylinder',
+      specs: 'd₀ = 15.0 mm, h₀ = 30.0 mm (Slenderness ratio h₀/d₀ = 2.0, A₀ = 176.71 mm²) | End faces flat and parallel within 0.005 mm.',
+      func: 'The metallic alloy specimen subjected to uniaxial compressive plastic deformation or brittle shear fracture.',
+      desc: 'Specimens develop characteristic barreling (bulging at mid-height) due to frictional resistance at platen contact faces.',
+      tip: 'Measure initial diameter at top, middle, and bottom with an optical micrometer before mounting to verify cylindrical uniformity.'
+    },
+    'load-cell': {
+      title: 'Pancake Strain-Gauge Load Cell (300 kN)',
+      badge: 'FORCE TRANSDUCER',
+      category: 'Compression Force Sensor',
+      specs: 'Capacity: 300 kN (67,400 lbf) | Accuracy: ISO 7500-1 Class 0.5 | Temperature compensated Wheatstone bridge.',
+      func: 'Continuously measures axial compressive force applied to the sub-press and specimen with 0.1 N electronic resolution.',
+      desc: 'Multi-column shear web pancake architecture designed for high side-load immunity and zero bending crosstalk under extreme compressive loads.',
+      tip: 'Tare the digital load reading after lowering the crosshead into gentle proximity with the upper sub-press platen.'
+    },
+    'crosshead-drive': {
+      title: 'Electromechanical Crosshead & Twin Ball Screws',
+      badge: 'MOTION SYSTEM',
+      category: 'Precision Kinematics',
+      specs: 'Twin hardened recirculating ball screws | Speed range: 0.001 to 250 mm/min | Maximum compressive thrust: 300 kN.',
+      func: 'Drives the movable crosshead downward at a strictly regulated ASTM E9 strain rate (e.g. 0.005 mm/mm/min in elastic range).',
+      desc: 'Synchronized servomotor drive provides backlash-free displacement and rapid closed-loop response to load and strain feedback.',
+      tip: 'Maintain the constant ASTM E9 crosshead displacement velocity throughout the test to prevent strain-rate hardening artifacts.'
+    },
+    'deflection-sensor': {
+      title: 'Dual Averaging Platen-to-Platen Compressometer',
+      badge: 'STRAIN TRANSDUCER',
+      category: 'High-Precision LVDT',
+      specs: 'Dual opposing LVDT sensors | Gauge travel: 15 mm | Resolution: 0.1 µm | Classification: ASTM E83 Class B-1.',
+      func: 'Directly measures the true compressive axial contraction (Δh) between the platens, bypassing machine frame compliance errors.',
+      desc: 'Averaging the displacement from two diametrically opposed sensors cancels out any parasitic angular tilt or bending deformation.',
+      tip: 'Calibrate the compressometer gauge factor with a certified micrometer calibrator stand before recording elastic modulus data.'
+    },
+    'machine-frame': {
+      title: 'Ultra-Stiff Load Frame & Cast Reaction Bed',
+      badge: 'STRUCTURAL RIGIDITY',
+      category: 'Structural Column Subsystem',
+      specs: 'High-stiffness 4-column cast iron bed (rigidity > 500 kN/mm) | Designed for < 0.02 mm frame deformation at 300 kN.',
+      func: 'Resists enormous compressive reaction forces without bending or twisting, maintaining strict coaxial alignment under 300 kN.',
+      desc: 'Rigid structural construction ensures high measurement fidelity and safe containment of elastic energy release upon specimen failure.',
+      tip: 'Verify frame leveling with a precision machinist level on the lower bed platen annually.'
+    }
+  };
+
   // =========================================================================
   // 2. UNIVERSAL INSPECTOR CONTROLLER
   // =========================================================================
@@ -270,6 +420,18 @@
       if (UTM_DATA['part-' + key]) return UTM_DATA['part-' + key];
       for (const k in UTM_DATA) {
         if (k.includes(key) || key.includes(normalizeKey(k))) return UTM_DATA[k];
+      }
+    } else if (diagramType === 'impact' || diagramType === 'charpy' || diagramType === 'izod') {
+      if (IMPACT_DATA[key]) return IMPACT_DATA[key];
+      if (IMPACT_DATA['part-' + key]) return IMPACT_DATA['part-' + key];
+      for (const k in IMPACT_DATA) {
+        if (k.includes(key) || key.includes(normalizeKey(k))) return IMPACT_DATA[k];
+      }
+    } else if (diagramType === 'compression' || diagramType === 'comp') {
+      if (COMPRESSION_DATA[key]) return COMPRESSION_DATA[key];
+      if (COMPRESSION_DATA['part-' + key]) return COMPRESSION_DATA['part-' + key];
+      for (const k in COMPRESSION_DATA) {
+        if (k.includes(key) || key.includes(normalizeKey(k))) return COMPRESSION_DATA[k];
       }
     }
     return null;
@@ -501,6 +663,34 @@
           const container = document.getElementById('utm-svg-container');
           const svg = container ? container.querySelector('svg') : null;
           selectPart('tensile', e.target.value, svg, 'utm-component-card');
+        });
+      }
+    }
+
+    // 4. Impact Testing Machine Inspector
+    if (document.getElementById('impact-svg-container')) {
+      initDiagram('impact-svg-container', 'impact', 'impact-component-card', 'striker-hammer');
+
+      const impactSelect = document.getElementById('impact-component-select');
+      if (impactSelect) {
+        impactSelect.addEventListener('change', function (e) {
+          const container = document.getElementById('impact-svg-container');
+          const svg = container ? container.querySelector('svg') : null;
+          selectPart('impact', e.target.value, svg, 'impact-component-card');
+        });
+      }
+    }
+
+    // 5. Compression Testing Machine Inspector
+    if (document.getElementById('compression-svg-container')) {
+      initDiagram('compression-svg-container', 'compression', 'comp-component-card', 'upper-platen');
+
+      const compSelect = document.getElementById('comp-component-select');
+      if (compSelect) {
+        compSelect.addEventListener('change', function (e) {
+          const container = document.getElementById('compression-svg-container');
+          const svg = container ? container.querySelector('svg') : null;
+          selectPart('compression', e.target.value, svg, 'comp-component-card');
         });
       }
     }

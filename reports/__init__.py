@@ -1,1 +1,5 @@
 # reports package
+from .report_generator import generate_tensile_pdf
+from .hardness_report_generator import generate_hardness_pdf
+from .impact_report_generator import generate_impact_pdf
+from .compression_report_generator import generate_compression_pdf

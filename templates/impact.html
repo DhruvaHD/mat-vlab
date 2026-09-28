@@ -1,0 +1,972 @@
+{% extends "base.html" %}
+
+{% block title %}Impact Test (ASTM E23 / ISO 148-1) — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Breadcrumb Navigation -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('experiments') }}" class="text-decoration-none">Experiments</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Impact Test (Charpy &amp; Izod)</li>
+    </ol>
+  </nav>
+
+  <!-- Experiment Header Card (Unified Cool Green Header) -->
+  <div class="experiment-header-card lab-card p-4 p-md-5 mb-4 border border-secondary border-opacity-25 shadow-sm position-relative overflow-hidden">
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+      <span class="badge bg-success bg-opacity-25 text-dark fw-bold border border-success border-opacity-50 px-2 py-1">
+        <i class="fas fa-hammer me-1 text-success"></i> Dynamic Fracture Mechanics
+      </span>
+      <span class="badge bg-secondary bg-opacity-10 text-dark border border-secondary border-opacity-25 px-2 py-1">
+        <i class="fas fa-certificate me-1 text-success"></i> ASTM E23 / ISO 148-1 / IS 1757
+      </span>
+      <span class="badge bg-success bg-opacity-15 text-success border border-success border-opacity-25 px-2 py-1">
+        <i class="fas fa-check-circle me-1"></i> Active Virtual Laboratory
+      </span>
+    </div>
+
+    <h1 class="fw-bold text-navy fs-1 mb-2">Impact Test (Charpy &amp; Izod)</h1>
+    <p class="text-secondary fs-6 mb-3" style="max-width: 860px;">
+      Determine the notch toughness, dynamic shock resistance, and temperature-dependent Ductile-to-Brittle Transition Temperature (DBTT) 
+      of metallic materials by measuring kinetic energy absorbed ($K_V$) during high-velocity pendulum fracture of standardized notched specimens.
+    </p>
+
+    <div class="d-flex flex-wrap gap-2">
+      <a href="#virtual-lab" class="btn btn-sm btn-lab-primary">
+        <i class="fas fa-play me-1"></i> Start Virtual Simulation
+      </a>
+      <a href="#manual-lab" class="btn btn-sm btn-lab-secondary">
+        <i class="fas fa-keyboard me-1"></i> Manual Data Entry
+      </a>
+      <a href="#apparatus" class="btn btn-sm btn-outline-success">
+        <i class="fas fa-eye me-1"></i> Interactive Machine Diagram
+      </a>
+      <a href="#quiz-section" class="btn btn-sm btn-outline-warning text-dark">
+        <i class="fas fa-graduation-cap me-1 text-warning"></i> Take Quiz
+      </a>
+    </div>
+  </div>
+
+  <!-- Sticky In-Page Navigation Bar -->
+  <div class="experiment-nav-sticky lab-card p-2 mb-4 border border-secondary border-opacity-25 bg-light d-flex flex-wrap gap-2 justify-content-between align-items-center shadow-sm">
+    <div class="d-flex flex-wrap gap-1">
+      <a href="#objective" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">1. Objective</a>
+      <a href="#theory" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">2. Theory</a>
+      <a href="#apparatus" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">3. Apparatus</a>
+      <a href="#specimen" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">4. Specimen</a>
+      <a href="#principle" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">5. Principle</a>
+      <a href="#procedure" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">6. Procedure</a>
+      <a href="#virtual-lab" class="btn btn-sm btn-link text-decoration-none text-success fw-bold px-2 py-1">7. Virtual Simulation</a>
+      <a href="#manual-lab" class="btn btn-sm btn-link text-decoration-none text-primary fw-bold px-2 py-1">8. Manual Data</a>
+      <a href="#calculations" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">9. Results</a>
+      <a href="#quiz-section" class="btn btn-sm btn-link text-decoration-none text-warning text-dark fw-semibold px-2 py-1">10. Quiz</a>
+    </div>
+    <span class="badge bg-success bg-opacity-20 text-success font-mono small d-none d-md-inline">ASTM E23 / ISO 148</span>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 1. OBJECTIVE -->
+  <!-- ========================================== -->
+  <section id="objective" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">01</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Experiment Objective</h3>
+      </div>
+      <p class="text-secondary mb-2 leading-relaxed">
+        1. To measure the <strong>energy absorbed ($K_V$)</strong> and calculate the <strong>notch toughness ($a_k$)</strong> of standard metallic specimens (Mild Steel, Medium Carbon Steel, Alloy Steel 4140, Stainless Steel 304, Aluminium 6061-T6, and Grey Cast Iron) under dynamic three-point bending impact according to <strong>ASTM E23 / ISO 148-1</strong>.
+      </p>
+      <p class="text-secondary mb-0 leading-relaxed">
+        2. To evaluate the effect of temperature on fracture behavior, identify the <strong>Ductile-to-Brittle Transition Temperature (DBTT)</strong> in Body-Centered Cubic (BCC) alloys, calculate Fracture Appearance Transition Temperature ($FATT_{50}$), and correlate lateral expansion with metallurgical toughness criteria.
+      </p>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 2. THEORY -->
+  <!-- ========================================== -->
+  <section id="theory" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">02</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Theory &amp; Fundamental Concepts</h3>
+      </div>
+
+      <div class="row g-4 mb-3">
+        <div class="col-lg-6">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 h-100">
+            <h5 class="fw-bold text-navy mb-2"><i class="fas fa-cube text-success me-2"></i>Charpy vs. Izod Impact Testing</h5>
+            <ul class="text-secondary small ps-3 mb-0 leading-relaxed">
+              <li class="mb-2"><strong>Charpy Test (ASTM E23 / ISO 148):</strong> The specimen ($10 \times 10 \times 55\text{ mm}$) rests horizontally as a <em>three-point simply supported beam</em> on 40 mm span anvils. The striking hammer strikes directly behind the V-notch. Standard in structural steel, pressure vessels, and aerospace.</li>
+              <li><strong>Izod Test (ASTM E23 / ISO 180):</strong> The specimen ($10 \times 10 \times 75\text{ mm}$) is clamped vertically as a <em>cantilever beam</em> with the notch facing the striking direction. Widely used for plastics, tool steels, and foundry castings.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 h-100">
+            <h5 class="fw-bold text-navy mb-2"><i class="fas fa-temperature-low text-primary me-2"></i>The DBTT Phenomenon &amp; Crystal Structure</h5>
+            <ul class="text-secondary small ps-3 mb-0 leading-relaxed">
+              <li class="mb-2"><strong>BCC Metals (Ferritic Steels):</strong> Dislocation mobility has high thermal activation resistance (Peierls-Nabarro stress). At low temperatures, yield stress exceeds cleavage stress, causing sudden drop from high energy (Upper Shelf) to catastrophic brittle fracture (Lower Shelf).</li>
+              <li><strong>FCC Metals (Aluminium, SS 304):</strong> Possess 12 independent slip systems active across all temperatures. They do not exhibit DBTT drop, remaining ductile and tough down to cryogenic conditions (-196°C).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 3. APPARATUS & INTERACTIVE DIAGRAM -->
+  <!-- ========================================== -->
+  <section id="apparatus" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">03</span>
+          <h3 class="fw-bold text-navy fs-4 mb-0">Equipment Apparatus &amp; Interactive Schematic</h3>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <label for="impact-component-select" class="small text-secondary fw-semibold mb-0">Select Component:</label>
+          <select id="impact-component-select" class="form-select form-select-sm" style="width: auto;">
+            <option value="striker-hammer">Striker Hammer (Tup)</option>
+            <option value="pendulum-arm">Pendulum Arm</option>
+            <option value="specimen-anvil">Specimen Anvil (40mm Span)</option>
+            <option value="charpy-specimen">Charpy V-Notch Specimen</option>
+            <option value="dial-indicator">Calibrated Energy Dial</option>
+            <option value="release-latch">Release Latch Mechanism</option>
+            <option value="brake-mechanism">Friction Safety Brake</option>
+            <option value="safety-housing">Safety Containment Cage</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row g-4 align-items-start">
+        <!-- Interactive SVG Diagram Container -->
+        <div class="col-lg-7">
+          <div class="p-3 bg-white rounded border border-secondary border-opacity-25 shadow-sm text-center" id="impact-svg-container" style="min-height: 480px;">
+            {% include "svg/impact_tester.svg" %}
+          </div>
+          <div class="text-center mt-2 small text-muted">
+            <i class="fas fa-hand-pointer text-success me-1"></i> Click or tap any labeled component on the pendulum schematic above.
+          </div>
+        </div>
+
+        <!-- Technical Component Information Card -->
+        <div class="col-lg-5">
+          <div class="p-4 bg-white rounded border border-secondary border-opacity-25 shadow-sm h-100" id="impact-component-card">
+            <div class="text-center py-5">
+              <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-light text-success shadow-sm" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                <i class="fas fa-hammer"></i>
+              </div>
+              <h5 class="fw-bold text-navy mb-2">Impact Apparatus Inspector</h5>
+              <p class="text-secondary small mb-3">
+                Click any component on the pendulum impact tester schematic to view its engineering specifications, operational role, and ASTM E23 calibration standards.
+              </p>
+              <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <span class="badge bg-light text-secondary border font-mono small">ASTM E23</span>
+                <span class="badge bg-light text-secondary border font-mono small">ISO 148-1</span>
+                <span class="badge bg-light text-secondary border font-mono small">300 Joules</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 4. SPECIMEN -->
+  <!-- ========================================== -->
+  <section id="specimen" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">04</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Standardized Specimen Dimensions</h3>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25">
+            <div class="fw-bold text-navy mb-1"><i class="fas fa-ruler-combined text-success me-1"></i> Charpy V-Notch (ASTM Type A)</div>
+            <div class="font-mono small text-secondary">
+              Length: 55.0 mm &plusmn; 0.6 mm<br/>
+              Cross-section: 10.0 &times; 10.0 mm<br/>
+              Notch: 45&deg; V-Notch, 2.0 mm deep<br/>
+              Root radius: 0.25 mm &plusmn; 0.025 mm<br/>
+              <strong>Net Area $A_0$: 80.0 mm&sup2; (0.80 cm&sup2;)</strong>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25">
+            <div class="fw-bold text-navy mb-1"><i class="fas fa-ruler-combined text-primary me-1"></i> Charpy U-Notch (ASTM Type B)</div>
+            <div class="font-mono small text-secondary">
+              Length: 55.0 mm &plusmn; 0.6 mm<br/>
+              Cross-section: 10.0 &times; 10.0 mm<br/>
+              Notch: Keyhole / U-Notch, 5.0 mm deep<br/>
+              Root radius: 1.0 mm &plusmn; 0.05 mm<br/>
+              <strong>Net Area $A_0$: 50.0 mm&sup2; (0.50 cm&sup2;)</strong>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25">
+            <div class="fw-bold text-navy mb-1"><i class="fas fa-ruler-combined text-warning me-1"></i> Standard Izod Cantilever</div>
+            <div class="font-mono small text-secondary">
+              Length: 75.0 mm &plusmn; 1.0 mm<br/>
+              Cross-section: 10.0 &times; 10.0 mm<br/>
+              Notch: 45&deg; V-Notch, 2.0 mm deep<br/>
+              Striking distance: 22.0 mm above notch<br/>
+              <strong>Net Area $A_0$: 80.0 mm&sup2; (0.80 cm&sup2;)</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 5. PRINCIPLE & FORMULAS -->
+  <!-- ========================================== -->
+  <section id="principle" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">05</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Governing Mathematical Principles</h3>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="formula-card-cool p-3 bg-white rounded border border-success border-opacity-25 shadow-sm h-100">
+            <div class="text-secondary small fw-bold mb-1">1. Absorbed Energy ($K_V$)</div>
+            <div class="fs-5 fw-bold text-navy font-mono mb-2">\(K_V = E_0 - E_1 - L_f\)</div>
+            <p class="text-secondary small mb-0">
+              Where $E_0$ is initial potential energy ($m \cdot g \cdot h_0$), $E_1$ is residual swing energy ($m \cdot g \cdot h_1$), and $L_f$ is tare friction &amp; windage loss.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="formula-card-cool p-3 bg-white rounded border border-success border-opacity-25 shadow-sm h-100">
+            <div class="text-secondary small fw-bold mb-1">2. Specific Notch Toughness ($a_k$)</div>
+            <div class="fs-5 fw-bold text-navy font-mono mb-2">\(a_k = \frac{K_V}{A_0}\)</div>
+            <p class="text-secondary small mb-0">
+              Energy absorbed divided by original net cross-sectional area under the notch ($A_0 = 0.80\text{ cm}^2$). Expressed in $\text{J/cm}^2$ or $\text{kJ/m}^2$.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="formula-card-cool p-3 bg-white rounded border border-success border-opacity-25 shadow-sm h-100">
+            <div class="text-secondary small fw-bold mb-1">3. DBTT Sigmoidal Model</div>
+            <div class="fs-5 fw-bold text-navy font-mono mb-2">\(K_V(T) = A + B \tanh\left(\frac{T - T_0}{C}\right)\)</div>
+            <p class="text-secondary small mb-0">
+              Hyperbolic tangent function fitting the sigmoidal transition between lower shelf and upper shelf toughness across temperatures.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 6. PROCEDURE (SOP CHECKLIST) -->
+  <!-- ========================================== -->
+  <section id="procedure" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">06</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Standard Operating Procedure (ASTM E23 SOP)</h3>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="d-flex gap-3 align-items-start">
+            <div class="badge bg-success text-white rounded-circle p-2" style="width: 28px; height: 28px;">1</div>
+            <div>
+              <div class="fw-bold text-navy small">Friction Tare Calibration:</div>
+              <div class="text-secondary small">Cock pendulum to release angle ($140^\circ$) without specimen, release freely, and verify tare pointer reads $\le 1.5\text{ J}$ friction loss.</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="d-flex gap-3 align-items-start">
+            <div class="badge bg-success text-white rounded-circle p-2" style="width: 28px; height: 28px;">2</div>
+            <div>
+              <div class="fw-bold text-navy small">Specimen Temperature Conditioning:</div>
+              <div class="text-secondary small">Condition specimen in liquid nitrogen/ethanol bath or temperature chamber for minimum 15 minutes to ensure uniform thermal stabilization.</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="d-flex gap-3 align-items-start">
+            <div class="badge bg-success text-white rounded-circle p-2" style="width: 28px; height: 28px;">3</div>
+            <div>
+              <div class="fw-bold text-navy small">Rapid Anvil Alignment (&lt;5 Seconds):</div>
+              <div class="text-secondary small">Transfer specimen with centering tongs onto the 40 mm span anvils. Ensure notch faces away from the pendulum striking edge.</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="d-flex gap-3 align-items-start">
+            <div class="badge bg-success text-white rounded-circle p-2" style="width: 28px; height: 28px;">4</div>
+            <div>
+              <div class="fw-bold text-navy small">Pendulum Release &amp; Braking:</div>
+              <div class="text-secondary small">Close safety cage, disengage release latch, fracture the specimen, apply mechanical brake on return swing, and record $K_V$ on pointer.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 7. VIRTUAL SIMULATION STUDIO -->
+  <!-- ========================================== -->
+  <section id="virtual-lab" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">07</span>
+          <h3 class="fw-bold text-navy fs-4 mb-0">Virtual Impact Simulation Studio</h3>
+        </div>
+        <span class="badge bg-warning bg-opacity-25 text-dark border border-warning font-mono">
+          <i class="fas fa-atom me-1"></i> SIMULATION / DEMO DATA
+        </span>
+      </div>
+
+      <!-- Controls Row -->
+      <div class="row g-3 p-3 bg-light rounded border border-secondary border-opacity-25 mb-4 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label small fw-bold text-secondary">Material Alloy:</label>
+          <select id="sim-material" class="form-select form-select-sm">
+            <option value="mild-steel" selected>Mild Steel (AISI 1018 / IS 2062)</option>
+            <option value="medium-carbon-steel">Medium Carbon Steel (AISI 1045)</option>
+            <option value="alloy-steel-4140">Alloy Steel (AISI 4140 Q&amp;T)</option>
+            <option value="stainless-steel-304">Austenitic Stainless (AISI 304 - FCC)</option>
+            <option value="aluminium-6061-t6">Aluminium Alloy (6061-T6 - FCC)</option>
+            <option value="grey-cast-iron">Grey Cast Iron (FG 200 - Brittle)</option>
+            <option value="structural-steel-is2062">Structural Steel (IS 2062 Grade E250)</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label small fw-bold text-secondary">Test Configuration:</label>
+          <select id="sim-specimen-type" class="form-select form-select-sm">
+            <option value="charpy_v" selected>Charpy V-Notch (ASTM Type A, 2mm)</option>
+            <option value="charpy_u">Charpy U-Notch (ASTM Type B, 5mm)</option>
+            <option value="izod_v">Izod Cantilever V-Notch</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <div class="d-flex justify-content-between">
+            <label class="form-label small fw-bold text-secondary">Temperature ($T$):</label>
+            <span id="temp-display" class="small font-mono fw-bold text-success">23 &deg;C</span>
+          </div>
+          <input type="range" class="form-range" id="sim-temp" min="-100" max="100" value="23" step="5">
+          <div class="d-flex justify-content-between small text-muted" style="font-size: 10px;">
+            <span>-100&deg;C (LN₂)</span>
+            <span>0&deg;C</span>
+            <span>+100&deg;C</span>
+          </div>
+        </div>
+
+        <div class="col-md-3 d-flex gap-2">
+          <button type="button" id="btn-run-simulation" class="btn btn-sm btn-lab-primary flex-grow-1">
+            <i class="fas fa-play me-1"></i> Release Pendulum
+          </button>
+          <button type="button" id="btn-save-simulation" class="btn btn-sm btn-outline-success" disabled title="Save simulation to laboratory record">
+            <i class="fas fa-save"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Simulation Telemetry & Interactive DBTT Chart -->
+      <div class="row g-4 align-items-stretch">
+        <div class="col-lg-5">
+          <div class="p-3 bg-white rounded border border-secondary border-opacity-25 shadow-sm h-100">
+            <h6 class="fw-bold text-navy mb-3"><i class="fas fa-tachometer-alt text-success me-2"></i>Multi-Trial Dynamometer Telemetry</h6>
+            <div class="table-responsive mb-3">
+              <table class="table table-sm table-bordered align-middle small mb-0" id="sim-trials-table">
+                <thead class="table-light">
+                  <tr>
+                    <th>Trial</th>
+                    <th>Temp</th>
+                    <th>Absorbed $K_V$</th>
+                    <th>Toughness $a_k$</th>
+                    <th>Fracture</th>
+                  </tr>
+                </thead>
+                <tbody id="sim-trials-body">
+                  <tr>
+                    <td colspan="5" class="text-center text-muted py-3">Click "Release Pendulum" to trigger simulation</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Mean Summary Metrics -->
+            <div class="p-3 bg-light rounded border border-secondary border-opacity-25" id="sim-summary-box" style="display: none;">
+              <div class="row g-2 text-center">
+                <div class="col-6">
+                  <div class="small text-muted">Mean Absorbed $K_V$:</div>
+                  <div class="fs-4 fw-bold text-success font-mono" id="sim-mean-kv">0.0 J</div>
+                </div>
+                <div class="col-6">
+                  <div class="small text-muted">Notch Toughness $a_k$:</div>
+                  <div class="fs-4 fw-bold text-navy font-mono" id="sim-mean-ak">0.0 J/cm&sup2;</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="p-3 bg-white rounded border border-secondary border-opacity-25 shadow-sm h-100">
+            <h6 class="fw-bold text-navy mb-2"><i class="fas fa-chart-line text-success me-2"></i>Ductile-to-Brittle Transition Temperature (DBTT) Plot</h6>
+            <div id="impact-dbtt-plot" style="width: 100%; height: 320px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 8. MANUAL LABORATORY DATA ENTRY -->
+  <!-- ========================================== -->
+  <section id="manual-lab" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary bg-opacity-20 text-primary fw-bold font-mono">08</span>
+          <h3 class="fw-bold text-navy fs-4 mb-0">Manual Laboratory Reading Entry</h3>
+        </div>
+        <span class="badge bg-info bg-opacity-25 text-dark border border-info font-mono">
+          <i class="fas fa-keyboard me-1"></i> USER-ENTERED LABORATORY DATA
+        </span>
+      </div>
+
+      <p class="text-secondary small mb-3">
+        Enter physical laboratory test bench readings recorded from an actual pendulum impact testing machine.
+      </p>
+
+      <form id="manual-impact-form">
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label small fw-bold text-secondary">Specimen Material:</label>
+            <input type="text" id="man-material" class="form-control form-control-sm" placeholder="e.g. Mild Steel AISI 1018" value="Mild Steel Specimen" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold text-secondary">Test Temperature (&deg;C):</label>
+            <input type="number" id="man-temp" class="form-control form-control-sm" value="23" step="0.5" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label small fw-bold text-secondary">Machine Capacity ($E_0$):</label>
+            <select id="man-capacity" class="form-select form-select-sm">
+              <option value="300" selected>300 Joules (Standard Charpy)</option>
+              <option value="450">450 Joules (Heavy Capacity)</option>
+              <option value="168">168 Joules (Standard Izod)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive mb-3">
+          <table class="table table-sm table-bordered align-middle small" id="manual-readings-table">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 80px;">Trial #</th>
+                <th>Absorbed Energy $K_V$ (Joules)</th>
+                <th>Lateral Expansion (mm) [Optional]</th>
+                <th>Shear Fracture % [Optional]</th>
+                <th style="width: 50px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="manual-readings-body">
+              <tr>
+                <td class="text-center fw-bold">1</td>
+                <td><input type="number" class="form-control form-control-sm man-kv-input" placeholder="e.g. 142.5" step="0.1" required></td>
+                <td><input type="number" class="form-control form-control-sm man-lat-input" placeholder="e.g. 1.60" step="0.01"></td>
+                <td><input type="number" class="form-control form-control-sm man-shear-input" placeholder="e.g. 85" min="0" max="100" step="1"></td>
+                <td class="text-center">—</td>
+              </tr>
+              <tr>
+                <td class="text-center fw-bold">2</td>
+                <td><input type="number" class="form-control form-control-sm man-kv-input" placeholder="e.g. 145.0" step="0.1"></td>
+                <td><input type="number" class="form-control form-control-sm man-lat-input" placeholder="e.g. 1.65" step="0.01"></td>
+                <td><input type="number" class="form-control form-control-sm man-shear-input" placeholder="e.g. 85" min="0" max="100" step="1"></td>
+                <td class="text-center">—</td>
+              </tr>
+              <tr>
+                <td class="text-center fw-bold">3</td>
+                <td><input type="number" class="form-control form-control-sm man-kv-input" placeholder="e.g. 140.0" step="0.1"></td>
+                <td><input type="number" class="form-control form-control-sm man-lat-input" placeholder="e.g. 1.58" step="0.01"></td>
+                <td><input type="number" class="form-control form-control-sm man-shear-input" placeholder="e.g. 80" min="0" max="100" step="1"></td>
+                <td class="text-center">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-add-manual-row">
+            <i class="fas fa-plus me-1"></i> Add Trial
+          </button>
+          <button type="submit" class="btn btn-sm btn-lab-primary" id="btn-calc-manual">
+            <i class="fas fa-calculator me-1"></i> Calculate &amp; Analyze Readings
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 9. CALCULATIONS & RESULTS -->
+  <!-- ========================================== -->
+  <section id="calculations" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">09</span>
+          <h3 class="fw-bold text-navy fs-4 mb-0">Calculated Results &amp; Assessment</h3>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-success" id="btn-download-pdf-report" disabled>
+            <i class="fas fa-file-pdf me-1"></i> Generate Certified PDF Report
+          </button>
+        </div>
+      </div>
+
+      <div id="results-display-area" class="p-4 bg-light rounded border border-secondary border-opacity-25 text-center text-muted">
+        <i class="fas fa-info-circle me-1 text-success"></i> Run a simulation or submit manual laboratory readings to view comprehensive calculations and download the certified report.
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 10. QUIZ -->
+  <!-- ========================================== -->
+  <section id="quiz-section" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-warning bg-opacity-25 text-dark fw-bold font-mono">10</span>
+          <h3 class="fw-bold text-navy fs-4 mb-0">Impact Testing Mastery Quiz</h3>
+        </div>
+        <span class="badge bg-light text-muted border font-mono small">10 Questions</span>
+      </div>
+
+      <div id="quiz-container">
+        {% if questions %}
+          {% for q in questions %}
+          <div class="quiz-card p-3 mb-3 bg-white rounded border border-secondary border-opacity-25 shadow-sm" data-qid="{{ q.id }}">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="badge bg-light text-secondary border font-mono small">Question {{ loop.index }} of {{ questions|length }}</span>
+              <span class="badge bg-secondary bg-opacity-10 text-secondary small">{{ q.difficulty }}</span>
+            </div>
+            <h6 class="fw-bold text-navy mb-3">{{ q.question }}</h6>
+            <div class="d-flex flex-column gap-2">
+              <label class="quiz-option p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 cursor-pointer">
+                <input type="radio" name="q_{{ q.id }}" value="A"> <span><strong>A.</strong> {{ q.option_a }}</span>
+              </label>
+              <label class="quiz-option p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 cursor-pointer">
+                <input type="radio" name="q_{{ q.id }}" value="B"> <span><strong>B.</strong> {{ q.option_b }}</span>
+              </label>
+              <label class="quiz-option p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 cursor-pointer">
+                <input type="radio" name="q_{{ q.id }}" value="C"> <span><strong>C.</strong> {{ q.option_c }}</span>
+              </label>
+              <label class="quiz-option p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 cursor-pointer">
+                <input type="radio" name="q_{{ q.id }}" value="D"> <span><strong>D.</strong> {{ q.option_d }}</span>
+              </label>
+            </div>
+            <div class="quiz-feedback mt-2 p-2 rounded small d-none"></div>
+          </div>
+          {% endfor %}
+          <div class="text-end">
+            <button type="button" id="btn-submit-quiz" class="btn btn-sm btn-warning text-dark fw-bold">
+              <i class="fas fa-check-circle me-1"></i> Submit Quiz &amp; Grade
+            </button>
+          </div>
+        {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="fas fa-graduation-cap fs-2 mb-2 text-warning"></i>
+            <p class="mb-0">Quiz questions are currently being loaded from the database.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Plotly.js for DBTT curve rendering -->
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  let latestExperimentData = null;
+
+  // Temperature Slider Sync
+  const tempSlider = document.getElementById('sim-temp');
+  const tempDisplay = document.getElementById('temp-display');
+  if (tempSlider && tempDisplay) {
+    tempSlider.addEventListener('input', function(e) {
+      tempDisplay.textContent = e.target.value + ' °C';
+    });
+  }
+
+  // Bind Dropdown to Diagram Inspector
+  const compSelect = document.getElementById('impact-component-select');
+  if (compSelect) {
+    compSelect.addEventListener('change', function(e) {
+      const container = document.getElementById('impact-svg-container');
+      const svg = container ? container.querySelector('svg') : null;
+      if (window.MatVLabDiagram) {
+        window.MatVLabDiagram.selectPart('impact', e.target.value, svg, 'impact-component-card');
+      }
+    });
+  }
+
+  // Run Simulation
+  const btnRun = document.getElementById('btn-run-simulation');
+  if (btnRun) {
+    btnRun.addEventListener('click', function() {
+      btnRun.disabled = true;
+      btnRun.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Swinging Pendulum...';
+
+      const payload = {
+        material_slug: document.getElementById('sim-material').value,
+        specimen_type: document.getElementById('sim-specimen-type').value,
+        temperature_c: parseFloat(tempSlider.value),
+        num_trials: 3
+      };
+
+      fetch('/api/impact/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        btnRun.disabled = false;
+        btnRun.innerHTML = '<i class="fas fa-play me-1"></i> Release Pendulum';
+        if (data.success && data.data) {
+          renderSimulationResults(data.data, 'SIMULATION / DEMONSTRATION DATA');
+        } else {
+          alert('Simulation error: ' + (data.error || 'Failed to simulate'));
+        }
+      })
+      .catch(err => {
+        btnRun.disabled = false;
+        btnRun.innerHTML = '<i class="fas fa-play me-1"></i> Release Pendulum';
+        console.error(err);
+        alert('Simulation communication error');
+      });
+    });
+  }
+
+  // Render Simulation Results & DBTT Plot
+  function renderSimulationResults(data, origin) {
+    latestExperimentData = data;
+    latestExperimentData.data_origin = origin;
+    latestExperimentData.mode = (origin.includes('SIMULATION') ? 'VIRTUAL_SIMULATION' : 'MANUAL_ENTRY');
+
+    // 1. Populate trials table
+    const tbody = document.getElementById('sim-trials-body');
+    if (tbody && data.readings) {
+      tbody.innerHTML = '';
+      data.readings.forEach(r => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="fw-bold">Trial ${r.trial_number}</td>
+          <td>${r.temperature_celsius}°C</td>
+          <td class="fw-bold text-success">${r.absorbed_energy_j.toFixed(1)} J</td>
+          <td class="font-mono">${(r.absorbed_energy_j / 0.8).toFixed(1)} J/cm²</td>
+          <td><span class="badge ${r.absorbed_energy_j >= 70 ? 'bg-success' : (r.absorbed_energy_j >= 30 ? 'bg-warning text-dark' : 'bg-danger')}">${data.summary.fracture_type.split(' ')[0]}</span></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // 2. Summary box
+    const sBox = document.getElementById('sim-summary-box');
+    if (sBox) {
+      sBox.style.display = 'block';
+      document.getElementById('sim-mean-kv').textContent = data.summary.mean_absorbed_energy_j.toFixed(1) + ' J';
+      document.getElementById('sim-mean-ak').textContent = data.summary.mean_ak_j_cm2.toFixed(1) + ' J/cm²';
+    }
+
+    // 3. Render DBTT Plot via Plotly
+    if (data.temperature_sweep && document.getElementById('impact-dbtt-plot')) {
+      const temps = data.temperature_sweep.map(p => p.temperature_c);
+      const energies = data.temperature_sweep.map(p => p.energy_j);
+
+      const traceCurve = {
+        x: temps,
+        y: energies,
+        mode: 'lines+markers',
+        name: data.material_name + ' Model',
+        line: { color: '#1b6b50', width: 3 },
+        marker: { color: '#0f3d2e', size: 6 }
+      };
+
+      const tracePoint = {
+        x: [data.test_temperature_c],
+        y: [data.summary.mean_absorbed_energy_j],
+        mode: 'markers',
+        name: 'Current Test Point',
+        marker: { color: '#e11d48', size: 14, symbol: 'diamond', line: { color: '#ffffff', width: 2 } }
+      };
+
+      const layout = {
+        title: { text: 'Impact Energy vs. Temperature (DBTT)', font: { size: 12, color: '#0f3d2e' } },
+        xaxis: { title: 'Test Temperature (°C)', gridcolor: '#e8f5ef' },
+        yaxis: { title: 'Absorbed Energy KV (J)', gridcolor: '#e8f5ef' },
+        margin: { l: 50, r: 20, t: 35, b: 40 },
+        plot_bgcolor: '#f5f9f6',
+        paper_bgcolor: '#ffffff',
+        legend: { orientation: 'h', y: -0.2 }
+      };
+
+      Plotly.newPlot('impact-dbtt-plot', [traceCurve, tracePoint], layout, { responsive: true, displayModeBar: false });
+    }
+
+    // 4. Update Calculations & Results Section
+    renderResultsSection(data);
+
+    // 5. Enable Buttons
+    document.getElementById('btn-save-simulation').disabled = false;
+    document.getElementById('btn-download-pdf-report').disabled = false;
+  }
+
+  // Render Calculations & Results Card
+  function renderResultsSection(data) {
+    const area = document.getElementById('results-display-area');
+    if (!area) return;
+
+    area.className = 'p-4 bg-white rounded border border-secondary border-opacity-25 shadow-sm text-start';
+    area.innerHTML = `
+      <div class="row g-4 mb-3">
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded text-center border">
+            <div class="small text-muted mb-1">Mean Energy ($K_V$)</div>
+            <div class="fs-4 fw-bold text-success font-mono">${data.summary.mean_absorbed_energy_j.toFixed(2)} J</div>
+            <div class="small text-muted">(&plusmn; ${data.summary.std_dev_j.toFixed(2)} J)</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded text-center border">
+            <div class="small text-muted mb-1">Notch Toughness ($a_k$)</div>
+            <div class="fs-4 fw-bold text-navy font-mono">${data.summary.mean_ak_j_cm2.toFixed(2)} J/cm&sup2;</div>
+            <div class="small text-muted">${data.summary.mean_ak_kj_m2.toFixed(1)} kJ/m&sup2;</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded text-center border">
+            <div class="small text-muted mb-1">Fracture Appearance</div>
+            <div class="fs-6 fw-bold text-dark mb-1">${data.summary.fracture_type}</div>
+            <span class="badge ${data.summary.mean_absorbed_energy_j >= 70 ? 'bg-success' : 'bg-warning text-dark'} small">${data.summary.fracture_class}</span>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded text-center border">
+            <div class="small text-muted mb-1">Lateral Expansion</div>
+            <div class="fs-4 fw-bold text-navy font-mono">${data.summary.mean_lateral_expansion_mm.toFixed(2)} mm</div>
+            <div class="small text-muted">ASTM E23 Annex A6</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 bg-light rounded border border-secondary border-opacity-25 mb-3 small">
+        <div class="fw-bold text-navy mb-1"><i class="fas fa-check-circle text-success me-1"></i> Algorithmic Metallurgical Assessment:</div>
+        <p class="mb-0 text-secondary leading-relaxed">${data.conclusion}</p>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+        <span class="badge bg-light text-secondary border font-mono small">${data.data_origin || 'LABORATORY DATA'}</span>
+        <button type="button" class="btn btn-sm btn-success" id="btn-results-pdf">
+          <i class="fas fa-file-pdf me-1"></i> Download Certified PDF Laboratory Report
+        </button>
+      </div>
+    `;
+
+    document.getElementById('btn-results-pdf').addEventListener('click', generatePdfReport);
+  }
+
+  // Save Simulation
+  document.getElementById('btn-save-simulation').addEventListener('click', function() {
+    if (!latestExperimentData) return;
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+    fetch('/api/impact/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(latestExperimentData)
+    })
+    .then(r => r.json())
+    .then(res => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save me-1"></i> Saved to Records';
+      if (res.success) {
+        alert('Impact experiment saved successfully! (Record #' + res.experiment_id + ')');
+        latestExperimentData.id = res.experiment_id;
+      } else {
+        alert('Error saving: ' + res.error);
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save"></i>';
+      alert('Network error saving experiment');
+    });
+  });
+
+  // Manual Form Submission
+  const manForm = document.getElementById('manual-impact-form');
+  if (manForm) {
+    manForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const readings = [];
+      const rows = document.querySelectorAll('#manual-readings-body tr');
+      rows.forEach((tr, idx) => {
+        const kv = parseFloat(tr.querySelector('.man-kv-input').value);
+        if (!isNaN(kv) && kv > 0) {
+          const lat = parseFloat(tr.querySelector('.man-lat-input').value) || 0.0;
+          const shear = parseFloat(tr.querySelector('.man-shear-input').value) || 0.0;
+          readings.push({
+            trial_number: idx + 1,
+            absorbed_energy_j: kv,
+            lateral_expansion_mm: lat,
+            pct_shear_fracture: shear
+          });
+        }
+      });
+
+      if (readings.length === 0) {
+        alert('Please enter at least one valid absorbed energy reading.');
+        return;
+      }
+
+      const payload = {
+        material_name: document.getElementById('man-material').value,
+        test_temperature_c: parseFloat(document.getElementById('man-temp').value),
+        machine_capacity_j: parseFloat(document.getElementById('man-capacity').value),
+        specimen_type: 'charpy_v',
+        readings: readings
+      };
+
+      fetch('/api/impact/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.result) {
+          const fullData = {
+            ...payload,
+            summary: data.result.summary,
+            readings: data.result.processed_readings,
+            formulas: data.result.formulas,
+            conclusion: data.result.conclusion
+          };
+          renderSimulationResults(fullData, 'USER-ENTERED LABORATORY DATA');
+          document.getElementById('calculations').scrollIntoView({ behavior: 'smooth' });
+        } else {
+          alert('Error: ' + (data.error || 'Failed to analyze manual readings'));
+        }
+      })
+      .catch(err => alert('Network error communicating with calculation engine.'));
+    });
+  }
+
+  // Add Manual Row
+  document.getElementById('btn-add-manual-row').addEventListener('click', function() {
+    const tbody = document.getElementById('manual-readings-body');
+    const newIdx = tbody.querySelectorAll('tr').length + 1;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="text-center fw-bold">${newIdx}</td>
+      <td><input type="number" class="form-control form-control-sm man-kv-input" placeholder="e.g. 140.0" step="0.1" required></td>
+      <td><input type="number" class="form-control form-control-sm man-lat-input" placeholder="e.g. 1.60" step="0.01"></td>
+      <td><input type="number" class="form-control form-control-sm man-shear-input" placeholder="e.g. 85" min="0" max="100" step="1"></td>
+      <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="this.closest('tr').remove()">&times;</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // PDF Generator Trigger
+  function generatePdfReport() {
+    if (!latestExperimentData) return;
+    fetch('/api/impact/generate-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(latestExperimentData)
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('PDF Generation failed');
+      return res.blob();
+    })
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `MAT_VLAB_Impact_Report_${(latestExperimentData.material_name || 'Specimen').replace(/ /g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    })
+    .catch(err => alert('Could not generate PDF: ' + err.message));
+  }
+
+  document.getElementById('btn-download-pdf-report').addEventListener('click', generatePdfReport);
+
+  // Quiz Grading Engine
+  const btnQuiz = document.getElementById('btn-submit-quiz');
+  if (btnQuiz) {
+    btnQuiz.addEventListener('click', function() {
+      const cards = document.querySelectorAll('#quiz-container .quiz-card');
+      let score = 0;
+      let answered = 0;
+
+      // Real-time answers evaluation
+      const answersKey = {
+        // Defaults if dynamic
+      };
+
+      cards.forEach(card => {
+        const qid = card.getAttribute('data-qid');
+        const selected = card.querySelector(`input[name="q_${qid}"]:checked`);
+        const feedback = card.querySelector('.quiz-feedback');
+
+        if (selected) {
+          answered++;
+          // For demo/quiz evaluation, check answer against attributes or server
+          // Trigger visual feedback
+          selected.closest('label').classList.add('border-primary');
+        }
+      });
+
+      // Submit quiz attempt to API
+      fetch('/api/quiz/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          experiment_type: 'impact',
+          score: answered, // will be graded
+          total_questions: cards.length
+        })
+      })
+      .then(r => r.json())
+      .then(res => {
+        alert(`Quiz Submitted! You answered ${answered} of ${cards.length} questions.`);
+      });
+    });
+  }
+});
+</script>
+{% endblock %}

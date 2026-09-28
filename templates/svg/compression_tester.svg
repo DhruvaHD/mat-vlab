@@ -1,0 +1,188 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 650" width="100%" height="auto" class="mat-vlab-svg">
+  <defs>
+    <!-- Gradients & Lighting -->
+    <linearGradient id="compFrameGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="compGreenGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0f3d2e"/>
+      <stop offset="50%" stop-color="#1b6b50"/>
+      <stop offset="100%" stop-color="#2e9e76"/>
+    </linearGradient>
+    <linearGradient id="steelPlaten" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="30%" stop-color="#cbd5e1"/>
+      <stop offset="70%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#64748b"/>
+    </linearGradient>
+    <linearGradient id="columnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#94a3b8"/>
+      <stop offset="35%" stop-color="#e2e8f0"/>
+      <stop offset="70%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#64748b"/>
+    </linearGradient>
+    <linearGradient id="specimenCopper" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1b6b50"/>
+      <stop offset="50%" stop-color="#2e9e76"/>
+      <stop offset="100%" stop-color="#0f3d2e"/>
+    </linearGradient>
+    <filter id="compGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1b6b50" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <style>
+    .interactive-part {
+      cursor: pointer;
+      transition: all 0.25s ease-in-out;
+    }
+    .interactive-part:hover, .interactive-part:focus {
+      filter: drop-shadow(0 0 8px #2e9e76);
+      opacity: 0.92;
+    }
+    .active-part {
+      filter: drop-shadow(0 0 12px #10b981) !important;
+      stroke: #10b981 !important;
+      stroke-width: 2.5px !important;
+    }
+    .title-text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      fill: #0f3d2e;
+    }
+  </style>
+
+  <!-- Background Canvas -->
+  <rect x="0" y="0" width="800" height="650" fill="#f8faf9" rx="8"/>
+
+  <!-- Concrete Base & Bed Plate -->
+  <rect x="120" y="560" width="560" height="55" rx="4" fill="#475569" stroke="#1e293b" stroke-width="2"/>
+  <rect x="140" y="575" width="520" height="25" rx="2" fill="#334155"/>
+  <circle cx="180" cy="587" r="6" fill="#cbd5e1" stroke="#0f172a"/>
+  <circle cx="620" cy="587" r="6" fill="#cbd5e1" stroke="#0f172a"/>
+
+  <!-- ==================== 1. MACHINE FRAME & DRIVE COLUMNS ==================== -->
+  <g id="part-machine-frame" class="interactive-part" data-part="machine-frame">
+    <!-- Base Casting Bed -->
+    <rect x="200" y="500" width="400" height="60" rx="4" fill="url(#compFrameGrad)" stroke="#0f172a" stroke-width="2"/>
+    <!-- Top Fixed Reaction Crosshead Header -->
+    <rect x="200" y="70" width="400" height="55" rx="4" fill="url(#compFrameGrad)" stroke="#0f172a" stroke-width="2"/>
+    <!-- Twin Precision Pre-stressed Steel Guidance Columns -->
+    <rect x="230" y="125" width="36" height="375" fill="url(#columnGrad)" stroke="#475569" stroke-width="1.5"/>
+    <rect x="534" y="125" width="36" height="375" fill="url(#columnGrad)" stroke="#475569" stroke-width="1.5"/>
+  </g>
+
+  <!-- ==================== 2. CROSSHEAD DRIVE & BALL SCREWS ==================== -->
+  <g id="part-crosshead-drive" class="interactive-part" data-part="crosshead-drive">
+    <!-- Movable Heavy Intermediate Crosshead Platen -->
+    <rect x="220" y="170" width="360" height="50" rx="4" fill="url(#compFrameGrad)" stroke="#0f172a" stroke-width="2" filter="url(#compGlow)"/>
+    <!-- Twin Drive Ball Screws (threaded columns) -->
+    <rect x="280" y="125" width="18" height="375" fill="#e2e8f0" stroke="#64748b" stroke-width="1"/>
+    <!-- Screw thread pitch simulation -->
+    <path d="M 280 140 L 298 144 M 280 160 L 298 164 M 280 180 L 298 184 M 280 240 L 298 244 M 280 260 L 298 264 M 280 280 L 298 284 M 280 300 L 298 304 M 280 320 L 298 324 M 280 340 L 298 344 M 280 360 L 298 364 M 280 380 L 298 384 M 280 400 L 298 404 M 280 420 L 298 424 M 280 440 L 298 444 M 280 460 L 298 464 M 280 480 L 298 484" stroke="#94a3b8" stroke-width="1.5"/>
+
+    <rect x="502" y="125" width="18" height="375" fill="#e2e8f0" stroke="#64748b" stroke-width="1"/>
+    <path d="M 502 140 L 520 144 M 502 160 L 520 164 M 502 180 L 520 184 M 502 240 L 520 244 M 502 260 L 520 264 M 502 280 L 520 284 M 502 300 L 520 304 M 502 320 L 520 324 M 502 340 L 520 344 M 502 360 L 520 364 M 502 380 L 520 384 M 502 400 L 520 404 M 502 420 L 520 424 M 502 440 L 520 444 M 502 460 L 520 464 M 502 480 L 520 484" stroke="#94a3b8" stroke-width="1.5"/>
+
+    <!-- Downward Displacement Arrows -->
+    <polygon points="310,200 320,185 300,185" fill="#22c55e"/>
+    <polygon points="490,200 500,185 480,185" fill="#22c55e"/>
+  </g>
+
+  <!-- ==================== 3. LOAD CELL (FORCE TRANSDUCER) ==================== -->
+  <g id="part-load-cell" class="interactive-part" data-part="load-cell">
+    <!-- Pancake Precision Strain Gauge Load Cell (100 kN - 300 kN) -->
+    <rect x="345" y="220" width="110" height="35" rx="3" fill="url(#compGreenGrad)" stroke="#0f3d2e" stroke-width="2" filter="url(#compGlow)"/>
+    <rect x="355" y="226" width="90" height="23" rx="2" fill="#0f172a"/>
+    <circle cx="370" cy="237" r="4" fill="#22c55e"/>
+    <text x="405" y="241" font-size="8.5" fill="#ffffff" font-weight="bold" text-anchor="middle">300 kN LOAD CELL</text>
+    <!-- Signal Cable Conduit -->
+    <path d="M 455 237 L 485 237 L 485 160" fill="none" stroke="#2e9e76" stroke-width="2" stroke-dasharray="3,2"/>
+  </g>
+
+  <!-- ==================== 4. SUBPRESS GUIDE (ALIGNMENT FIXTURE) ==================== -->
+  <g id="part-subpress-guide" class="interactive-part" data-part="subpress-guide">
+    <!-- ASTM E9 Precision Sub-Press Alignment Fixture Cage -->
+    <rect x="320" y="255" width="160" height="245" rx="6" fill="#e8f5ef" fill-opacity="0.35" stroke="#1b6b50" stroke-width="2" stroke-dasharray="6,3"/>
+    <!-- Hardened Precision Linear Guide Bushings -->
+    <rect x="328" y="260" width="12" height="235" fill="url(#steelPlaten)" stroke="#334155" stroke-width="1"/>
+    <rect x="460" y="260" width="12" height="235" fill="url(#steelPlaten)" stroke="#334155" stroke-width="1"/>
+    <text x="400" y="272" font-size="7.5" fill="#1b6b50" font-weight="bold" text-anchor="middle">ASTM E9 SUB-PRESS FIXTURE</text>
+  </g>
+
+  <!-- ==================== 5. UPPER PLATEN (SPHERICAL SEATED) ==================== -->
+  <g id="part-upper-platen" class="interactive-part" data-part="upper-platen">
+    <!-- Spherical Seat Self-Aligning Upper Compression Tool -->
+    <!-- Curved Ball Seat -->
+    <path d="M 365 285 Q 400 270 435 285 L 445 320 L 355 320 Z" fill="url(#steelPlaten)" stroke="#1e293b" stroke-width="2" filter="url(#compGlow)"/>
+    <!-- Flat Ground Tool Steel Platen (Hardness >= 60 HRC, Ra <= 0.2 um) -->
+    <rect x="355" y="320" width="90" height="18" rx="2" fill="url(#steelPlaten)" stroke="#0f172a" stroke-width="2"/>
+    <!-- Center contact line -->
+    <line x1="360" y1="337" x2="440" y2="337" stroke="#0f3d2e" stroke-width="1.5"/>
+    <text x="400" y="310" font-size="7.5" fill="#0f172a" font-weight="bold" text-anchor="middle">SPHERICAL SEAT</text>
+  </g>
+
+  <!-- ==================== 6. COMPRESSION SPECIMEN ==================== -->
+  <g id="part-compression-specimen" class="interactive-part" data-part="compression-specimen">
+    <!-- Standard Cylinder Specimen (d0 = 15mm, h0 = 30mm, slenderness ratio 2.0) -->
+    <!-- Showing subtle physical barreling bulge at mid-height -->
+    <path d="M 378 338 Q 370 375 378 412 L 422 412 Q 430 375 422 338 Z" fill="url(#specimenCopper)" stroke="#0f3d2e" stroke-width="2" filter="url(#compGlow)"/>
+    <!-- Specimen Centerline -->
+    <line x1="400" y1="338" x2="400" y2="412" stroke="#22c55e" stroke-width="1" stroke-dasharray="2,2"/>
+    <!-- Dimension lines -->
+    <!-- Height h0 = 30 mm -->
+    <line x1="360" y1="338" x2="360" y2="412" stroke="#dc2626" stroke-width="1.5"/>
+    <line x1="355" y1="338" x2="365" y2="338" stroke="#dc2626" stroke-width="1.5"/>
+    <line x1="355" y1="412" x2="365" y2="412" stroke="#dc2626" stroke-width="1.5"/>
+    <text x="352" y="380" font-size="8" fill="#dc2626" font-weight="bold" text-anchor="end">h₀=30mm</text>
+    <!-- Diameter d0 = 15 mm -->
+    <line x1="378" y1="422" x2="422" y2="422" stroke="#0f3d2e" stroke-width="1.5"/>
+    <text x="400" y="432" font-size="8" fill="#0f3d2e" font-weight="bold" text-anchor="middle">d₀=15mm</text>
+  </g>
+
+  <!-- ==================== 7. LOWER PLATEN (RIGID REACTION) ==================== -->
+  <g id="part-lower-platen" class="interactive-part" data-part="lower-platen">
+    <!-- Ground Rigid Hardened Lower Platen -->
+    <rect x="345" y="412" width="110" height="22" rx="2" fill="url(#steelPlaten)" stroke="#0f172a" stroke-width="2" filter="url(#compGlow)"/>
+    <!-- Concentric Scribe Centering Rings -->
+    <line x1="370" y1="414" x2="430" y2="414" stroke="#64748b" stroke-width="1"/>
+    <line x1="385" y1="416" x2="415" y2="416" stroke="#64748b" stroke-width="1"/>
+    <!-- Heavy Support Adapter Bolted to Base -->
+    <rect x="355" y="434" width="90" height="66" rx="2" fill="url(#compFrameGrad)" stroke="#1e293b" stroke-width="2"/>
+    <circle cx="370" cy="465" r="5" fill="#cbd5e1" stroke="#0f172a"/>
+    <circle cx="430" cy="465" r="5" fill="#cbd5e1" stroke="#0f172a"/>
+  </g>
+
+  <!-- ==================== 8. DEFLECTION SENSOR (LVDT / COMPRESSOMETER) ==================== -->
+  <g id="part-deflection-sensor" class="interactive-part" data-part="deflection-sensor">
+    <!-- Dual Averaging Platen-to-Platen Compressometer LVDT -->
+    <rect x="448" y="345" width="16" height="55" rx="3" fill="#0f3d2e" stroke="#2e9e76" stroke-width="1.5" filter="url(#compGlow)"/>
+    <!-- Measuring Plunger Rod contacting upper platen -->
+    <line x1="456" y1="337" x2="456" y2="345" stroke="#1e293b" stroke-width="2.5"/>
+    <circle cx="456" cy="337" r="2.5" fill="#dc2626"/>
+    <!-- Lower anchor arm contacting lower platen -->
+    <line x1="456" y1="400" x2="456" y2="412" stroke="#1e293b" stroke-width="2.5"/>
+    <circle cx="456" cy="412" r="2.5" fill="#1e293b"/>
+    <!-- Telemetry Readout Tag -->
+    <rect x="472" y="360" width="55" height="18" rx="3" fill="#ffffff" stroke="#1b6b50" stroke-width="1"/>
+    <text x="500" y="372" font-size="7.5" fill="#0f3d2e" font-weight="bold" text-anchor="middle">LVDT Δh</text>
+  </g>
+
+  <!-- Diagram Header Callout -->
+  <g transform="translate(30, 35)">
+    <rect x="0" y="0" width="310" height="48" rx="6" fill="#ffffff" stroke="#d6e5dc" stroke-width="1.5" filter="url(#compGlow)"/>
+    <text x="12" y="20" class="title-text">UNIAXIAL COMPRESSION TESTER</text>
+    <text x="12" y="38" font-size="10" fill="#1b6b50" font-weight="600">Standard: ASTM E9 / ISO 13314 | Self-Aligning Sub-Press</text>
+  </g>
+
+  <!-- Interactive Hint Banner -->
+  <g transform="translate(510, 35)">
+    <rect x="0" y="0" width="250" height="40" rx="20" fill="#e8f5ef" stroke="#2e9e76" stroke-width="1.5"/>
+    <circle cx="22" cy="20" r="12" fill="#1b6b50"/>
+    <text x="22" y="24" font-size="12" fill="#ffffff" font-weight="bold" text-anchor="middle">i</text>
+    <text x="44" y="24" font-size="9.5" fill="#0f3d2e" font-weight="600">Click or tap any labeled part to inspect</text>
+  </g>
+</svg>

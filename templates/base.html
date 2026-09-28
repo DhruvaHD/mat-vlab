@@ -64,7 +64,7 @@
             </a>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle {% if active_page in ['experiments', 'tensile', 'hardness', 'brinell', 'rockwell', 'hardness_compare'] %}active{% endif %}" href="#" id="experimentsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle {% if active_page in ['experiments', 'tensile', 'hardness', 'brinell', 'rockwell', 'hardness_compare', 'impact', 'compression'] %}active{% endif %}" href="#" id="experimentsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="fas fa-flask me-1"></i> Experiments
             </a>
             <ul class="dropdown-menu dropdown-menu-matvlab shadow-sm border" aria-labelledby="experimentsDropdown">
@@ -74,10 +74,20 @@
                 </a>
               </li>
               <li><hr class="dropdown-divider"></li>
-              <li class="dropdown-header text-uppercase small fw-bold text-muted">Tensile Testing</li>
+              <li class="dropdown-header text-uppercase small fw-bold text-muted">Mechanical Testing Labs</li>
               <li>
                 <a class="dropdown-item py-2" href="{{ url_for('tensile_hub') }}">
                   <i class="fas fa-compress-arrows-alt text-steel me-2"></i> Tensile Test (UTM ASTM E8)
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2" href="{{ url_for('compression_test') }}">
+                  <i class="fas fa-arrows-alt-v text-success me-2"></i> Compression Test (ASTM E9)
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2" href="{{ url_for('impact_test') }}">
+                  <i class="fas fa-hammer text-danger me-2"></i> Impact Test (ASTM E23 / ISO 148)
                 </a>
               </li>
               <li><hr class="dropdown-divider"></li>
@@ -105,7 +115,7 @@
             </ul>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle {% if active_page in ['simulation', 'manual'] %}active{% endif %}" href="#" id="vlabDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle {% if active_page in ['simulation', 'manual', 'impact', 'compression'] %}active{% endif %}" href="#" id="vlabDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="fas fa-microscope me-1"></i> Virtual Lab
             </a>
             <ul class="dropdown-menu dropdown-menu-matvlab shadow-sm border" aria-labelledby="vlabDropdown">
@@ -121,6 +131,18 @@
                 </a>
               </li>
               <li><hr class="dropdown-divider"></li>
+              <li class="dropdown-header text-uppercase small fw-bold text-muted">Impact &amp; Compression Stations</li>
+              <li>
+                <a class="dropdown-item py-2" href="{{ url_for('impact_test') }}#virtual-lab">
+                  <i class="fas fa-hammer text-danger me-2"></i> Impact Virtual Machine &amp; DBTT
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item py-2" href="{{ url_for('compression_test') }}#virtual-lab">
+                  <i class="fas fa-arrows-alt-v text-success me-2"></i> Compression Virtual Machine &amp; Curve
+                </a>
+              </li>
+              <li><hr class="dropdown-divider"></li>
               <li class="dropdown-header text-uppercase small fw-bold text-muted">Hardness Testing Station</li>
               <li>
                 <a class="dropdown-item py-2" href="{{ url_for('hardness_brinell') }}#simulation">
@@ -130,12 +152,6 @@
               <li>
                 <a class="dropdown-item py-2" href="{{ url_for('hardness_rockwell') }}#simulation">
                   <i class="fas fa-gem text-danger me-2"></i> Rockwell Virtual Machine
-                </a>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <a class="dropdown-item py-2" href="{{ url_for('tensile_hub') }}">
-                  <i class="fas fa-book-open text-warning me-2"></i> Apparatus &amp; Machine Inspector
                 </a>
               </li>
             </ul>
@@ -213,20 +229,20 @@
           </div>
         </div>
 
-        <div class="col-lg-2 col-6">
+        <div class="col-lg-3 col-6">
           <h6 class="footer-heading">Testing Labs</h6>
           <ul class="list-unstyled small mb-0">
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('tensile_hub') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">Tensile Testing</a></li>
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('simulation') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">UTM Simulation</a></li>
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('manual_entry') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">Manual Data Entry</a></li>
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('experiments') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">All Experiments</a></li>
+            <li class="mb-2"><a href="{{ url_for('tensile_hub') }}" class="footer-link">Tensile Test (ASTM E8)</a></li>
+            <li class="mb-2"><a href="{{ url_for('compression_test') }}" class="footer-link">Compression Test (ASTM E9)</a></li>
+            <li class="mb-2"><a href="{{ url_for('impact_test') }}" class="footer-link">Impact Test (ASTM E23)</a></li>
+            <li class="mb-2"><a href="{{ url_for('hardness_hub') }}" class="footer-link">Hardness Test (ASTM E10/E18)</a></li>
+            <li class="mb-2"><a href="{{ url_for('experiments') }}" class="footer-link">All Experiments Catalog</a></li>
           </ul>
         </div>
 
-        <div class="col-lg-3 col-6">
+        <div class="col-lg-2 col-6">
           <h6 class="footer-heading">Engineering Tools</h6>
           <ul class="list-unstyled small mb-0">
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('materials') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">Material Database</a></li>
             <li class="mb-2"><a href="{{ url_for('materials') }}" class="footer-link">Material Database</a></li>
             <li class="mb-2"><a href="{{ url_for('compare') }}" class="footer-link">Material Comparison</a></li>
             <li class="mb-2"><a href="{{ url_for('my_experiments') }}" class="footer-link">Saved Experiments</a></li>
@@ -241,9 +257,12 @@
           </p>
           <div class="d-flex flex-wrap gap-1">
             <span class="badge bg-white text-navy border">ASTM E8 / E8M</span>
+            <span class="badge bg-white text-navy border">ASTM E9</span>
+            <span class="badge bg-white text-navy border">ASTM E23</span>
+            <span class="badge bg-white text-navy border">ISO 148-1</span>
+            <span class="badge bg-white text-navy border">ASTM E10</span>
+            <span class="badge bg-white text-navy border">ASTM E18</span>
             <span class="badge bg-white text-navy border">ISO 6892-1</span>
-            <span class="badge bg-white text-navy border">IS 1608</span>
-            <span class="badge bg-white text-navy border">ASTM E83</span>
           </div>
         </div>
       </div>

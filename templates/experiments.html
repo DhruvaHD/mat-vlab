@@ -47,39 +47,36 @@
       </div>
     </div>
 
-    <!-- 2. COMPRESSION TEST (COMING SOON) -->
+    <!-- 2. COMPRESSION TEST (ACTIVE / FULLY IMPLEMENTED) -->
     <div class="col-lg-4 col-md-6">
-      <div class="lab-card h-100 d-flex flex-column opacity-75">
+      <div class="lab-card h-100 d-flex flex-column" style="border-color: rgba(27, 107, 80, 0.4);">
         <div class="position-relative mb-3 rounded overflow-hidden d-flex align-items-center justify-content-center" style="height: 180px; background: var(--bg-secondary); border: 1px solid var(--border-color);">
-          <div class="text-center p-3">
-            <i class="fas fa-compress-arrows-alt text-steel fs-1 mb-2"></i>
-            <div class="text-secondary small">Platen Compression Cylinder</div>
-          </div>
-          <span class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark fw-bold">
-            <i class="fas fa-clock me-1"></i> Coming Soon
+          <img src="{{ url_for('static', filename='images/compression_tester.svg') }}" alt="Compression Test Sub-press Machine" class="w-100 h-100 object-fit-contain p-2">
+          <span class="position-absolute top-0 end-0 m-2 badge bg-success text-white">
+            <i class="fas fa-check-circle me-1"></i> Active / Implemented
           </span>
-          <span class="position-absolute bottom-0 start-0 m-2 badge bg-light text-secondary border">
-            ASTM E9
+          <span class="position-absolute bottom-0 start-0 m-2 badge bg-light text-success border">
+            ASTM E9 / ISO 13314
           </span>
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25">Uniaxial Compression</span>
+          <span class="badge bg-success bg-opacity-25 text-dark border border-success border-opacity-25">Uniaxial Compression</span>
           <span class="text-secondary small"><i class="fas fa-signal text-warning me-1"></i> Intermediate</span>
         </div>
 
         <h4 class="text-navy fw-bold mb-2">Compression Test</h4>
         <p class="text-secondary small mb-4 flex-grow-1">
-          Investigate compressive yield strength, buckling phenomena, barreling, and crushing behavior of brittle cast irons, structural ceramics, and ductile metals under opposing platens.
+          Investigate compressive yield strength ($\sigma_{cy}$ 0.2% offset), crushing fracture, barreling index ($B$), and slenderness ratio of brittle cast irons and ductile alloys under opposing hardened platens.
         </p>
 
         <div class="d-flex gap-2 pt-3 border-top border-secondary border-opacity-25">
-          <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" data-bs-toggle="modal" data-bs-target="#modalCompression">
-            <i class="fas fa-info-circle me-1"></i> Overview
-          </button>
-          <button type="button" class="btn btn-sm btn-secondary flex-fill" disabled>
-            Coming Soon
-          </button>
+          <a href="{{ url_for('compression_test') }}" class="btn btn-sm btn-lab-secondary flex-fill">
+            <i class="fas fa-book-open me-1"></i> Learn &amp; Theory
+          </a>
+          <a href="{{ url_for('compression_test') }}#virtual-lab" class="btn btn-sm btn-lab-primary flex-fill">
+            <i class="fas fa-play me-1"></i> Start Experiment
+          </a>
         </div>
       </div>
     </div>
@@ -133,39 +130,36 @@
       </div>
     </div>
 
-    <!-- 4. IMPACT TEST (COMING SOON) -->
+    <!-- 4. IMPACT TEST (ACTIVE / FULLY IMPLEMENTED) -->
     <div class="col-lg-4 col-md-6">
-      <div class="lab-card h-100 d-flex flex-column opacity-75">
+      <div class="lab-card h-100 d-flex flex-column" style="border-color: rgba(27, 107, 80, 0.4);">
         <div class="position-relative mb-3 rounded overflow-hidden d-flex align-items-center justify-content-center" style="height: 180px; background: var(--bg-secondary); border: 1px solid var(--border-color);">
-          <div class="text-center p-3">
-            <i class="fas fa-hammer text-danger fs-1 mb-2"></i>
-            <div class="text-secondary small">Charpy V-Notch &amp; Izod Pendulum</div>
-          </div>
-          <span class="position-absolute top-0 end-0 m-2 badge bg-warning text-dark fw-bold">
-            <i class="fas fa-clock me-1"></i> Coming Soon
+          <img src="{{ url_for('static', filename='images/impact_tester.svg') }}" alt="Charpy &amp; Izod Pendulum Impact Tester" class="w-100 h-100 object-fit-contain p-2">
+          <span class="position-absolute top-0 end-0 m-2 badge bg-success text-white">
+            <i class="fas fa-check-circle me-1"></i> Active / Implemented
           </span>
-          <span class="position-absolute bottom-0 start-0 m-2 badge bg-light text-secondary border">
-            ASTM E23 / ISO 148
+          <span class="position-absolute bottom-0 start-0 m-2 badge bg-light text-danger border">
+            ASTM E23 / ISO 148-1
           </span>
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25">Dynamic Fracture</span>
+          <span class="badge bg-danger bg-opacity-25 text-dark border border-danger border-opacity-25">Dynamic Fracture</span>
           <span class="text-secondary small"><i class="fas fa-signal text-warning me-1"></i> Intermediate</span>
         </div>
 
         <h4 class="text-navy fw-bold mb-2">Impact Test (Charpy / Izod)</h4>
         <p class="text-secondary small mb-4 flex-grow-1">
-          Measure dynamic energy absorption under high strain-rate impact loading and determine Ductile-to-Brittle Transition Temperature (DBTT) in structural BCC steels.
+          Measure dynamic energy absorption ($K_V$), notch toughness ($a_k$), and temperature-dependent Ductile-to-Brittle Transition Temperature (DBTT) in structural BCC steels using swinging pendulum strikers.
         </p>
 
         <div class="d-flex gap-2 pt-3 border-top border-secondary border-opacity-25">
-          <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" data-bs-toggle="modal" data-bs-target="#modalImpact">
-            <i class="fas fa-info-circle me-1"></i> Overview
-          </button>
-          <button type="button" class="btn btn-sm btn-secondary flex-fill" disabled>
-            Coming Soon
-          </button>
+          <a href="{{ url_for('impact_test') }}" class="btn btn-sm btn-lab-secondary flex-fill">
+            <i class="fas fa-book-open me-1"></i> Learn &amp; Theory
+          </a>
+          <a href="{{ url_for('impact_test') }}#virtual-lab" class="btn btn-sm btn-lab-primary flex-fill">
+            <i class="fas fa-play me-1"></i> Start Experiment
+          </a>
         </div>
       </div>
     </div>

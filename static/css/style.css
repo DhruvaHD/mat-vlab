@@ -12,44 +12,60 @@
    ========================================================================== */
 
 :root {
-  /* Surface & Backgrounds */
-  --bg-primary: #f8fafc;
-  --bg-secondary: #f1f5f9;
-  --bg-card: #ffffff;
-  --bg-card-hover: #fcfdfe;
-  --bg-input: #ffffff;
-  --border-color: #e2e8f0;
-  --border-strong: #cbd5e1;
+  /* ==========================================================================
+     Cool Green Design System Tokens (Scientific Engineering Theme)
+     ========================================================================== */
+  --primary-green: #0f3d2e;            /* Deep cool forest/slate green (commanding, WCAG AAA) */
+  --primary-green-hover: #08261c;
+  --secondary-green: #1b6b50;          /* Refined emerald / teal-green */
+  --secondary-green-hover: #14533e;
+  --accent-green: #2e9e76;             /* Cool mint / sage accent */
+  --accent-green-hover: #248261;
+  --light-green: #e8f5ef;              /* Soft cool mint surface tint */
+  --light-green-border: #b7e4cf;
+  --background: #f5f9f6;               /* Very light cool green-white */
+  --surface: #ffffff;                  /* Crisp white cards */
+  --text-primary: #11231b;             /* Dark charcoal with deep green undertone */
+  --text-secondary: #375345;           /* Calm muted slate green */
+  --border: #d6e5dc;                   /* Subtle cool green border */
+  --border-strong: #b0cbbe;
 
-  /* Brand Colors */
-  --primary-navy: #0f2b48;
-  --primary-navy-hover: #091a2c;
-  --steel-blue: #2b6cb0;
-  --steel-blue-hover: #1e4e82;
-  --steel-blue-light: #ebf4ff;
-  --accent-teal: #0d9488;
-  --accent-cyan: #0284c7;
+  /* Surface & Backgrounds */
+  --bg-primary: var(--background);
+  --bg-secondary: #edf5f0;
+  --bg-card: var(--surface);
+  --bg-card-hover: #fafdfb;
+  --bg-input: #ffffff;
+  --border-color: var(--border);
+
+  /* Legacy Color Aliases (maintains 100% backward compatibility) */
+  --primary-navy: var(--primary-green);
+  --primary-navy-hover: var(--primary-green-hover);
+  --steel-blue: var(--secondary-green);
+  --steel-blue-hover: var(--secondary-green-hover);
+  --steel-blue-light: var(--light-green);
+  --accent-teal: var(--secondary-green);
+  --accent-cyan: var(--accent-green);
 
   /* State & Feedback Colors */
-  --color-success: #059669;
-  --color-success-bg: #ecfdf5;
-  --color-success-border: #a7f3d0;
-  --color-warning: #d97706;
+  --color-success: #1b6b50;
+  --color-success-bg: #e8f5ef;
+  --color-success-border: #b7e4cf;
+  --color-warning: #b45309;
   --color-warning-bg: #fffbeb;
   --color-warning-border: #fde68a;
-  --color-danger: #dc2626;
+  --color-danger: #b91c1c;
   --color-danger-bg: #fef2f2;
   --color-danger-border: #fecaca;
-  --color-info: #0284c7;
-  --color-info-bg: #f0f9ff;
-  --color-info-border: #bae6fd;
-  --color-purple: #7c3aed;
+  --color-info: #0d9488;
+  --color-info-bg: #f0fdfa;
+  --color-info-border: #99f6e4;
+  --color-purple: #6d28d9;
 
   /* Typography Colors */
-  --text-main: #1e293b;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
-  --text-light: #94a3b8;
+  --text-main: var(--text-primary);
+  --text-muted: #5c7c6e;
+  --text-light: #8fa99c;
   --text-white: #ffffff;
 
   /* Fonts */
@@ -58,9 +74,9 @@
   --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
 
   /* Shadows & Radii */
-  --shadow-sm: 0 1px 3px rgba(15, 43, 72, 0.05);
-  --shadow-md: 0 4px 12px rgba(15, 43, 72, 0.07);
-  --shadow-lg: 0 10px 25px rgba(15, 43, 72, 0.10);
+  --shadow-sm: 0 1px 3px rgba(15, 61, 46, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 61, 46, 0.08);
+  --shadow-lg: 0 10px 25px rgba(15, 61, 46, 0.12);
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -133,13 +149,13 @@ img, svg {
 }
 
 /* ==========================================================================
-   Navigation Bar (Deep Navy Blue Header)
+   Navigation Bar (Deep Cool Green Header)
    ========================================================================== */
 .navbar-matvlab {
-  background-color: var(--primary-navy);
-  border-bottom: 2px solid rgba(2, 132, 199, 0.4);
+  background-color: var(--primary-green);
+  border-bottom: 2px solid rgba(46, 158, 118, 0.4);
   padding: 0.75rem 0;
-  box-shadow: 0 2px 10px rgba(15, 43, 72, 0.15);
+  box-shadow: 0 2px 10px rgba(15, 61, 46, 0.2);
   z-index: 1030;
 }
 
@@ -160,7 +176,7 @@ img, svg {
   justify-content: center;
   width: 34px;
   height: 34px;
-  background: linear-gradient(135deg, #0284c7, #0d9488);
+  background: linear-gradient(135deg, var(--secondary-green), var(--accent-green));
   color: #ffffff;
   border-radius: var(--radius-sm);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
@@ -168,7 +184,7 @@ img, svg {
 
 .navbar-nav .nav-link {
   font-family: var(--font-body);
-  color: rgba(255, 255, 255, 0.82) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
   font-weight: 500;
   font-size: 0.92rem;
   padding: 0.55rem 0.85rem !important;
@@ -181,20 +197,20 @@ img, svg {
 
 .navbar-nav .nav-link:hover {
   color: #ffffff !important;
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .navbar-nav .nav-link.active {
   color: #ffffff !important;
-  background-color: rgba(2, 132, 199, 0.25);
-  border-bottom: 2px solid #38bdf8;
+  background-color: rgba(46, 158, 118, 0.28);
+  border-bottom: 2px solid var(--accent-green);
   font-weight: 600;
 }
 
 .btn-nav-cta {
-  background-color: #0284c7;
+  background-color: var(--secondary-green);
   color: #ffffff !important;
-  border: 1px solid #38bdf8;
+  border: 1px solid var(--accent-green);
   font-weight: 600;
   padding: 0.5rem 1.1rem;
   border-radius: var(--radius-sm);
@@ -203,8 +219,8 @@ img, svg {
 }
 
 .btn-nav-cta:hover {
-  background-color: #0369a1;
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+  background-color: var(--secondary-green-hover);
+  box-shadow: 0 2px 8px rgba(27, 107, 80, 0.35);
   transform: translateY(-1px);
 }
 
@@ -1223,12 +1239,12 @@ mjx-container svg {
 
 .experiment-card-modern:hover {
   transform: translateY(-5px);
-  box-shadow: 0 16px 32px rgba(15, 43, 72, 0.12);
-  border-color: var(--steel-blue);
+  box-shadow: 0 16px 32px rgba(15, 61, 46, 0.12);
+  border-color: var(--secondary-green);
 }
 
 .experiment-card-modern .card-img-wrapper {
-  background: linear-gradient(135deg, rgba(241, 245, 249, 0.8) 0%, rgba(226, 232, 240, 0.6) 100%);
+  background: linear-gradient(135deg, rgba(237, 245, 240, 0.8) 0%, rgba(214, 229, 220, 0.6) 100%);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   height: 190px;
@@ -1289,13 +1305,13 @@ mjx-container svg {
   display: flex;
   flex-direction: column;
   transition: all 0.22s ease;
-  box-shadow: 0 2px 6px rgba(15, 43, 72, 0.04);
+  box-shadow: 0 2px 6px rgba(15, 61, 46, 0.04);
 }
 
 .pillar-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(15, 43, 72, 0.08);
-  border-color: var(--accent-cyan);
+  box-shadow: 0 10px 20px rgba(15, 61, 46, 0.08);
+  border-color: var(--secondary-green);
 }
 
 .pillar-icon-box {
@@ -1308,6 +1324,72 @@ mjx-container svg {
   font-size: 1.25rem;
   margin-bottom: 0.85rem;
 }
+
+/* ==========================================================================
+   Unified Experiment Architecture (One Visual Language System)
+   ========================================================================== */
+.experiment-header-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  margin-bottom: 1.75rem;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.experiment-header-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-green), var(--secondary-green), var(--accent-green));
+}
+
+.experiment-nav-sticky {
+  position: sticky;
+  top: 60px;
+  z-index: 1020;
+  background-color: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
+}
+
+.experiment-section {
+  scroll-margin-top: 130px;
+  margin-bottom: 2rem;
+}
+
+.formula-card-cool {
+  background-color: #f7faf8;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--secondary-green);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+}
+
+.scorecard-metric {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.scorecard-metric:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--secondary-green);
+}
+
 
 
 

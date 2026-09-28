@@ -20,6 +20,8 @@ from models.database import (
     save_experiment, get_experiment_by_id, get_all_experiments, delete_experiment,
     save_hardness_experiment, get_hardness_experiment_by_id,
     get_all_hardness_experiments, delete_hardness_experiment,
+    save_impact_experiment, get_impact_experiment_by_id,
+    get_all_impact_experiments, delete_impact_experiment,
     get_quiz_questions, save_quiz_result,
     register_student, authenticate_student, is_student_id_available,
     validate_student_id, get_student_by_id, get_student_stats,
@@ -37,8 +39,20 @@ from calculations.hardness import (
     generate_brinell_simulation_data, generate_rockwell_simulation_data,
     astm_e140_convert, STANDARD_MATERIALS_HARDNESS
 )
+from calculations.impact import (
+    analyze_impact_readings, generate_impact_simulation_data,
+    calculate_absorbed_energy, calculate_impact_toughness,
+    IMPACT_SPECIMEN_STANDARDS, IMPACT_MATERIAL_PRESETS
+)
+from calculations.compression import (
+    analyze_compression_data, generate_compression_simulation_data,
+    calculate_cylindrical_area, calculate_compressive_stress, calculate_compressive_strain,
+    COMPRESSION_SPECIMEN_STANDARDS, COMPRESSION_MATERIAL_PRESETS
+)
 from reports.report_generator import generate_tensile_pdf
 from reports.hardness_report_generator import generate_hardness_pdf
+from reports.impact_report_generator import generate_impact_pdf
+from reports.compression_report_generator import generate_compression_pdf
 
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -365,6 +379,30 @@ def hardness_compare():
     sid = session.get('student_id')
     saved_list = get_all_hardness_experiments(student_id=sid)
     return render_template('hardness_compare.html', active_page='hardness_compare', saved_experiments=saved_list)
+
+@app.route('/experiments/impact')
+@login_required
+def impact_hub():
+    """Impact Testing Laboratory (ASTM E23 / ISO 148-1 Charpy & Izod)."""
+    questions = get_quiz_questions(experiment_type='impact', limit=10)
+    sid = session.get('student_id')
+    if sid:
+        log_activity(sid, 'EXPERIMENT_START', 'Charpy Impact Lab')
+    return render_template('impact.html', active_page='impact', questions=questions)
+
+app.add_url_rule('/experiments/impact', endpoint='impact_test', view_func=impact_hub)
+
+@app.route('/experiments/compression')
+@login_required
+def compression_hub():
+    """Uniaxial Compression Testing Laboratory (ASTM E9 / ISO 13314)."""
+    questions = get_quiz_questions(experiment_type='compression', limit=10)
+    sid = session.get('student_id')
+    if sid:
+        log_activity(sid, 'EXPERIMENT_START', 'Compression Testing Lab')
+    return render_template('compression.html', active_page='compression', questions=questions)
+
+app.add_url_rule('/experiments/compression', endpoint='compression_test', view_func=compression_hub)
 
 @app.route('/simulation')
 @login_required
@@ -875,6 +913,323 @@ def download_sample_csv_endpoint():
         as_attachment=True,
         download_name='mat_vlab_sample_tensile.csv'
     )
+
+# ==========================================
+# IMPACT TESTING REST API & PDF ROUTES
+# ==========================================
+
+@app.route('/api/impact/simulation-data', methods=['GET'])
+@app.route('/api/impact/simulate', methods=['GET', 'POST'])
+def api_impact_simulate():
+    """Generates realistic physics-based Charpy / Izod simulation data across temperatures."""
+    try:
+        if request.method == 'POST':
+            payload = request.get_json() or {}
+        else:
+            payload = request.args
+
+        mat_slug = payload.get('material_slug', payload.get('material', 'mild-steel'))
+        spec_type = payload.get('specimen_type', 'charpy_v')
+        temp_c = float(payload.get('temperature_c', payload.get('temperature', 23.0)))
+        num_trials = int(payload.get('num_trials', 3))
+        cap_j = float(payload.get('machine_capacity_j', 300.0))
+
+        data = generate_impact_simulation_data(
+            material_slug=mat_slug,
+            specimen_type=spec_type,
+            temperature_c=temp_c,
+            num_trials=num_trials,
+            machine_capacity_j=cap_j
+        )
+        resp = dict(data)
+        resp['success'] = True
+        resp['data'] = data
+        return jsonify(resp)
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False}), 500
+
+@app.route('/api/impact/calculate', methods=['POST'])
+def api_impact_calculate():
+    """Calculates absorbed energy, notch toughness, and statistics from user readings."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Missing calculation payload'}), 400
+
+        readings = data.get('readings', [])
+        spec_type = data.get('specimen_type', 'charpy_v')
+        mat_name = data.get('material_name', 'Metallic Specimen')
+        temp_c = float(data.get('test_temperature_c', data.get('temperature_c', 23.0)))
+        cap_j = float(data.get('machine_capacity_j', 300.0))
+        fl = float(data.get('friction_loss_j', 0.5))
+
+        result = analyze_impact_readings(
+            readings=readings,
+            specimen_type=spec_type,
+            material_name=mat_name,
+            test_temperature_c=temp_c,
+            initial_energy_capacity_j=cap_j,
+            friction_loss_j=fl
+        )
+        return jsonify({'success': True, 'result': result, **result})
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False}), 500
+
+@app.route('/api/impact/save', methods=['POST'])
+def api_impact_save():
+    """Persists an Impact experiment to the database."""
+    try:
+        import secrets
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Missing payload to save.'}), 400
+
+        if not session.get('session_id'):
+            session['session_id'] = secrets.token_hex(16)
+
+        student_id = data.get('student_id') or session.get('student_id')
+        student_name = data.get('student_name') or session.get('student_name') or 'Student Investigator'
+        university = data.get('university') or session.get('university') or 'Materials Testing Laboratory'
+        session_id = data.get('session_id') or session.get('session_id')
+
+        exp_id = save_impact_experiment(
+            data,
+            student_id=student_id,
+            student_name=student_name,
+            university=university,
+            session_id=session_id
+        )
+        return jsonify({'success': True, 'experiment_id': exp_id})
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False}), 500
+
+@app.route('/impact/report/<int:experiment_id>')
+@app.route('/api/impact/download-report/<int:experiment_id>')
+def download_impact_report_by_id(experiment_id):
+    """Generates and serves the certified PDF report for an impact experiment."""
+    exp = get_impact_experiment_by_id(experiment_id)
+    if not exp:
+        return "Impact experiment not found", 404
+
+    exp['student_name'] = exp.get('student_name') or session.get('student_name') or 'Materials Science Student'
+    exp['student_university'] = exp.get('university') or session.get('university') or 'Engineering Institute'
+    exp['student_course'] = exp.get('course') or session.get('course') or 'Materials Testing Laboratory'
+    exp['student_id'] = exp.get('student_id') or 'Session'
+
+    log_activity(
+        student_id=exp.get('student_id'),
+        activity_type='REPORT_DOWNLOAD',
+        details=f"Downloaded PDF for Impact Exp #{experiment_id}",
+        student_name=exp['student_name'],
+        university=exp['student_university'],
+        session_id=session.get('session_id')
+    )
+
+    pdf_buffer = generate_impact_pdf(exp)
+    clean_mat = (exp.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
+    filename = f"MAT_VLAB_Impact_Exp{experiment_id}_{clean_mat}.pdf"
+    return send_file(
+        pdf_buffer,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=filename
+    )
+
+@app.route('/api/impact/generate-pdf', methods=['POST'])
+def api_impact_generate_pdf():
+    """Generates a certified Impact PDF report on-the-fly from client payload."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Missing data for PDF generation'}), 400
+
+        data['student_name'] = data.get('student_name') or session.get('student_name') or 'Materials Science Student'
+        data['student_university'] = data.get('university') or session.get('university') or 'Engineering Institute'
+        data['student_course'] = data.get('course') or session.get('course') or 'Materials Testing Laboratory'
+        data['student_id'] = data.get('student_id') or 'Session'
+
+        log_activity(
+            student_id=data.get('student_id'),
+            activity_type='REPORT_DOWNLOAD',
+            details=f"Generated Impact PDF report for {data.get('material_name', 'Metal')}",
+            student_name=data['student_name'],
+            university=data['student_university'],
+            session_id=session.get('session_id')
+        )
+
+        pdf_buffer = generate_impact_pdf(data)
+        clean_mat = (data.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
+        filename = f"MAT_VLAB_Impact_{clean_mat}.pdf"
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=filename
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ==========================================
+# COMPRESSION TESTING REST API & PDF ROUTES
+# ==========================================
+
+@app.route('/api/compression/simulation-data', methods=['GET'])
+@app.route('/api/compression/simulate', methods=['GET', 'POST'])
+def api_compression_simulate():
+    """Generates realistic physics-based compression simulation data."""
+    try:
+        if request.method == 'POST':
+            payload = request.get_json() or {}
+        else:
+            payload = request.args
+
+        mat_slug = payload.get('material_slug', payload.get('material', 'mild-steel'))
+        d0 = float(payload.get('diameter_mm', payload.get('original_diameter', 15.0)))
+        h0 = float(payload.get('height_mm', payload.get('original_height', 30.0)))
+        num_pts = int(payload.get('num_points', 35))
+
+        data = generate_compression_simulation_data(
+            material_slug=mat_slug,
+            diameter_mm=d0,
+            height_mm=h0,
+            num_points=num_pts
+        )
+        resp = dict(data)
+        resp['success'] = True
+        resp['data'] = data
+        return jsonify(resp)
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False}), 500
+
+@app.route('/api/compression/calculate', methods=['POST'])
+def api_compression_calculate():
+    """Calculates compressive stress, strain, modulus, and proof stress from readings."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Missing calculation payload'}), 400
+
+        d0 = float(data.get('original_diameter_mm', data.get('original_diameter', 15.0)))
+        h0 = float(data.get('original_height_mm', data.get('original_height', 30.0)))
+        readings = data.get('readings', [])
+        fh = float(data['final_height_mm']) if data.get('final_height_mm') else None
+        f_mid_d = float(data['final_mid_diameter_mm']) if data.get('final_mid_diameter_mm') else None
+        f_end_d = float(data['final_end_diameter_mm']) if data.get('final_end_diameter_mm') else None
+        mat_name = data.get('material_name', 'Metallic Specimen')
+
+        result = analyze_compression_data(
+            original_diameter_mm=d0,
+            original_height_mm=h0,
+            readings=readings,
+            final_height_mm=fh,
+            final_mid_diameter_mm=f_mid_d,
+            final_end_diameter_mm=f_end_d,
+            material_name=mat_name
+        )
+        return jsonify({'success': True, 'result': result, **result})
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False}), 500
+
+@app.route('/api/compression/save', methods=['POST'])
+def api_compression_save():
+    """Persists a Compression experiment to the database using polymorphic experiments table."""
+    try:
+        import secrets
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Missing payload to save.'}), 400
+
+        if not session.get('session_id'):
+            session['session_id'] = secrets.token_hex(16)
+
+        data['experiment_type'] = 'compression'
+        student_id = data.get('student_id') or session.get('student_id')
+        student_name = data.get('student_name') or session.get('student_name') or 'Student Investigator'
+        university = data.get('university') or session.get('university') or 'Materials Testing Laboratory'
+        session_id = data.get('session_id') or session.get('session_id')
+
+        # Map compression fields to standard experiments schema
+        if 'original_height_mm' in data and 'original_gauge_length' not in data:
+            data['original_gauge_length'] = data['original_height_mm']
+        if 'original_diameter_mm' in data and 'original_diameter' not in data:
+            data['original_diameter'] = data['original_diameter_mm']
+
+        exp_id = save_experiment(
+            data,
+            student_id=student_id,
+            student_name=student_name,
+            university=university,
+            session_id=session_id
+        )
+        return jsonify({'success': True, 'experiment_id': exp_id})
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False}), 500
+
+@app.route('/compression/report/<int:experiment_id>')
+@app.route('/api/compression/download-report/<int:experiment_id>')
+def download_compression_report_by_id(experiment_id):
+    """Generates and serves the certified PDF report for a compression experiment."""
+    exp = get_experiment_by_id(experiment_id)
+    if not exp:
+        return "Compression experiment not found", 404
+
+    exp['student_name'] = exp.get('student_name') or session.get('student_name') or 'Materials Science Student'
+    exp['student_university'] = exp.get('university') or session.get('university') or 'Engineering Institute'
+    exp['student_course'] = exp.get('course') or session.get('course') or 'Materials Testing Laboratory'
+    exp['student_id'] = exp.get('student_id') or 'Session'
+
+    log_activity(
+        student_id=exp.get('student_id'),
+        activity_type='REPORT_DOWNLOAD',
+        details=f"Downloaded PDF for Compression Exp #{experiment_id}",
+        student_name=exp['student_name'],
+        university=exp['student_university'],
+        session_id=session.get('session_id')
+    )
+
+    pdf_buffer = generate_compression_pdf(exp)
+    clean_mat = (exp.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
+    filename = f"MAT_VLAB_Compression_Exp{experiment_id}_{clean_mat}.pdf"
+    return send_file(
+        pdf_buffer,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=filename
+    )
+
+@app.route('/api/compression/generate-pdf', methods=['POST'])
+def api_compression_generate_pdf():
+    """Generates a certified Compression PDF report on-the-fly from client payload."""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Missing data for PDF generation'}), 400
+
+        data['student_name'] = data.get('student_name') or session.get('student_name') or 'Materials Science Student'
+        data['student_university'] = data.get('university') or session.get('university') or 'Engineering Institute'
+        data['student_course'] = data.get('course') or session.get('course') or 'Materials Testing Laboratory'
+        data['student_id'] = data.get('student_id') or 'Session'
+
+        log_activity(
+            student_id=data.get('student_id'),
+            activity_type='REPORT_DOWNLOAD',
+            details=f"Generated Compression PDF report for {data.get('material_name', 'Metal')}",
+            student_name=data['student_name'],
+            university=data['student_university'],
+            session_id=session.get('session_id')
+        )
+
+        pdf_buffer = generate_compression_pdf(data)
+        clean_mat = (data.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
+        filename = f"MAT_VLAB_Compression_{clean_mat}.pdf"
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=filename
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     host = os.environ.get('HOST', '0.0.0.0')

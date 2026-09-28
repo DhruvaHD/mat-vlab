@@ -532,7 +532,47 @@ def init_db():
         cursor.execute("ALTER TABLE hardness_experiments ADD COLUMN IF NOT EXISTS session_id TEXT")
         cursor.execute("ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS student_name TEXT")
         cursor.execute("ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS university TEXT")
-        cursor.execute("ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS session_id TEXT")
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS impact_experiments (
+            id SERIAL PRIMARY KEY,
+            student_id TEXT,
+            student_name TEXT,
+            university TEXT,
+            session_id TEXT,
+            title TEXT NOT NULL,
+            method TEXT NOT NULL,
+            specimen_type TEXT NOT NULL,
+            mode TEXT NOT NULL,
+            data_origin TEXT NOT NULL,
+            material_name TEXT NOT NULL,
+            test_temperature_c DOUBLE PRECISION NOT NULL,
+            machine_capacity_j DOUBLE PRECISION NOT NULL,
+            mean_absorbed_energy_j DOUBLE PRECISION NOT NULL,
+            std_dev_j DOUBLE PRECISION,
+            mean_ak_j_cm2 DOUBLE PRECISION,
+            mean_lateral_expansion_mm DOUBLE PRECISION,
+            fracture_appearance TEXT,
+            num_readings INTEGER NOT NULL,
+            parameters_json TEXT,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS impact_readings (
+            id SERIAL PRIMARY KEY,
+            experiment_id INTEGER NOT NULL REFERENCES impact_experiments (id) ON DELETE CASCADE,
+            trial_number INTEGER NOT NULL,
+            initial_energy_j DOUBLE PRECISION,
+            residual_energy_j DOUBLE PRECISION,
+            friction_loss_j DOUBLE PRECISION,
+            absorbed_energy_j DOUBLE PRECISION NOT NULL,
+            lateral_expansion_mm DOUBLE PRECISION,
+            pct_shear_fracture DOUBLE PRECISION,
+            ak_j_cm2 DOUBLE PRECISION
+        )
+        ''')
 
         # Auto-migrate SQLite data if this is a fresh PostgreSQL instance
         auto_migrate_sqlite_to_postgres_if_empty(conn)
@@ -756,6 +796,49 @@ def init_db():
             depth_mm REAL,
             hardness_value REAL NOT NULL,
             FOREIGN KEY (experiment_id) REFERENCES hardness_experiments (id) ON DELETE CASCADE
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS impact_experiments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id TEXT,
+            student_name TEXT,
+            university TEXT,
+            session_id TEXT,
+            title TEXT NOT NULL,
+            method TEXT NOT NULL, -- 'CHARPY' or 'IZOD'
+            specimen_type TEXT NOT NULL, -- 'charpy_v', 'charpy_u', 'izod_v'
+            mode TEXT NOT NULL, -- 'VIRTUAL_SIMULATION' or 'MANUAL_ENTRY'
+            data_origin TEXT NOT NULL,
+            material_name TEXT NOT NULL,
+            test_temperature_c REAL NOT NULL,
+            machine_capacity_j REAL NOT NULL,
+            mean_absorbed_energy_j REAL NOT NULL,
+            std_dev_j REAL,
+            mean_ak_j_cm2 REAL,
+            mean_lateral_expansion_mm REAL,
+            fracture_appearance TEXT,
+            num_readings INTEGER NOT NULL,
+            parameters_json TEXT,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS impact_readings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            experiment_id INTEGER NOT NULL,
+            trial_number INTEGER NOT NULL,
+            initial_energy_j REAL,
+            residual_energy_j REAL,
+            friction_loss_j REAL,
+            absorbed_energy_j REAL NOT NULL,
+            lateral_expansion_mm REAL,
+            pct_shear_fracture REAL,
+            ak_j_cm2 REAL,
+            FOREIGN KEY (experiment_id) REFERENCES impact_experiments (id) ON DELETE CASCADE
         )
         ''')
 
@@ -1078,6 +1161,216 @@ def seed_quiz_questions(conn):
             }
         ]
         for q in hardness_questions:
+            cursor.execute('''
+            INSERT INTO quiz_questions (
+                experiment_type, question, option_a, option_b, option_c, option_d,
+                correct_option, explanation, difficulty
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                q['experiment_type'], q['question'], q['option_a'], q['option_b'],
+                q['option_c'], q['option_d'], q['correct_option'], q['explanation'], q['difficulty']
+            ))
+        conn.commit()
+
+    # Seed Impact quiz questions if not already present
+    cursor.execute("SELECT COUNT(*) as count FROM quiz_questions WHERE experiment_type = 'impact'")
+    if cursor.fetchone()['count'] == 0:
+        impact_questions = [
+            {
+                "experiment_type": "impact",
+                "question": "In the Charpy impact test (ASTM E23 / ISO 148), how is the specimen supported relative to the swinging pendulum striker?",
+                "option_a": "As a cantilever clamped at one end with notch facing striker",
+                "option_b": "As a simply supported three-point beam (40 mm span) with notch facing away from the striking edge",
+                "option_c": "Clamped at both ends under tensile preload",
+                "option_d": "Suspended freely by magnetic holders",
+                "correct_option": "B",
+                "explanation": "In Charpy testing, the specimen rests horizontally on anvils across a 40 mm span. The 45° V-notch is centered and faces away from the striking tup so that the notch root experiences maximum tensile bending stress upon impact.",
+                "difficulty": "Basic"
+            },
+            {
+                "experiment_type": "impact",
+                "question": "What does the absorbed impact energy (KV) measured on the pendulum scale represent?",
+                "option_a": "Total mass of the specimen after fracture",
+                "option_b": "The work done to initiate and propagate dynamic fracture, calculated as initial potential energy minus residual follow-through swing energy (minus tare friction loss)",
+                "option_c": "The elastic modulus under static load",
+                "option_d": "Hardness of the notch tip",
+                "correct_option": "B",
+                "explanation": "Absorbed energy KV = E₀ - E₁ - L_f measures the total energy dissipated in deforming and fracturing the notched bar under dynamic high strain-rate loading.",
+                "difficulty": "Basic"
+            },
+            {
+                "experiment_type": "impact",
+                "question": "What crystalline lattice structure typically exhibits a sharp Ductile-to-Brittle Transition Temperature (DBTT)?",
+                "option_a": "Face-Centered Cubic (FCC) metals such as Austenitic Stainless Steel and Aluminium",
+                "option_b": "Body-Centered Cubic (BCC) metals such as Ferritic Steels, and some HCP metals",
+                "option_c": "Amorphous metallic glasses",
+                "option_d": "Pure copper alloys",
+                "correct_option": "B",
+                "explanation": "BCC metals exhibit severe temperature dependence of dislocation mobility (Peierls-Nabarro stress). As temperature drops, slip is inhibited and fracture stress is reached before yield, causing catastrophic brittle cleavage. FCC metals have 12 active slip systems at all temperatures and do not exhibit DBTT.",
+                "difficulty": "Intermediate"
+            },
+            {
+                "experiment_type": "impact",
+                "question": "Why is a sharp notch machined into an impact test specimen according to ASTM E23?",
+                "option_a": "To reduce the weight of the specimen",
+                "option_b": "To produce a localized triaxial stress concentration that suppresses gross yielding and promotes crack initiation",
+                "option_c": "To provide a mounting slot for thermocouples",
+                "option_d": "To allow the specimen to bend without breaking",
+                "correct_option": "B",
+                "explanation": "The V-notch acts as a severe triaxial stress concentrator (Kt ≈ 3.4). High hydrostatic tension suppresses plastic shear flow, testing the material's inherent resistance to fast brittle cleavage crack propagation.",
+                "difficulty": "Intermediate"
+            },
+            {
+                "experiment_type": "impact",
+                "question": "In pendulum impact machines, what is the critical design requirement regarding the Center of Percussion (COP)?",
+                "option_a": "The COP must be positioned above the pivot bearing",
+                "option_b": "The striking tup must be located precisely at the Center of Percussion of the pendulum to prevent reaction impulse shock at the pivot shaft",
+                "option_c": "The COP must coincide with the release latch",
+                "option_d": "The COP must be at the very tip of the hammer",
+                "correct_option": "B",
+                "explanation": "Striking at the Center of Percussion ensures that dynamic impact reactions do not transmit shock impulses to the supporting axle bearings, preventing bearing friction distortion and premature machine wear.",
+                "difficulty": "Advanced"
+            },
+            {
+                "experiment_type": "impact",
+                "question": "How is Notch Impact Toughness (impact strength, ak) calculated from absorbed energy KV?",
+                "option_a": "ak = KV * Specimen Length",
+                "option_b": "ak = KV / A₀, where A₀ is the net cross-sectional area of the unnotched ligament directly below the notch (J/cm² or kJ/m²)",
+                "option_c": "ak = KV / Total Volume",
+                "option_d": "ak = KV * Pendulum Velocity",
+                "correct_option": "B",
+                "explanation": "Specific notch toughness ak normalizes energy by net fractured area: ak = KV / A₀ (e.g. 0.80 cm² for standard 10x10 mm specimen with 2 mm notch).",
+                "difficulty": "Basic"
+            },
+            {
+                "experiment_type": "impact",
+                "question": "What visual fracture surface appearance indicates ductile shear failure in a fractured Charpy specimen?",
+                "option_a": "Bright, shiny, reflective faceted crystalline surfaces with zero lateral expansion",
+                "option_b": "Dull, fibrous, matte grey appearance with pronounced lateral expansion and shear lips",
+                "option_c": "Smooth glass-like mirror surface",
+                "option_d": "Black oxidized columnar dendrites",
+                "correct_option": "B",
+                "explanation": "Ductile fracture occurs by microvoid coalescence, creating a dull matte fibrous texture with lateral expansion at the compression side and 45° shear lips at the edges.",
+                "difficulty": "Intermediate"
+            },
+            {
+                "experiment_type": "impact",
+                "question": "According to ASTM E23, when conducting Charpy impact tests at non-ambient temperatures, what is the maximum allowable time from bath removal to hammer strike?",
+                "option_a": "Within 5 seconds",
+                "option_b": "Within 30 seconds",
+                "option_c": "Within 2 minutes",
+                "option_d": "Temperature does not affect impact energy",
+                "correct_option": "A",
+                "explanation": "ASTM E23 mandates that non-ambient specimens must be positioned and struck within 5 seconds of removal from the conditioning bath to prevent thermal equalization with room air.",
+                "difficulty": "Advanced"
+            }
+        ]
+        for q in impact_questions:
+            cursor.execute('''
+            INSERT INTO quiz_questions (
+                experiment_type, question, option_a, option_b, option_c, option_d,
+                correct_option, explanation, difficulty
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                q['experiment_type'], q['question'], q['option_a'], q['option_b'],
+                q['option_c'], q['option_d'], q['correct_option'], q['explanation'], q['difficulty']
+            ))
+        conn.commit()
+
+    # Seed Compression quiz questions if not already present
+    cursor.execute("SELECT COUNT(*) as count FROM quiz_questions WHERE experiment_type = 'compression'")
+    if cursor.fetchone()['count'] == 0:
+        compression_questions = [
+            {
+                "experiment_type": "compression",
+                "question": "In a uniaxial compression test (ASTM E9), why does 'barreling' occur in ductile cylindrical specimens?",
+                "option_a": "Due to internal gas voids expanding under pressure",
+                "option_b": "Due to frictional shear constraint at the specimen-platen contact interfaces which restricts radial expansion at the ends",
+                "option_c": "Because compressive strain is non-uniform in the material lattice",
+                "option_d": "Due to gravitational settling of the metal",
+                "correct_option": "B",
+                "explanation": "Frictional resistance between the platens and specimen end-faces constrains radial expansion at top and bottom, generating a complex triaxial stress state and producing the characteristic barrel profile at mid-height.",
+                "difficulty": "Basic"
+            },
+            {
+                "experiment_type": "compression",
+                "question": "Why does Gray Cast Iron exhibit an Ultimate Compressive Strength (~680 MPa) roughly 3 to 4 times higher than its Ultimate Tensile Strength (~200 MPa)?",
+                "option_a": "In compression, internal graphite flakes are pressed together and blunted, whereas in tension sharp flake tips act as severe notch crack initiators",
+                "option_b": "Gray cast iron transforms to martensite under compression",
+                "option_c": "The specimen buckles during compression",
+                "option_d": "Gray cast iron is softer in tension",
+                "correct_option": "A",
+                "explanation": "In tension, sharp graphite flakes act as internal microcracks that readily propagate brittle cleavage. In compression, normal stresses close and blunt flake tips, allowing the pearlitic matrix to sustain high shear loads before failing.",
+                "difficulty": "Intermediate"
+            },
+            {
+                "experiment_type": "compression",
+                "question": "Along what characteristic angle does brittle shear fracture typically occur in a cylindrical Gray Cast Iron compression specimen?",
+                "option_a": "0° (parallel to the load axis)",
+                "option_b": "~45° (plane of maximum shear stress, modified slightly by internal friction according to Coulomb-Mohr theory)",
+                "option_c": "90° (perpendicular to the load axis)",
+                "option_d": "Random irregular crumbling",
+                "correct_option": "B",
+                "explanation": "Under uniaxial compression, maximum resolving shear stress occurs at 45° to the loading axis. Under the Coulomb-Mohr fracture criterion, internal friction shifts the actual macroscopic fracture angle to approximately 50°–55°.",
+                "difficulty": "Intermediate"
+            },
+            {
+                "experiment_type": "compression",
+                "question": "Why is a spherically-seated self-aligning upper platen recommended in ASTM E9 compression testing?",
+                "option_a": "To apply torsional twist during compression",
+                "option_b": "To swivel under initial contact and compensate for any non-parallelism of specimen end faces, guaranteeing pure axial load without bending moments",
+                "option_c": "To increase crosshead descent velocity",
+                "option_d": "To heat the specimen during the test",
+                "correct_option": "B",
+                "explanation": "A spherical seat tilts under initial seating load to establish flush planar contact across the full specimen face, preventing premature edge crushing and non-axial bending moments.",
+                "difficulty": "Basic"
+            },
+            {
+                "experiment_type": "compression",
+                "question": "What is the recommended slenderness ratio (height to diameter, h₀ / d₀) for standard ASTM E9 medium cylindrical specimens?",
+                "option_a": "h₀ / d₀ = 0.5",
+                "option_b": "h₀ / d₀ = 1.5 to 2.0 (typically 2.0, e.g. d₀ = 15 mm, h₀ = 30 mm)",
+                "option_c": "h₀ / d₀ = 8.0 to 10.0",
+                "option_d": "h₀ / d₀ = 20.0",
+                "correct_option": "B",
+                "explanation": "A slenderness ratio of 2.0 (e.g. 15 mm diameter by 30 mm height) provides sufficient height so platen friction constraint does not dominate the central gauge section while remaining short enough to avoid Euler column buckling.",
+                "difficulty": "Intermediate"
+            },
+            {
+                "experiment_type": "compression",
+                "question": "How is engineering compressive strain (ε_c) calculated from original height h₀ and instantaneous height h?",
+                "option_a": "ε_c = h / h₀",
+                "option_b": "ε_c = (h₀ - h) / h₀ = Δh / h₀",
+                "option_c": "ε_c = ln(h / h₀)",
+                "option_d": "ε_c = (h - h₀) / h",
+                "correct_option": "B",
+                "explanation": "Engineering compressive strain is defined conventionally as positive reduction in height divided by original height: ε_c = (h₀ - h) / h₀ = Δh / h₀.",
+                "difficulty": "Basic"
+            },
+            {
+                "experiment_type": "compression",
+                "question": "For ductile metals that deform plastically without discrete fracture (such as mild steel or copper), what metric is typically reported in lieu of ultimate fracture strength?",
+                "option_a": "Tensile elongation at break",
+                "option_b": "Compressive yield strength (0.2% offset) and flow stress at specified strains (e.g., σ_10%, σ_20%, σ_30%)",
+                "option_c": "Mohs mineral scratch hardness",
+                "option_d": "Charpy V-notch energy",
+                "correct_option": "B",
+                "explanation": "Because ductile metals barrel and flatten continuously under compression without fracturing, standards report the 0.2% proof stress and flow stresses at specified strain levels (e.g. 10%, 20%, 30%).",
+                "difficulty": "Intermediate"
+            },
+            {
+                "experiment_type": "compression",
+                "question": "What is the primary function of a sub-press fixture in precision compression testing?",
+                "option_a": "To cool the specimen with liquid nitrogen",
+                "option_b": "To guide the loading ram along precision ground pillars, maintaining strict coaxial alignment and preventing machine crosshead deflection from tilting the platens",
+                "option_c": "To measure the electrical resistance of the specimen",
+                "option_d": "To amplify the hydraulic pressure tenfold",
+                "correct_option": "B",
+                "explanation": "An ASTM E9 sub-press fixture uses pre-stressed guide columns to maintain strict vertical alignment between platens, bypassing machine frame compliance and eliminating parasitic crosshead tilt.",
+                "difficulty": "Advanced"
+            }
+        ]
+        for q in compression_questions:
             cursor.execute('''
             INSERT INTO quiz_questions (
                 experiment_type, question, option_a, option_b, option_c, option_d,
@@ -2004,32 +2297,201 @@ def delete_hardness_experiment(exp_id, student_id=None):
     return True
 
 # ==========================================
+# IMPACT EXPERIMENTS OPERATIONS (CHARPY & IZOD)
+# ==========================================
+
+def save_impact_experiment(data, student_id=None, student_name=None, university=None, session_id=None):
+    """
+    Saves a completed Charpy or Izod impact experiment.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    sid = student_id or data.get('student_id')
+    s_name = student_name or data.get('student_name')
+    uni = university or data.get('university')
+    sess_id = session_id or data.get('session_id')
+
+    method = (data.get('method') or 'CHARPY').upper().strip()
+    specimen_type = data.get('specimen_type', 'charpy_v')
+    mode = data.get('mode', 'MANUAL_ENTRY')
+    data_origin = data.get('data_origin')
+    if not data_origin:
+        data_origin = 'SIMULATION / DEMONSTRATION DATA' if mode == 'VIRTUAL_SIMULATION' else 'USER-ENTERED LABORATORY DATA'
+
+    params = data.get('parameters', {})
+    params_json = json.dumps(params) if isinstance(params, dict) else str(params)
+    readings = data.get('readings', [])
+    num_readings = len(readings) if readings else int(data.get('num_readings', 1))
+
+    summary = data.get('summary', {})
+    mean_kv = float(summary.get('mean_absorbed_energy_j', data.get('mean_absorbed_energy_j', 0.0)))
+    std_dev = float(summary.get('std_dev_j', data.get('std_dev_j', 0.0)))
+    mean_ak = float(summary.get('mean_ak_j_cm2', data.get('mean_ak_j_cm2', round(mean_kv / 0.80, 2))))
+    lat_exp = float(summary.get('mean_lateral_expansion_mm', data.get('mean_lateral_expansion_mm', 0.0)))
+    fracture = summary.get('fracture_type', data.get('fracture_type', 'Fibrous Shear'))
+
+    temp_c = float(data.get('test_temperature_c', 23.0))
+    cap_j = float(data.get('machine_capacity_j', 300.0))
+    title = data.get('title') or f"{method.capitalize()} Impact Test — {data.get('material_name', 'Specimen')}"
+
+    cursor.execute('''
+    INSERT INTO impact_experiments (
+        student_id, student_name, university, session_id,
+        title, method, specimen_type, mode, data_origin,
+        material_name, test_temperature_c, machine_capacity_j,
+        mean_absorbed_energy_j, std_dev_j, mean_ak_j_cm2,
+        mean_lateral_expansion_mm, fracture_appearance, num_readings,
+        parameters_json, notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        sid, s_name, uni, sess_id,
+        title, method, specimen_type, mode, data_origin,
+        data.get('material_name', 'Unknown Material'), temp_c, cap_j,
+        mean_kv, std_dev, mean_ak,
+        lat_exp, fracture, num_readings,
+        params_json, data.get('notes', '')
+    ))
+
+    exp_id = cursor.lastrowid
+
+    # Insert individual trial readings
+    for idx, r in enumerate(readings, start=1):
+        t_num = r.get('trial_number', idx)
+        e0 = float(r.get('initial_energy_j', cap_j))
+        e1 = float(r.get('residual_energy_j', 0.0))
+        fl = float(r.get('friction_loss_j', 0.5))
+        kv = float(r.get('absorbed_energy_j', mean_kv))
+        lat = float(r.get('lateral_expansion_mm', 0.0) or 0.0)
+        pct_sh = float(r.get('pct_shear_fracture', 0.0) or 0.0)
+        ak = float(r.get('ak_j_cm2', round(kv / 0.80, 2)))
+
+        cursor.execute('''
+        INSERT INTO impact_readings (
+            experiment_id, trial_number, initial_energy_j, residual_energy_j,
+            friction_loss_j, absorbed_energy_j, lateral_expansion_mm,
+            pct_shear_fracture, ak_j_cm2
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (exp_id, t_num, e0, e1, fl, kv, lat, pct_sh, ak))
+
+    conn.commit()
+    conn.close()
+
+    log_activity(
+        student_id=sid,
+        activity_type='EXPERIMENT_SAVE',
+        details=f"Impact {method} experiment #{exp_id} saved ({mode})",
+        student_name=s_name,
+        university=uni,
+        session_id=sess_id
+    )
+
+    return exp_id
+
+def get_impact_experiment_by_id(exp_id):
+    """
+    Retrieves full details of an impact experiment including trials and quiz.
+    """
+    conn = get_db_connection()
+    row = conn.execute('SELECT * FROM impact_experiments WHERE id = ?', (exp_id,)).fetchone()
+    if not row:
+        conn.close()
+        return None
+    exp = dict(row)
+    if exp.get('parameters_json'):
+        try:
+            exp['parameters'] = json.loads(exp['parameters_json'])
+        except Exception:
+            exp['parameters'] = {}
+    else:
+        exp['parameters'] = {}
+
+    readings = conn.execute('SELECT * FROM impact_readings WHERE experiment_id = ? ORDER BY trial_number ASC', (exp_id,)).fetchall()
+    exp['readings'] = [dict(r) for r in readings]
+
+    quiz_res = conn.execute('''
+    SELECT * FROM quiz_results 
+    WHERE experiment_id = ? OR (experiment_type = 'impact' AND (student_id = ? OR student_name = ?))
+    ORDER BY completed_at DESC LIMIT 1
+    ''', (exp_id, exp.get('student_id'), exp.get('student_name'))).fetchone()
+    exp['quiz'] = dict(quiz_res) if quiz_res else None
+
+    conn.close()
+    return exp
+
+def get_all_impact_experiments(student_id=None, session_id=None, student_name=None):
+    """
+    Retrieves all impact experiments, optionally filtered.
+    """
+    conn = get_db_connection()
+    query = 'SELECT * FROM impact_experiments WHERE 1=1'
+    params = []
+    if session_id:
+        query += ' AND session_id = ?'
+        params.append(session_id.strip())
+    elif student_id:
+        query += ' AND LOWER(student_id) = LOWER(?)'
+        params.append(student_id.strip())
+    elif student_name:
+        query += ' AND LOWER(student_name) = LOWER(?)'
+        params.append(student_name.strip())
+
+    query += ' ORDER BY created_at DESC'
+    rows = conn.execute(query, tuple(params)).fetchall()
+    conn.close()
+    result = []
+    for r in rows:
+        d = dict(r)
+        if d.get('parameters_json'):
+            try:
+                d['parameters'] = json.loads(d['parameters_json'])
+            except Exception:
+                d['parameters'] = {}
+        else:
+            d['parameters'] = {}
+        result.append(d)
+    return result
+
+def delete_impact_experiment(exp_id, student_id=None):
+    """
+    Deletes an impact experiment by id.
+    """
+    conn = get_db_connection()
+    if student_id:
+        row = conn.execute('SELECT student_id FROM impact_experiments WHERE id = ?', (exp_id,)).fetchone()
+        if not row or (row['student_id'] and row['student_id'].lower() != student_id.lower()):
+            conn.close()
+            return False
+    conn.execute('DELETE FROM impact_readings WHERE experiment_id = ?', (exp_id,))
+    conn.execute('DELETE FROM impact_experiments WHERE id = ?', (exp_id,))
+    conn.commit()
+    conn.close()
+    return True
+
+# ==========================================
 # ADMIN EXPERIMENT USAGE TELEMETRY & RECORDS
 # ==========================================
 
 def get_admin_usage_stats():
     """
-    Returns administrative summary statistics for MAT-VLAB ADMIN:
-    - total_experiments (Tensile + Hardness)
-    - total_students (unique user names across experiments and registered students)
-    - total_universities (unique institutions)
-    - sim_count (Virtual Simulation count across all experiments)
-    - manual_count (Manual Data Entry count across all experiments)
-    - total_quizzes
-    - universities list for filtering
+    Returns administrative summary statistics for MAT-VLAB ADMIN across Tensile, Hardness, Impact, and Compression.
     """
     conn = get_db_connection()
-    t_count = conn.execute('SELECT COUNT(*) FROM experiments').fetchone()[0]
+    t_count = conn.execute("SELECT COUNT(*) FROM experiments WHERE experiment_type != 'compression'").fetchone()[0]
+    c_count = conn.execute("SELECT COUNT(*) FROM experiments WHERE experiment_type = 'compression'").fetchone()[0]
     h_count = conn.execute('SELECT COUNT(*) FROM hardness_experiments').fetchone()[0]
-    total_experiments = t_count + h_count
+    i_count = conn.execute('SELECT COUNT(*) FROM impact_experiments').fetchone()[0]
+    total_experiments = t_count + c_count + h_count + i_count
 
     t_sim = conn.execute("SELECT COUNT(*) FROM experiments WHERE mode = 'VIRTUAL_SIMULATION'").fetchone()[0]
     h_sim = conn.execute("SELECT COUNT(*) FROM hardness_experiments WHERE mode = 'VIRTUAL_SIMULATION'").fetchone()[0]
-    sim_count = t_sim + h_sim
+    i_sim = conn.execute("SELECT COUNT(*) FROM impact_experiments WHERE mode = 'VIRTUAL_SIMULATION'").fetchone()[0]
+    sim_count = t_sim + h_sim + i_sim
 
     t_man = conn.execute("SELECT COUNT(*) FROM experiments WHERE mode = 'MANUAL_ENTRY'").fetchone()[0]
     h_man = conn.execute("SELECT COUNT(*) FROM hardness_experiments WHERE mode = 'MANUAL_ENTRY'").fetchone()[0]
-    manual_count = t_man + h_man
+    i_man = conn.execute("SELECT COUNT(*) FROM impact_experiments WHERE mode = 'MANUAL_ENTRY'").fetchone()[0]
+    manual_count = t_man + h_man + i_man
 
     total_quizzes = conn.execute('SELECT COUNT(*) FROM quiz_results').fetchone()[0]
 
@@ -2038,6 +2500,8 @@ def get_admin_usage_stats():
         SELECT student_name as name FROM experiments WHERE student_name IS NOT NULL AND student_name != ''
         UNION
         SELECT student_name as name FROM hardness_experiments WHERE student_name IS NOT NULL AND student_name != ''
+        UNION
+        SELECT student_name as name FROM impact_experiments WHERE student_name IS NOT NULL AND student_name != ''
         UNION
         SELECT name FROM students WHERE name IS NOT NULL AND name != ''
     )
@@ -2051,6 +2515,8 @@ def get_admin_usage_stats():
         UNION
         SELECT university FROM hardness_experiments WHERE university IS NOT NULL AND university != ''
         UNION
+        SELECT university FROM impact_experiments WHERE university IS NOT NULL AND university != ''
+        UNION
         SELECT university FROM students WHERE university IS NOT NULL AND university != ''
     ) ORDER BY university ASC
     '''
@@ -2060,6 +2526,10 @@ def get_admin_usage_stats():
     conn.close()
     return {
         'total_experiments': total_experiments,
+        'tensile_count': t_count,
+        'compression_count': c_count,
+        'hardness_count': h_count,
+        'impact_count': i_count,
         'total_students': total_students,
         'total_universities': total_universities,
         'sim_count': sim_count,
@@ -2076,10 +2546,10 @@ def get_admin_usage_records(search_query=None, exp_type=None, mode=None, univers
     conn = get_db_connection()
     records = []
 
-    # 1. Fetch Tensile Experiments
-    if not exp_type or exp_type.upper() in ['ALL', 'TENSILE']:
+    # 1. Fetch Tensile & Compression Experiments
+    if not exp_type or exp_type.upper() in ['ALL', 'TENSILE', 'COMPRESSION']:
         t_query = '''
-        SELECT e.id, 'tensile' as exp_table, 'TENSILE' as exp_type,
+        SELECT e.id, e.experiment_type as exp_type_raw,
                e.title, e.mode, e.material_name,
                COALESCE(e.student_name, s.name, e.student_id, 'Anonymous Student') as student_name,
                COALESCE(e.university, s.university, 'General Session') as university,
@@ -2092,6 +2562,10 @@ def get_admin_usage_records(search_query=None, exp_type=None, mode=None, univers
         WHERE 1=1
         '''
         t_params = []
+        if exp_type and exp_type.upper() == 'COMPRESSION':
+            t_query += " AND (e.experiment_type = 'compression' OR LOWER(e.title) LIKE '%compression%')"
+        elif exp_type and exp_type.upper() == 'TENSILE':
+            t_query += " AND (e.experiment_type != 'compression' AND LOWER(e.title) NOT LIKE '%compression%')"
         if mode and mode.upper() != 'ALL':
             t_query += ' AND e.mode = ?'
             t_params.append(mode)
@@ -2106,11 +2580,22 @@ def get_admin_usage_records(search_query=None, exp_type=None, mode=None, univers
         for r in t_rows:
             d = dict(r)
             uts = d.get('uts_mpa')
-            key_res = f"UTS: {round(uts, 1)} MPa" if uts is not None else "Completed"
+            is_comp = (d.get('exp_type_raw', '').lower() == 'compression' or 'compression' in (d.get('title') or '').lower())
+            if is_comp:
+                exp_label = 'Compression (ASTM E9)'
+                tbl_name = 'compression'
+                rep_url = f"/api/compression/download-report/{d['id']}"
+                key_res = f"Max σ_c: {round(uts, 1)} MPa" if uts is not None else "Completed"
+            else:
+                exp_label = 'Tensile (UTM)'
+                tbl_name = 'tensile'
+                rep_url = f"/api/download-report/{d['id']}"
+                key_res = f"UTS: {round(uts, 1)} MPa" if uts is not None else "Completed"
+
             records.append({
                 'id': d['id'],
-                'table': 'tensile',
-                'exp_type': 'Tensile (UTM)',
+                'table': tbl_name,
+                'exp_type': exp_label,
                 'title': d['title'],
                 'mode': d['mode'],
                 'material_name': d['material_name'],
@@ -2120,7 +2605,7 @@ def get_admin_usage_records(search_query=None, exp_type=None, mode=None, univers
                 'created_at': str(d.get('created_at', ''))[:19],
                 'key_result': key_res,
                 'readings_count': d.get('readings_count', 0),
-                'report_url': f"/api/download-report/{d['id']}"
+                'report_url': rep_url
             })
 
     # 2. Fetch Hardness Experiments
@@ -2172,6 +2657,55 @@ def get_admin_usage_records(search_query=None, exp_type=None, mode=None, univers
                 'report_url': f"/hardness/report/{d['id']}"
             })
 
+    # 3. Fetch Impact Experiments
+    if not exp_type or exp_type.upper() in ['ALL', 'IMPACT', 'CHARPY', 'IZOD']:
+        i_query = '''
+        SELECT i.id, 'impact' as exp_table, UPPER(i.method) as method,
+               i.title, i.mode, i.material_name,
+               COALESCE(i.student_name, s.name, i.student_id, 'Anonymous Student') as student_name,
+               COALESCE(i.university, s.university, 'General Session') as university,
+               i.session_id, i.created_at,
+               i.mean_absorbed_energy_j, i.mean_ak_j_cm2, i.num_readings
+        FROM impact_experiments i
+        LEFT JOIN students s ON LOWER(i.student_id) = LOWER(s.student_id)
+        WHERE 1=1
+        '''
+        i_params = []
+        if exp_type and exp_type.upper() in ['CHARPY', 'IZOD']:
+            i_query += ' AND UPPER(i.method) = ?'
+            i_params.append(exp_type.upper())
+        if mode and mode.upper() != 'ALL':
+            i_query += ' AND i.mode = ?'
+            i_params.append(mode)
+        if university and university.upper() != 'ALL':
+            i_query += ' AND (i.university = ? OR s.university = ?)'
+            i_params.extend([university, university])
+        if date_query:
+            i_query += ' AND i.created_at LIKE ?'
+            i_params.append(f"{date_query.strip()}%")
+
+        i_rows = conn.execute(i_query, tuple(i_params)).fetchall()
+        for r in i_rows:
+            d = dict(r)
+            kv = d.get('mean_absorbed_energy_j')
+            ak = d.get('mean_ak_j_cm2')
+            key_res = f"KV: {round(kv, 1)} J | ak: {round(ak, 1)} J/cm²" if kv is not None else "Completed"
+            records.append({
+                'id': d['id'],
+                'table': 'impact',
+                'exp_type': f"{d['method'].capitalize()} Impact",
+                'title': d['title'],
+                'mode': d['mode'],
+                'material_name': d['material_name'],
+                'student_name': d['student_name'],
+                'university': d['university'],
+                'session_id': d.get('session_id'),
+                'created_at': str(d.get('created_at', ''))[:19],
+                'key_result': key_res,
+                'readings_count': d.get('num_readings', 0),
+                'report_url': f"/api/impact/download-report/{d['id']}"
+            })
+
     conn.close()
 
     # Search filtering
@@ -2194,8 +2728,10 @@ def get_admin_record_by_id(table, record_id):
     """
     Fetches complete experiment record for admin modal inspection.
     """
-    if table == 'tensile':
+    if table in ('tensile', 'compression'):
         return get_experiment_by_id(record_id)
     elif table == 'hardness':
         return get_hardness_experiment_by_id(record_id)
+    elif table == 'impact':
+        return get_impact_experiment_by_id(record_id)
     return None

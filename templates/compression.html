@@ -1,0 +1,987 @@
+{% extends "base.html" %}
+
+{% block title %}Uniaxial Compression Test (ASTM E9) — MAT-VLAB{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Breadcrumb Navigation -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+      <li class="breadcrumb-item"><a href="{{ url_for('experiments') }}" class="text-decoration-none">Experiments</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Compression Test</li>
+    </ol>
+  </nav>
+
+  <!-- Experiment Header Card (Unified Cool Green Header) -->
+  <div class="experiment-header-card lab-card p-4 p-md-5 mb-4 border border-secondary border-opacity-25 shadow-sm position-relative overflow-hidden">
+    <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+      <span class="badge bg-success bg-opacity-25 text-dark fw-bold border border-success border-opacity-50 px-2 py-1">
+        <i class="fas fa-compress-arrows-alt me-1 text-success"></i> Uniaxial Compressive Deformation
+      </span>
+      <span class="badge bg-secondary bg-opacity-10 text-dark border border-secondary border-opacity-25 px-2 py-1">
+        <i class="fas fa-certificate me-1 text-success"></i> ASTM E9 / ISO 13314 / IS 14329
+      </span>
+      <span class="badge bg-success bg-opacity-15 text-success border border-success border-opacity-25 px-2 py-1">
+        <i class="fas fa-check-circle me-1"></i> Active Virtual Laboratory
+      </span>
+    </div>
+
+    <h1 class="fw-bold text-navy fs-1 mb-2">Uniaxial Compression Test</h1>
+    <p class="text-secondary fs-6 mb-3" style="max-width: 860px;">
+      Investigate the compressive deformation behavior, compressive modulus ($E_c$), 0.2% offset proof stress ($\sigma_{cy}$), 
+      interfacial friction-induced barreling, and brittle shear fracture characteristics of engineering alloys according to ASTM E9.
+    </p>
+
+    <div class="d-flex flex-wrap gap-2">
+      <a href="#virtual-lab" class="btn btn-sm btn-lab-primary">
+        <i class="fas fa-play me-1"></i> Start Virtual Simulation
+      </a>
+      <a href="#manual-lab" class="btn btn-sm btn-lab-secondary">
+        <i class="fas fa-keyboard me-1"></i> Manual Data Entry
+      </a>
+      <a href="#apparatus" class="btn btn-sm btn-outline-success">
+        <i class="fas fa-eye me-1"></i> Interactive Machine Diagram
+      </a>
+      <a href="#quiz-section" class="btn btn-sm btn-outline-warning text-dark">
+        <i class="fas fa-graduation-cap me-1 text-warning"></i> Take Quiz
+      </a>
+    </div>
+  </div>
+
+  <!-- Sticky In-Page Navigation Bar -->
+  <div class="experiment-nav-sticky lab-card p-2 mb-4 border border-secondary border-opacity-25 bg-light d-flex flex-wrap gap-2 justify-content-between align-items-center shadow-sm">
+    <div class="d-flex flex-wrap gap-1">
+      <a href="#objective" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">1. Objective</a>
+      <a href="#theory" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">2. Theory</a>
+      <a href="#apparatus" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">3. Apparatus</a>
+      <a href="#specimen" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">4. Specimen</a>
+      <a href="#principle" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">5. Principle</a>
+      <a href="#procedure" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">6. Procedure</a>
+      <a href="#virtual-lab" class="btn btn-sm btn-link text-decoration-none text-success fw-bold px-2 py-1">7. Virtual Simulation</a>
+      <a href="#manual-lab" class="btn btn-sm btn-link text-decoration-none text-primary fw-bold px-2 py-1">8. Manual Data</a>
+      <a href="#calculations" class="btn btn-sm btn-link text-decoration-none text-navy fw-semibold px-2 py-1">9. Results</a>
+      <a href="#quiz-section" class="btn btn-sm btn-link text-decoration-none text-warning text-dark fw-semibold px-2 py-1">10. Quiz</a>
+    </div>
+    <span class="badge bg-success bg-opacity-20 text-success font-mono small d-none d-md-inline">ASTM E9 / ISO 13314</span>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 1. OBJECTIVE -->
+  <!-- ========================================== -->
+  <section id="objective" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">01</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Experiment Objective</h3>
+      </div>
+      <p class="text-secondary mb-2 leading-relaxed">
+        1. To determine the <strong>compressive stress-strain curve</strong>, compressive modulus of elasticity ($E_c$), and <strong>0.2% offset compressive yield strength ($\sigma_{cy}$)</strong> for ductile metallic alloys (Mild Steel, Aluminium 6061-T6, Brass, Copper) and the <strong>Ultimate Compressive Strength ($\sigma_{cu}$)</strong> for brittle metals (Grey Cast Iron) under controlled axial loading according to <strong>ASTM E9</strong>.
+      </p>
+      <p class="text-secondary mb-0 leading-relaxed">
+        2. To observe and quantify interfacial frictional constraint effects (<strong>specimen barreling index $B$</strong>), evaluate slenderness ratio ($h_0 / d_0$) constraints to prevent column buckling, and analyze brittle shear failure modes along ~45&deg; maximum shear planes (Coulomb-Mohr fracture criterion).
+      </p>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 2. THEORY -->
+  <!-- ========================================== -->
+  <section id="theory" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">02</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Theory &amp; Constitutive Mechanics</h3>
+      </div>
+
+      <div class="row g-4 mb-3">
+        <div class="col-lg-6">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 h-100">
+            <h5 class="fw-bold text-navy mb-2"><i class="fas fa-drum-steelpan text-success me-2"></i>Platen Friction &amp; Specimen Barreling</h5>
+            <p class="text-secondary small leading-relaxed mb-0">
+              During uniaxial compression, as the specimen shortens axially, Poisson's effect dictates radial expansion. 
+              However, <strong>interfacial friction</strong> between the hardened loading platens and specimen end-faces creates a transverse shearing restraint. 
+              This generates localized triaxial compressive stress cones at the ends, leaving the unconstrained mid-height region to bulge outwards freely. 
+              This geometry is known as <strong>barreling</strong> ($B = (d_{mid} - d_{end}) / d_0$).
+            </p>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25 h-100">
+            <h5 class="fw-bold text-navy mb-2"><i class="fas fa-cubes-stacked text-primary me-2"></i>Ductile Flow vs. Brittle 45&deg; Shear Fracture</h5>
+            <p class="text-secondary small leading-relaxed mb-0">
+              <strong>Ductile metals (Mild Steel, Copper):</strong> Exhibit continuous plastic strain-hardening without discrete necking or fracture, flattening into pancakes as apparent flow stress climbs.<br/>
+              <strong>Brittle metals (Grey Cast Iron):</strong> Because graphite flakes are pressed together in compression rather than opened as crack-tips, compressive strength (~680 MPa) is 3 to 4 times higher than tensile strength (~200 MPa). Failure occurs catastrophically by shear sliding along ~45&deg; planes (Coulomb-Mohr criterion).
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 3. APPARATUS & INTERACTIVE DIAGRAM -->
+  <!-- ========================================== -->
+  <section id="apparatus" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">03</span>
+          <h3 class="fw-bold text-navy fs-4 mb-0">Equipment Apparatus &amp; Sub-Press Schematic</h3>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <label for="comp-component-select" class="small text-secondary fw-semibold mb-0">Select Component:</label>
+          <select id="comp-component-select" class="form-select form-select-sm" style="width: auto;">
+            <option value="upper-platen">Upper Platen (Spherical Seat)</option>
+            <option value="lower-platen">Lower Platen (Reaction Base)</option>
+            <option value="subpress-guide">Sub-Press Guide Assembly</option>
+            <option value="compression-specimen">Cylindrical Specimen (d₀=15mm)</option>
+            <option value="load-cell">Pancake Load Cell (300 kN)</option>
+            <option value="crosshead-drive">Movable Crosshead Drive</option>
+            <option value="deflection-sensor">LVDT Compressometer</option>
+            <option value="machine-frame">High-Stiffness Machine Frame</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row g-4 align-items-start">
+        <div class="col-lg-7">
+          <div class="p-3 bg-white rounded border border-secondary border-opacity-25 shadow-sm text-center" id="compression-svg-container" style="min-height: 480px;">
+            {% include "svg/compression_tester.svg" %}
+          </div>
+          <div class="text-center mt-2 small text-muted">
+            <i class="fas fa-hand-pointer text-success me-1"></i> Click or tap any labeled component on the compression machine schematic above.
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="p-4 bg-white rounded border border-secondary border-opacity-25 shadow-sm h-100" id="comp-component-card">
+            <div class="text-center py-5">
+              <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle bg-light text-success shadow-sm" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                <i class="fas fa-compress-arrows-alt"></i>
+              </div>
+              <h5 class="fw-bold text-navy mb-2">Compression Tooling Inspector</h5>
+              <p class="text-secondary small mb-3">
+                Click any component on the compression test schematic to view its technical specifications, anti-buckling sub-press guidance, and ASTM E9 platen requirements.
+              </p>
+              <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <span class="badge bg-light text-secondary border font-mono small">ASTM E9</span>
+                <span class="badge bg-light text-secondary border font-mono small">Spherical Seat</span>
+                <span class="badge bg-light text-secondary border font-mono small">300 kN Load Cell</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 4. SPECIMEN -->
+  <!-- ========================================== -->
+  <section id="specimen" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">04</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Specimen Geometry &amp; Slenderness Ratio</h3>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25">
+            <div class="fw-bold text-navy mb-1"><i class="fas fa-circle-notch text-success me-1"></i> ASTM E9 Medium Cylinder</div>
+            <div class="font-mono small text-secondary">
+              Diameter $d_0$: 15.0 mm &plusmn; 0.05 mm<br/>
+              Height $h_0$: 30.0 mm &plusmn; 0.10 mm<br/>
+              <strong>Slenderness $h_0 / d_0$: 2.00</strong><br/>
+              Cross-section $A_0$: 176.71 mm&sup2;<br/>
+              Parallelism: Within 0.005 mm
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25">
+            <div class="fw-bold text-navy mb-1"><i class="fas fa-circle-notch text-primary me-1"></i> Short Cylinder (Bearing Alloys)</div>
+            <div class="font-mono small text-secondary">
+              Diameter $d_0$: 15.0 mm &plusmn; 0.05 mm<br/>
+              Height $h_0$: 15.0 mm &plusmn; 0.10 mm<br/>
+              <strong>Slenderness $h_0 / d_0$: 1.00</strong><br/>
+              Cross-section $A_0$: 176.71 mm&sup2;<br/>
+              Used for high plastic bearing limits
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-light rounded border border-secondary border-opacity-25">
+            <div class="fw-bold text-navy mb-1"><i class="fas fa-circle-notch text-warning me-1"></i> Compact Cylinder (General Tooling)</div>
+            <div class="font-mono small text-secondary">
+              Diameter $d_0$: 10.0 mm &plusmn; 0.05 mm<br/>
+              Height $h_0$: 20.0 mm &plusmn; 0.10 mm<br/>
+              <strong>Slenderness $h_0 / d_0$: 2.00</strong><br/>
+              Cross-section $A_0$: 78.54 mm&sup2;<br/>
+              Low machine load requirement
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 5. PRINCIPLE & FORMULAS -->
+  <!-- ========================================== -->
+  <section id="principle" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">05</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Governing Mathematical Equations</h3>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="formula-card-cool p-3 bg-white rounded border border-success border-opacity-25 shadow-sm h-100">
+            <div class="text-secondary small fw-bold mb-1">1. Compressive Stress ($\sigma_c$)</div>
+            <div class="fs-5 fw-bold text-navy font-mono mb-2">\(\sigma_c = \frac{F}{A_0}\)</div>
+            <p class="text-secondary small mb-0">
+              Axial force $F$ divided by original cross-sectional area $A_0 = \pi d_0^2 / 4$. Expressed in MPa ($\text{N/mm}^2$).
+            </p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="formula-card-cool p-3 bg-white rounded border border-success border-opacity-25 shadow-sm h-100">
+            <div class="text-secondary small fw-bold mb-1">2. Compressive Strain ($\varepsilon_c$)</div>
+            <div class="fs-5 fw-bold text-navy font-mono mb-2">\(\varepsilon_c = \frac{\Delta h}{h_0} = \frac{h_0 - h}{h_0}\)</div>
+            <p class="text-secondary small mb-0">
+              Reduction in specimen height divided by original height. Dimensionless or expressed in percentage (%).
+            </p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="formula-card-cool p-3 bg-white rounded border border-success border-opacity-25 shadow-sm h-100">
+            <div class="text-secondary small fw-bold mb-1">3. Compressive Modulus ($E_c$)</div>
+            <div class="fs-5 fw-bold text-navy font-mono mb-2">\(E_c = \frac{\Delta \sigma_c}{\Delta \varepsilon_c}\)</div>
+            <p class="text-secondary small mb-0">
+              Linear slope of initial elastic regime determined via least-squares linear regression (GPa).
+            </p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="formula-card-cool p-3 bg-white rounded border border-success border-opacity-25 shadow-sm h-100">
+            <div class="text-secondary small fw-bold mb-1">4. Barreling Index ($B$)</div>
+            <div class="fs-5 fw-bold text-navy font-mono mb-2">\(B = \frac{d_{mid} - d_{end}}{d_0}\)</div>
+            <p class="text-secondary small mb-0">
+              Measures severity of interfacial friction between platens and specimen ends.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 6. PROCEDURE (SOP CHECKLIST) -->
+  <!-- ========================================== -->
+  <section id="procedure" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">06</span>
+        <h3 class="fw-bold text-navy fs-4 mb-0">Standard Operating Procedure (ASTM E9 SOP)</h3>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="d-flex gap-3 align-items-start">
+            <div class="badge bg-success text-white rounded-circle p-2" style="width: 28px; height: 28px;">1</div>
+            <div>
+              <div class="fw-bold text-navy small">Specimen Dimension Metrology:</div>
+              <div class="text-secondary small">Measure $d_0$ at three heights with an optical micrometer; verify end-face flatness and parallelism ($&lt;0.005\text{ mm}$).</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="d-flex gap-3 align-items-start">
+            <div class="badge bg-success text-white rounded-circle p-2" style="width: 28px; height: 28px;">2</div>
+            <div>
+              <div class="fw-bold text-navy small">Platen Lubrication &amp; Centering:</div>
+              <div class="text-secondary small">Apply thin PTFE film or molybdenum grease to platens. Position specimen strictly concentric with lower platen centering rings.</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="d-flex gap-3 align-items-start">
+            <div class="badge bg-success text-white rounded-circle p-2" style="width: 28px; height: 28px;">3</div>
+            <div>
+              <div class="fw-bold text-navy small">Spherical Seat Self-Alignment:</div>
+              <div class="text-secondary small">Apply minor seating preload (50–100 N) to allow the spherical seat to swivel into 100% planar contact, then zero LVDT deflectometer.</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="d-flex gap-3 align-items-start">
+            <div class="badge bg-success text-white rounded-circle p-2" style="width: 28px; height: 28px;">4</div>
+            <div>
+              <div class="fw-bold text-navy small">Constant Strain-Rate Loading:</div>
+              <div class="text-secondary small">Drive crosshead at $0.005\text{ mm/mm/min}$ in elastic range until fracture (cast iron) or prescribed plastic strain (steel/aluminium).</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 7. VIRTUAL SIMULATION STUDIO -->
+  <!-- ========================================== -->
+  <section id="virtual-lab" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">07</span>
+          <h3 class="fw-bold text-navy fs-4 mb-0">Virtual Compression Simulation Studio</h3>
+        </div>
+        <span class="badge bg-warning bg-opacity-25 text-dark border border-warning font-mono">
+          <i class="fas fa-atom me-1"></i> SIMULATION / DEMO DATA
+        </span>
+      </div>
+
+      <!-- Controls Row -->
+      <div class="row g-3 p-3 bg-light rounded border border-secondary border-opacity-25 mb-4 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label small fw-bold text-secondary">Material Alloy:</label>
+          <select id="sim-material" class="form-select form-select-sm">
+            <option value="grey-cast-iron" selected>Grey Cast Iron (FG 200 - Brittle 45° Shear)</option>
+            <option value="mild-steel">Mild Steel (AISI 1018 - Ductile Barreling)</option>
+            <option value="aluminium-6061-t6">Aluminium Alloy (6061-T6)</option>
+            <option value="cartridge-brass">Cartridge Brass (70Cu-30Zn)</option>
+            <option value="pure-copper">Electrolytic Copper (C11000)</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small fw-bold text-secondary">Diameter $d_0$ (mm):</label>
+          <input type="number" id="sim-d0" class="form-control form-control-sm" value="15.0" step="0.5" min="5" max="30">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small fw-bold text-secondary">Height $h_0$ (mm):</label>
+          <input type="number" id="sim-h0" class="form-control form-control-sm" value="30.0" step="1.0" min="10" max="60">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small fw-bold text-secondary">Slenderness $h_0/d_0$:</label>
+          <div class="form-control form-control-sm bg-white font-mono fw-bold text-success" id="sim-slenderness-val">2.00</div>
+        </div>
+
+        <div class="col-md-3 d-flex gap-2">
+          <button type="button" id="btn-run-simulation" class="btn btn-sm btn-lab-primary flex-grow-1">
+            <i class="fas fa-play me-1"></i> Apply Compression
+          </button>
+          <button type="button" id="btn-save-simulation" class="btn btn-sm btn-outline-success" disabled title="Save simulation to laboratory record">
+            <i class="fas fa-save"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Telemetry & Compressive Curve -->
+      <div class="row g-4 align-items-stretch">
+        <div class="col-lg-5">
+          <div class="p-3 bg-white rounded border border-secondary border-opacity-25 shadow-sm h-100">
+            <h6 class="fw-bold text-navy mb-3"><i class="fas fa-tachometer-alt text-success me-2"></i>Real-Time Platen Telemetry</h6>
+            <div class="table-responsive mb-3" style="max-height: 280px; overflow-y: auto;">
+              <table class="table table-sm table-bordered align-middle small mb-0" id="sim-readings-table">
+                <thead class="table-light sticky-top">
+                  <tr>
+                    <th>Pt</th>
+                    <th>Load (kN)</th>
+                    <th>&Delta;h (mm)</th>
+                    <th>Stress (MPa)</th>
+                    <th>Strain %</th>
+                  </tr>
+                </thead>
+                <tbody id="sim-readings-body">
+                  <tr>
+                    <td colspan="5" class="text-center text-muted py-3">Click "Apply Compression" to start test</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Summary Box -->
+            <div class="p-3 bg-light rounded border border-secondary border-opacity-25" id="sim-summary-box" style="display: none;">
+              <div class="row g-2 text-center">
+                <div class="col-6">
+                  <div class="small text-muted">Elastic Modulus ($E_c$):</div>
+                  <div class="fs-5 fw-bold text-success font-mono" id="sim-ec-val">0.0 GPa</div>
+                </div>
+                <div class="col-6">
+                  <div class="small text-muted" id="sim-strength-label">Peak Stress:</div>
+                  <div class="fs-5 fw-bold text-navy font-mono" id="sim-strength-val">0.0 MPa</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="p-3 bg-white rounded border border-secondary border-opacity-25 shadow-sm h-100">
+            <h6 class="fw-bold text-navy mb-2"><i class="fas fa-chart-line text-success me-2"></i>Compressive Stress-Strain Curve (&sigma;_c vs. &epsilon;_c)</h6>
+            <div id="compression-curve-plot" style="width: 100%; height: 320px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 8. MANUAL LABORATORY DATA ENTRY -->
+  <!-- ========================================== -->
+  <section id="manual-lab" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-primary bg-opacity-20 text-primary fw-bold font-mono">08</span>
+          <h3 class="fw-bold text-navy fs-4 mb-0">Manual Laboratory Reading Entry</h3>
+        </div>
+        <span class="badge bg-info bg-opacity-25 text-dark border border-info font-mono">
+          <i class="fas fa-keyboard me-1"></i> USER-ENTERED LABORATORY DATA
+        </span>
+      </div>
+
+      <p class="text-secondary small mb-3">
+        Enter physical compression testing machine readings recorded from sub-press platens and LVDT sensors according to ASTM E9.
+      </p>
+
+      <form id="manual-comp-form">
+        <div class="row g-3 mb-3">
+          <div class="col-md-3">
+            <label class="form-label small fw-bold text-secondary">Specimen Material:</label>
+            <input type="text" id="man-material" class="form-control form-control-sm" value="Mild Steel Specimen" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small fw-bold text-secondary">Diameter $d_0$ (mm):</label>
+            <input type="number" id="man-d0" class="form-control form-control-sm" value="15.0" step="0.1" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small fw-bold text-secondary">Height $h_0$ (mm):</label>
+            <input type="number" id="man-h0" class="form-control form-control-sm" value="30.0" step="0.1" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label small fw-bold text-secondary">Final Height $h$ (mm) [Optional]:</label>
+            <input type="number" id="man-final-h" class="form-control form-control-sm" placeholder="e.g. 22.5" step="0.1">
+          </div>
+        </div>
+
+        <div class="table-responsive mb-3" style="max-height: 320px; overflow-y: auto;">
+          <table class="table table-sm table-bordered align-middle small" id="man-readings-table">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th style="width: 70px;">Pt #</th>
+                <th>Applied Load $F$ (kN)</th>
+                <th>Axial Contraction $\Delta h$ (mm)</th>
+                <th style="width: 50px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="man-readings-body">
+              <tr><td class="text-center fw-bold">1</td><td><input type="number" class="form-control form-control-sm man-f-input" value="10.5" step="0.1" required></td><td><input type="number" class="form-control form-control-sm man-dh-input" value="0.045" step="0.001" required></td><td class="text-center">—</td></tr>
+              <tr><td class="text-center fw-bold">2</td><td><input type="number" class="form-control form-control-sm man-f-input" value="25.0" step="0.1" required></td><td><input type="number" class="form-control form-control-sm man-dh-input" value="0.108" step="0.001" required></td><td class="text-center">—</td></tr>
+              <tr><td class="text-center fw-bold">3</td><td><input type="number" class="form-control form-control-sm man-f-input" value="45.0" step="0.1" required></td><td><input type="number" class="form-control form-control-sm man-dh-input" value="0.195" step="0.001" required></td><td class="text-center">—</td></tr>
+              <tr><td class="text-center fw-bold">4</td><td><input type="number" class="form-control form-control-sm man-f-input" value="65.0" step="0.1" required></td><td><input type="number" class="form-control form-control-sm man-dh-input" value="0.450" step="0.001" required></td><td class="text-center">—</td></tr>
+              <tr><td class="text-center fw-bold">5</td><td><input type="number" class="form-control form-control-sm man-f-input" value="95.0" step="0.1" required></td><td><input type="number" class="form-control form-control-sm man-dh-input" value="1.500" step="0.001" required></td><td class="text-center">—</td></tr>
+              <tr><td class="text-center fw-bold">6</td><td><input type="number" class="form-control form-control-sm man-f-input" value="130.0" step="0.1" required></td><td><input type="number" class="form-control form-control-sm man-dh-input" value="3.200" step="0.001" required></td><td class="text-center">—</td></tr>
+              <tr><td class="text-center fw-bold">7</td><td><input type="number" class="form-control form-control-sm man-f-input" value="160.0" step="0.1" required></td><td><input type="number" class="form-control form-control-sm man-dh-input" value="5.500" step="0.001" required></td><td class="text-center">—</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-add-comp-row">
+            <i class="fas fa-plus me-1"></i> Add Data Point
+          </button>
+          <button type="submit" class="btn btn-sm btn-lab-primary" id="btn-calc-comp">
+            <i class="fas fa-calculator me-1"></i> Analyze Compression Data
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 9. CALCULATIONS & RESULTS -->
+  <!-- ========================================== -->
+  <section id="calculations" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-success bg-opacity-20 text-success fw-bold font-mono">09</span>
+          <h3 class="fw-bold text-navy fs-4 mb-0">Calculated Results &amp; Assessment</h3>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-success" id="btn-download-pdf-report" disabled>
+            <i class="fas fa-file-pdf me-1"></i> Generate Certified PDF Report
+          </button>
+        </div>
+      </div>
+
+      <div id="results-display-area" class="p-4 bg-light rounded border border-secondary border-opacity-25 text-center text-muted">
+        <i class="fas fa-info-circle me-1 text-success"></i> Run a simulation or submit manual laboratory readings to view comprehensive calculations and download the certified report.
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================== -->
+  <!-- 10. QUIZ -->
+  <!-- ========================================== -->
+  <section id="quiz-section" class="experiment-section mb-4">
+    <div class="lab-card p-4 border border-secondary border-opacity-25 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-warning bg-opacity-25 text-dark fw-bold font-mono">10</span>
+          <h3 class="fw-bold text-navy fs-4 mb-0">Compression Testing Mastery Quiz</h3>
+        </div>
+        <span class="badge bg-light text-muted border font-mono small">10 Questions</span>
+      </div>
+
+      <div id="quiz-container">
+        {% if questions %}
+          {% for q in questions %}
+          <div class="quiz-card p-3 mb-3 bg-white rounded border border-secondary border-opacity-25 shadow-sm" data-qid="{{ q.id }}">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="badge bg-light text-secondary border font-mono small">Question {{ loop.index }} of {{ questions|length }}</span>
+              <span class="badge bg-secondary bg-opacity-10 text-secondary small">{{ q.difficulty }}</span>
+            </div>
+            <h6 class="fw-bold text-navy mb-3">{{ q.question }}</h6>
+            <div class="d-flex flex-column gap-2">
+              <label class="quiz-option p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 cursor-pointer">
+                <input type="radio" name="q_{{ q.id }}" value="A"> <span><strong>A.</strong> {{ q.option_a }}</span>
+              </label>
+              <label class="quiz-option p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 cursor-pointer">
+                <input type="radio" name="q_{{ q.id }}" value="B"> <span><strong>B.</strong> {{ q.option_b }}</span>
+              </label>
+              <label class="quiz-option p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 cursor-pointer">
+                <input type="radio" name="q_{{ q.id }}" value="C"> <span><strong>C.</strong> {{ q.option_c }}</span>
+              </label>
+              <label class="quiz-option p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 cursor-pointer">
+                <input type="radio" name="q_{{ q.id }}" value="D"> <span><strong>D.</strong> {{ q.option_d }}</span>
+              </label>
+            </div>
+            <div class="quiz-feedback mt-2 p-2 rounded small d-none"></div>
+          </div>
+          {% endfor %}
+          <div class="text-end">
+            <button type="button" id="btn-submit-quiz" class="btn btn-sm btn-warning text-dark fw-bold">
+              <i class="fas fa-check-circle me-1"></i> Submit Quiz &amp; Grade
+            </button>
+          </div>
+        {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="fas fa-graduation-cap fs-2 mb-2 text-warning"></i>
+            <p class="mb-0">Quiz questions are currently being loaded from the database.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Plotly.js for Stress-Strain curve rendering -->
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  let latestExperimentData = null;
+
+  // Slenderness Calculation Sync
+  const simD0 = document.getElementById('sim-d0');
+  const simH0 = document.getElementById('sim-h0');
+  const slendernessVal = document.getElementById('sim-slenderness-val');
+
+  function updateSlenderness() {
+    const d = parseFloat(simD0.value) || 15.0;
+    const h = parseFloat(simH0.value) || 30.0;
+    slendernessVal.textContent = (h / d).toFixed(2);
+  }
+  if (simD0 && simH0) {
+    simD0.addEventListener('input', updateSlenderness);
+    simH0.addEventListener('input', updateSlenderness);
+  }
+
+  // Bind Dropdown to Diagram Inspector
+  const compSelect = document.getElementById('comp-component-select');
+  if (compSelect) {
+    compSelect.addEventListener('change', function(e) {
+      const container = document.getElementById('compression-svg-container');
+      const svg = container ? container.querySelector('svg') : null;
+      if (window.MatVLabDiagram) {
+        window.MatVLabDiagram.selectPart('compression', e.target.value, svg, 'comp-component-card');
+      }
+    });
+  }
+
+  // Run Simulation
+  const btnRun = document.getElementById('btn-run-simulation');
+  if (btnRun) {
+    btnRun.addEventListener('click', function() {
+      btnRun.disabled = true;
+      btnRun.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Compressing Specimen...';
+
+      const payload = {
+        material_slug: document.getElementById('sim-material').value,
+        diameter_mm: parseFloat(simD0.value) || 15.0,
+        height_mm: parseFloat(simH0.value) || 30.0,
+        num_points: 35
+      };
+
+      fetch('/api/compression/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        btnRun.disabled = false;
+        btnRun.innerHTML = '<i class="fas fa-play me-1"></i> Apply Compression';
+        if (data.success && data.data) {
+          renderSimulationResults(data.data, 'SIMULATION / DEMONSTRATION DATA');
+        } else {
+          alert('Simulation error: ' + (data.error || 'Failed to simulate'));
+        }
+      })
+      .catch(err => {
+        btnRun.disabled = false;
+        btnRun.innerHTML = '<i class="fas fa-play me-1"></i> Apply Compression';
+        console.error(err);
+        alert('Network communication error during simulation.');
+      });
+    });
+  }
+
+  // Render Simulation Results & Stress-Strain Curve
+  function renderSimulationResults(data, origin) {
+    latestExperimentData = data;
+    latestExperimentData.data_origin = origin;
+    latestExperimentData.mode = (origin.includes('SIMULATION') ? 'VIRTUAL_SIMULATION' : 'MANUAL_ENTRY');
+
+    // 1. Populate readings table
+    const tbody = document.getElementById('sim-readings-body');
+    if (tbody && data.readings) {
+      tbody.innerHTML = '';
+      data.readings.forEach(r => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="fw-bold">${r.reading_number}</td>
+          <td>${r.load_kn.toFixed(2)}</td>
+          <td>${r.delta_h_mm.toFixed(3)}</td>
+          <td class="fw-bold text-success">${r.stress_mpa.toFixed(1)}</td>
+          <td>${r.strain_pct.toFixed(2)}%</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // 2. Summary box
+    const sBox = document.getElementById('sim-summary-box');
+    if (sBox) {
+      sBox.style.display = 'block';
+      document.getElementById('sim-ec-val').textContent = (data.summary.elastic_modulus_gpa ? data.summary.elastic_modulus_gpa.toFixed(1) : 'N/A') + ' GPa';
+      document.getElementById('sim-strength-label').textContent = data.summary.strength_metric_name || 'Peak Stress:';
+      document.getElementById('sim-strength-val').textContent = data.summary.max_stress_mpa.toFixed(1) + ' MPa';
+    }
+
+    // 3. Render Stress-Strain Plot via Plotly
+    if (data.readings && document.getElementById('compression-curve-plot')) {
+      const strains = data.readings.map(r => r.strain_pct);
+      const stresses = data.readings.map(r => r.stress_mpa);
+
+      const traceCurve = {
+        x: strains,
+        y: stresses,
+        mode: 'lines+markers',
+        name: 'σ_c vs. ε_c',
+        line: { color: '#1b6b50', width: 3 },
+        marker: { color: '#0f3d2e', size: 5 }
+      };
+
+      const traces = [traceCurve];
+
+      // Add 0.2% offset line if available
+      if (data.summary.elastic_modulus_gpa && data.summary.compressive_yield_mpa) {
+        const ec = data.summary.elastic_modulus_gpa;
+        const yld = data.summary.compressive_yield_mpa;
+        const offsetPct = 0.2;
+        const xOffsetEnd = offsetPct + (yld * 1.3) / (ec * 10.0);
+        traces.push({
+          x: [offsetPct, xOffsetEnd],
+          y: [0, yld * 1.3],
+          mode: 'lines',
+          name: '0.2% Proof Line',
+          line: { color: '#e11d48', width: 1.5, dash: 'dash' }
+        });
+        traces.push({
+          x: [offsetPct + yld / (ec * 10.0)],
+          y: [yld],
+          mode: 'markers',
+          name: `σ_cy = ${yld.toFixed(0)} MPa`,
+          marker: { color: '#e11d48', size: 10, symbol: 'star' }
+        });
+      }
+
+      const layout = {
+        title: { text: `${data.material_name} — Compressive Stress-Strain Curve`, font: { size: 12, color: '#0f3d2e' } },
+        xaxis: { title: 'Compressive Strain ε_c (%)', gridcolor: '#e8f5ef' },
+        yaxis: { title: 'Compressive Stress σ_c (MPa)', gridcolor: '#e8f5ef' },
+        margin: { l: 55, r: 20, t: 35, b: 40 },
+        plot_bgcolor: '#f5f9f6',
+        paper_bgcolor: '#ffffff',
+        legend: { orientation: 'h', y: -0.2 }
+      };
+
+      Plotly.newPlot('compression-curve-plot', traces, layout, { responsive: true, displayModeBar: false });
+    }
+
+    // 4. Update Calculations & Results Section
+    renderResultsSection(data);
+
+    // 5. Enable Buttons
+    document.getElementById('btn-save-simulation').disabled = false;
+    document.getElementById('btn-download-pdf-report').disabled = false;
+  }
+
+  // Render Calculations & Results Card
+  function renderResultsSection(data) {
+    const area = document.getElementById('results-display-area');
+    if (!area) return;
+
+    area.className = 'p-4 bg-white rounded border border-secondary border-opacity-25 shadow-sm text-start';
+    area.innerHTML = `
+      <div class="row g-4 mb-3">
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded text-center border">
+            <div class="small text-muted mb-1">Elastic Modulus ($E_c$)</div>
+            <div class="fs-4 fw-bold text-success font-mono">${data.summary.elastic_modulus_gpa ? data.summary.elastic_modulus_gpa.toFixed(1) : 'N/A'} GPa</div>
+            <div class="small text-muted">Linear Elastic Slope</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded text-center border">
+            <div class="small text-muted mb-1">0.2% Proof Stress ($\sigma_{cy}$)</div>
+            <div class="fs-4 fw-bold text-navy font-mono">${data.summary.compressive_yield_mpa ? data.summary.compressive_yield_mpa.toFixed(1) : 'N/A'} MPa</div>
+            <div class="small text-muted">ASTM E9 0.002 Offset</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded text-center border">
+            <div class="small text-muted mb-1">Max / Fracture Stress</div>
+            <div class="fs-4 fw-bold text-dark font-mono">${data.summary.max_stress_mpa.toFixed(1)} MPa</div>
+            <div class="small text-muted">Max Load: ${data.summary.max_load_kn.toFixed(1)} kN</div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3 bg-light rounded text-center border">
+            <div class="small text-muted mb-1">Barreling Index ($B$)</div>
+            <div class="fs-4 fw-bold text-navy font-mono">${data.summary.barreling_index.toFixed(3)}</div>
+            <div class="small text-muted">${data.summary.behavior_mode.split(' ')[0]}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 bg-light rounded border border-secondary border-opacity-25 mb-3 small">
+        <div class="fw-bold text-navy mb-1"><i class="fas fa-check-circle text-success me-1"></i> Algorithmic Metallurgical Assessment:</div>
+        <p class="mb-0 text-secondary leading-relaxed">${data.conclusion}</p>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+        <span class="badge bg-light text-secondary border font-mono small">${data.data_origin || 'LABORATORY DATA'}</span>
+        <button type="button" class="btn btn-sm btn-success" id="btn-results-pdf">
+          <i class="fas fa-file-pdf me-1"></i> Download Certified PDF Laboratory Report
+        </button>
+      </div>
+    `;
+
+    document.getElementById('btn-results-pdf').addEventListener('click', generatePdfReport);
+  }
+
+  // Save Simulation
+  document.getElementById('btn-save-simulation').addEventListener('click', function() {
+    if (!latestExperimentData) return;
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+    const payload = {
+      title: `Compression Test — ${latestExperimentData.material_name}`,
+      experiment_type: 'compression',
+      material_name: latestExperimentData.material_name,
+      mode: latestExperimentData.mode,
+      original_diameter: latestExperimentData.specimen.original_diameter_mm,
+      original_gauge_length: latestExperimentData.specimen.original_height_mm,
+      final_gauge_length: latestExperimentData.specimen.final_height_mm,
+      readings: latestExperimentData.readings.map(r => ({
+        load_n: r.load_kn * 1000.0,
+        extension_mm: r.delta_h_mm,
+        stress_mpa: r.stress_mpa,
+        strain: r.strain
+      })),
+      results: {
+        cross_sectional_area: latestExperimentData.specimen.original_area_mm2,
+        youngs_modulus_gpa: latestExperimentData.summary.elastic_modulus_gpa,
+        yield_strength_mpa: latestExperimentData.summary.compressive_yield_mpa,
+        uts_mpa: latestExperimentData.summary.max_stress_mpa,
+        max_load_n: latestExperimentData.summary.max_load_kn * 1000.0,
+        elongation_pct: latestExperimentData.summary.final_strain_pct,
+        conclusion: latestExperimentData.conclusion
+      }
+    };
+
+    fetch('/api/compression/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(res => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save me-1"></i> Saved to Records';
+      if (res.success) {
+        alert('Compression experiment saved successfully! (Record #' + res.experiment_id + ')');
+        latestExperimentData.id = res.experiment_id;
+      } else {
+        alert('Error saving: ' + res.error);
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save"></i>';
+      alert('Network error saving experiment');
+    });
+  });
+
+  // Manual Form Submission
+  const manForm = document.getElementById('manual-comp-form');
+  if (manForm) {
+    manForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const readings = [];
+      const rows = document.querySelectorAll('#man-readings-body tr');
+      rows.forEach(tr => {
+        const f = parseFloat(tr.querySelector('.man-f-input').value);
+        const dh = parseFloat(tr.querySelector('.man-dh-input').value);
+        if (!isNaN(f) && !isNaN(dh) && f >= 0 && dh >= 0) {
+          readings.push({ load_kn: f, delta_h_mm: dh });
+        }
+      });
+
+      if (readings.length < 2) {
+        alert('Please enter at least 2 valid load and deformation readings.');
+        return;
+      }
+
+      const payload = {
+        material_name: document.getElementById('man-material').value,
+        original_diameter_mm: parseFloat(document.getElementById('man-d0').value) || 15.0,
+        original_height_mm: parseFloat(document.getElementById('man-h0').value) || 30.0,
+        final_height_mm: parseFloat(document.getElementById('man-final-h').value) || null,
+        readings: readings
+      };
+
+      fetch('/api/compression/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.result) {
+          const fullData = {
+            material_name: payload.material_name,
+            specimen: data.result.specimen,
+            summary: data.result.summary,
+            readings: data.result.computed_readings,
+            formulas: data.result.formulas,
+            conclusion: data.result.conclusion
+          };
+          renderSimulationResults(fullData, 'USER-ENTERED LABORATORY DATA');
+          document.getElementById('calculations').scrollIntoView({ behavior: 'smooth' });
+        } else {
+          alert('Error: ' + (data.error || 'Failed to analyze compression data'));
+        }
+      })
+      .catch(err => alert('Network error communicating with calculation engine.'));
+    });
+  }
+
+  // Add Manual Row
+  document.getElementById('btn-add-comp-row').addEventListener('click', function() {
+    const tbody = document.getElementById('man-readings-body');
+    const newIdx = tbody.querySelectorAll('tr').length + 1;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="text-center fw-bold">${newIdx}</td>
+      <td><input type="number" class="form-control form-control-sm man-f-input" placeholder="e.g. 180.0" step="0.1" required></td>
+      <td><input type="number" class="form-control form-control-sm man-dh-input" placeholder="e.g. 6.8" step="0.001" required></td>
+      <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="this.closest('tr').remove()">&times;</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // PDF Generator Trigger
+  function generatePdfReport() {
+    if (!latestExperimentData) return;
+    fetch('/api/compression/generate-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(latestExperimentData)
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('PDF Generation failed');
+      return res.blob();
+    })
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `MAT_VLAB_Compression_Report_${(latestExperimentData.material_name || 'Specimen').replace(/ /g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    })
+    .catch(err => alert('Could not generate PDF: ' + err.message));
+  }
+
+  document.getElementById('btn-download-pdf-report').addEventListener('click', generatePdfReport);
+
+  // Quiz Grading Engine
+  const btnQuiz = document.getElementById('btn-submit-quiz');
+  if (btnQuiz) {
+    btnQuiz.addEventListener('click', function() {
+      const cards = document.querySelectorAll('#quiz-container .quiz-card');
+      let answered = 0;
+      cards.forEach(card => {
+        const qid = card.getAttribute('data-qid');
+        const selected = card.querySelector(`input[name="q_${qid}"]:checked`);
+        if (selected) {
+          answered++;
+          selected.closest('label').classList.add('border-primary');
+        }
+      });
+
+      fetch('/api/quiz/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          experiment_type: 'compression',
+          score: answered,
+          total_questions: cards.length
+        })
+      })
+      .then(r => r.json())
+      .then(res => {
+        alert(`Quiz Submitted! You answered ${answered} of ${cards.length} questions.`);
+      });
+    });
+  }
+});
+</script>
+{% endblock %}
