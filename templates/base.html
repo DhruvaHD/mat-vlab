@@ -57,62 +57,16 @@
 
       <div class="collapse navbar-collapse" id="navbarMain">
         <!-- Main Laboratory Navigation: Clean & Directly Accessible -->
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item">
             <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('index') }}">
               <i class="fas fa-home me-1"></i> Home
             </a>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle {% if active_page in ['experiments', 'tensile', 'hardness', 'brinell', 'rockwell', 'hardness_compare', 'impact', 'compression'] %}active{% endif %}" href="#" id="experimentsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <li class="nav-item">
+            <a class="nav-link {% if active_page in ['experiments', 'tensile', 'hardness', 'brinell', 'rockwell', 'hardness_compare', 'impact', 'compression'] %}active{% endif %}" href="{{ url_for('experiments') }}">
               <i class="fas fa-flask me-1"></i> Explore Experiments
             </a>
-            <ul class="dropdown-menu dropdown-menu-matvlab shadow-sm border" aria-labelledby="experimentsDropdown">
-              <li>
-                <a class="dropdown-item py-2 fw-semibold" href="{{ url_for('experiments') }}">
-                  <i class="fas fa-th-large text-primary me-2"></i> All Experiments Catalog
-                </a>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li class="dropdown-header text-uppercase small fw-bold text-muted">Mechanical Testing Labs</li>
-              <li>
-                <a class="dropdown-item py-2" href="{{ url_for('tensile_hub') }}">
-                  <i class="fas fa-compress-arrows-alt text-steel me-2"></i> Tensile Test (UTM ASTM E8)
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item py-2" href="{{ url_for('compression_test') }}">
-                  <i class="fas fa-arrows-alt-v text-success me-2"></i> Compression Test (ASTM E9)
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item py-2" href="{{ url_for('impact_test') }}">
-                  <i class="fas fa-hammer text-danger me-2"></i> Impact Test (ASTM E23 / ISO 148)
-                </a>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li class="dropdown-header text-uppercase small fw-bold text-muted">Hardness Testing</li>
-              <li>
-                <a class="dropdown-item py-2" href="{{ url_for('hardness_hub') }}">
-                  <i class="fas fa-bullseye text-warning me-2"></i> Hardness Hub &amp; Method Selector
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item py-2 ps-4" href="{{ url_for('hardness_brinell') }}">
-                  <i class="fas fa-circle text-primary me-2"></i> Brinell Hardness Test (ASTM E10)
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item py-2 ps-4" href="{{ url_for('hardness_rockwell') }}">
-                  <i class="fas fa-gem text-danger me-2"></i> Rockwell Hardness Test (ASTM E18)
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item py-2 ps-4" href="{{ url_for('hardness_compare') }}">
-                  <i class="fas fa-balance-scale text-success me-2"></i> Comparison &amp; ASTM E140 Conversion
-                </a>
-              </li>
-            </ul>
           </li>
           <li class="nav-item">
             <a class="nav-link {% if active_page == 'materials' %}active{% endif %}" href="{{ url_for('materials') }}">
@@ -140,13 +94,6 @@
             </a>
           </li>
         </ul>
-
-        <!-- Right Quick Action: Direct Experiment Launcher -->
-        <div class="d-flex align-items-center flex-wrap gap-2 pt-2 pt-lg-0">
-          <a href="{{ url_for('experiments') }}" class="btn btn-sm btn-lab-primary d-inline-flex align-items-center gap-1 shadow-sm px-3">
-            <i class="fas fa-flask"></i> Explore Experiments
-          </a>
-        </div>
       </div>
     </div>
   </nav>
