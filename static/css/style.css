@@ -252,8 +252,8 @@ img, svg {
    ========================================================================== */
 .hero-section {
   position: relative;
-  padding: 3.5rem 0 3rem 0;
-  background: linear-gradient(180deg, #edf4fa 0%, #f8fafc 100%);
+  padding: 1.25rem 0 2rem 0;
+  background: linear-gradient(180deg, #edf7f2 0%, var(--background) 100%);
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -261,9 +261,9 @@ img, svg {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: #e0f2fe;
-  color: var(--accent-cyan);
-  border: 1px solid #bae6fd;
+  background: var(--light-green);
+  color: var(--secondary-green);
+  border: 1px solid var(--light-green-border);
   padding: 0.35rem 0.9rem;
   border-radius: 9999px;
   font-size: 0.8rem;

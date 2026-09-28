@@ -87,11 +87,15 @@ class TestMATVLabSimplification(unittest.TestCase):
         self.assertNotIn('Start Virtual Lab', html)
         self.assertNotIn('START VIRTUAL LAB', html)
 
-        # 5. Presence of direct experiment cards
-        self.assertIn('Tensile Test (UTM)', html)
-        self.assertIn('Brinell Hardness Test', html)
-        self.assertIn('Rockwell Hardness Test', html)
-        self.assertIn('Explore Experiment', html)
+        # 5. Presence of direct experiment action on Home and direct cards on /experiments
+        self.assertIn('Explore All Experiments', html)
+        exp_res = self.client.get('/experiments')
+        self.assertEqual(exp_res.status_code, 200)
+        exp_html = exp_res.data.decode('utf-8')
+        self.assertIn('Tensile Test (UTM', exp_html)
+        self.assertIn('Brinell Hardness Test', exp_html)
+        self.assertIn('Rockwell Hardness Test', exp_html)
+        self.assertIn('Explore Experiment', exp_html)
 
     def test_experiments_accessible_directly_without_login(self):
         """Verify all core student experiment and learning pages are accessible directly without authentication."""

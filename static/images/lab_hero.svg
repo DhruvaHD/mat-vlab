@@ -1,117 +1,458 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 480" width="100%" height="100%">
   <defs>
-    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0284c7"/>
-      <stop offset="50%" stop-color="#2b6cb0"/>
-      <stop offset="100%" stop-color="#0f2b48"/>
+    <!-- Gradients -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#edf7f2"/>
+      <stop offset="50%" stop-color="#f5f9f6"/>
+      <stop offset="100%" stop-color="#e8f5ef"/>
     </linearGradient>
-    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#f8fafc"/>
+
+    <linearGradient id="primaryGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1b6b50"/>
+      <stop offset="100%" stop-color="#0f3d2e"/>
     </linearGradient>
+
+    <linearGradient id="accentGreenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+
+    <linearGradient id="metalColumn" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#64748b"/>
+      <stop offset="25%" stop-color="#cbd5e1"/>
+      <stop offset="50%" stop-color="#f8fafc"/>
+      <stop offset="75%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+
+    <linearGradient id="specimenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#94a3b8"/>
+      <stop offset="35%" stop-color="#cbd5e1"/>
+      <stop offset="47%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#ef4444"/>
+      <stop offset="53%" stop-color="#f59e0b"/>
+      <stop offset="65%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+
+    <linearGradient id="curveAreaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0.02"/>
+    </linearGradient>
+
+    <linearGradient id="laserGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#34d399" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#059669" stop-opacity="0.8"/>
+    </linearGradient>
+
+    <!-- Drop Shadows & Glows -->
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="114%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f3d2e" flood-opacity="0.08"/>
+    </filter>
+
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
 
-  <rect width="600" height="450" fill="#edf4fa" rx="16" stroke="#cbd5e1" stroke-width="1.5"/>
+  <!-- Canvas Outer Shell -->
+  <rect width="740" height="480" rx="14" fill="url(#bgGrad)" stroke="#b7e4cf" stroke-width="1.5"/>
 
-  <!-- Background Laboratory Grid -->
-  <g stroke="#cbd5e1" stroke-width="1" opacity="0.6">
-    <line x1="0" y1="75" x2="600" y2="75"/>
-    <line x1="0" y1="150" x2="600" y2="150"/>
-    <line x1="0" y1="225" x2="600" y2="225"/>
-    <line x1="0" y1="300" x2="600" y2="300"/>
-    <line x1="0" y1="375" x2="600" y2="375"/>
-    <line x1="100" y1="0" x2="100" y2="450"/>
-    <line x1="200" y1="0" x2="200" y2="450"/>
-    <line x1="300" y1="0" x2="300" y2="450"/>
-    <line x1="400" y1="0" x2="400" y2="450"/>
-    <line x1="500" y1="0" x2="500" y2="450"/>
+  <!-- Blueprint Engineering Grid -->
+  <g stroke="#b7e4cf" stroke-width="0.75" opacity="0.45" stroke-dasharray="2,3">
+    <line x1="0" y1="60" x2="740" y2="60"/>
+    <line x1="0" y1="120" x2="740" y2="120"/>
+    <line x1="0" y1="180" x2="740" y2="180"/>
+    <line x1="0" y1="240" x2="740" y2="240"/>
+    <line x1="0" y1="300" x2="740" y2="300"/>
+    <line x1="0" y1="360" x2="740" y2="360"/>
+    <line x1="0" y1="420" x2="740" y2="420"/>
+    <line x1="60" y1="0" x2="60" y2="480"/>
+    <line x1="130" y1="0" x2="130" y2="480"/>
+    <line x1="200" y1="0" x2="200" y2="480"/>
+    <line x1="270" y1="0" x2="270" y2="480"/>
+    <line x1="340" y1="0" x2="340" y2="480"/>
+    <line x1="410" y1="0" x2="410" y2="480"/>
+    <line x1="480" y1="0" x2="480" y2="480"/>
+    <line x1="550" y1="0" x2="550" y2="480"/>
+    <line x1="620" y1="0" x2="620" y2="480"/>
+    <line x1="690" y1="0" x2="690" y2="480"/>
   </g>
 
-  <!-- Atomic Lattice (FCC unit cell isometric projection) -->
-  <g transform="translate(60, 60)" opacity="0.95">
-    <!-- Lattice cube back edges -->
-    <line x1="60" y1="30" x2="140" y2="30" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3"/>
-    <line x1="140" y1="30" x2="140" y2="110" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3"/>
-    <line x1="60" y1="30" x2="20" y2="70" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <!-- =========================================================================
+       TOP TELEMETRY HEADER STRIP
+       ========================================================================= -->
+  <g transform="translate(20, 16)">
+    <rect width="700" height="38" rx="8" fill="#ffffff" stroke="#b7e4cf" stroke-width="1.2" filter="url(#cardShadow)"/>
+    
+    <!-- Status indicator pulse -->
+    <circle cx="22" cy="19" r="6" fill="#10b981" filter="url(#softGlow)"/>
+    <circle cx="22" cy="19" r="3" fill="#ffffff"/>
+    
+    <!-- Title -->
+    <text x="38" y="23" font-family="'Poppins', system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f3d2e" letter-spacing="0.5">
+      MAT-VLAB MULTI-STATION TELEMETRY ENGINE
+    </text>
 
-    <!-- Lattice cube front edges -->
-    <rect x="20" y="70" width="80" height="80" fill="none" stroke="#2b6cb0" stroke-width="2"/>
-    <line x1="100" y1="70" x2="140" y2="30" stroke="#2b6cb0" stroke-width="2"/>
-    <line x1="100" y1="150" x2="140" y2="110" stroke="#2b6cb0" stroke-width="2"/>
-    <line x1="20" y1="70" x2="60" y2="30" stroke="#2b6cb0" stroke-width="2"/>
-    <line x1="60" y1="30" x2="140" y2="30" stroke="#2b6cb0" stroke-width="2"/>
+    <!-- ASTM Standard Badge -->
+    <rect x="375" y="8" width="95" height="22" rx="4" fill="#e8f5ef" stroke="#b7e4cf"/>
+    <text x="422" y="23" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#1b6b50">
+      ASTM E8 / E9
+    </text>
 
-    <!-- Corner Atoms -->
-    <circle cx="20" cy="70" r="6" fill="#0284c7"/>
-    <circle cx="100" cy="70" r="6" fill="#0284c7"/>
-    <circle cx="20" cy="150" r="6" fill="#0284c7"/>
-    <circle cx="100" cy="150" r="6" fill="#0284c7"/>
-    <circle cx="60" cy="30" r="5" fill="#2b6cb0"/>
-    <circle cx="140" cy="30" r="5" fill="#2b6cb0"/>
-    <circle cx="140" cy="110" r="5" fill="#2b6cb0"/>
+    <!-- Sensor Sample Rate Badge -->
+    <rect x="478" y="8" width="96" height="22" rx="4" fill="#e8f5ef" stroke="#b7e4cf"/>
+    <text x="526" y="23" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="600" fill="#1b6b50">
+      SYNC 100 Hz
+    </text>
 
-    <!-- Face Centered Atom -->
-    <circle cx="60" cy="110" r="8" fill="#d97706"/>
-    <text x="60" y="180" text-anchor="middle" font-family="'Poppins', system-ui" font-size="10" font-weight="700" fill="#0f2b48">CRYSTALLINE METALLIC LATTICE</text>
+    <!-- Live Status Chip -->
+    <rect x="582" y="8" width="106" height="22" rx="4" fill="#1b6b50"/>
+    <text x="635" y="23" text-anchor="middle" font-family="'Inter', system-ui, sans-serif" font-size="10" font-weight="700" fill="#ffffff" letter-spacing="0.4">
+      STATION LIVE
+    </text>
   </g>
 
-  <!-- Central Stress-Strain Oscilloscope Card -->
-  <g transform="translate(240, 50)">
-    <rect width="320" height="230" fill="url(#cardGrad)" stroke="#cbd5e1" stroke-width="1.5" rx="10"/>
-    <rect x="15" y="15" width="290" height="150" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" rx="6"/>
+  <!-- =========================================================================
+       LEFT SIDE: PRECISION UNIVERSAL TESTING MACHINE (UTM)
+       ========================================================================= -->
+  <g transform="translate(24, 70)">
+    <!-- Machine Enclosure / Background Plate -->
+    <rect width="250" height="390" rx="10" fill="#ffffff" stroke="#d6e5dc" stroke-width="1.2" filter="url(#cardShadow)"/>
 
-    <!-- Graph axes -->
-    <line x1="30" y1="150" x2="290" y2="150" stroke="#64748b" stroke-width="1.5"/>
-    <line x1="30" y1="150" x2="30" y2="25" stroke="#64748b" stroke-width="1.5"/>
-    <text x="290" y="160" text-anchor="end" font-family="'Inter', system-ui" font-size="9" font-weight="600" fill="#475569">Strain (ε)</text>
-    <text x="25" y="25" text-anchor="start" font-family="'Inter', system-ui" font-size="9" font-weight="600" fill="#475569">Stress (σ)</text>
+    <!-- UTM Base Machine Block -->
+    <rect x="25" y="325" width="200" height="48" rx="6" fill="#0f3d2e"/>
+    <rect x="35" y="333" width="180" height="8" rx="2" fill="#1b6b50"/>
+    <!-- Machine feet -->
+    <rect x="40" y="373" width="30" height="6" rx="2" fill="#334155"/>
+    <rect x="180" y="373" width="30" height="6" rx="2" fill="#334155"/>
 
-    <!-- Stress Strain Path -->
+    <!-- Machine Label -->
+    <text x="125" y="360" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#34d399" letter-spacing="1">
+      UTM-100 kN VIRTUAL
+    </text>
+
+    <!-- Dual Heavy Chrome Support Columns -->
+    <!-- Left Column -->
+    <rect x="42" y="55" width="20" height="270" rx="4" fill="url(#metalColumn)" stroke="#475569" stroke-width="1"/>
+    <!-- Thread grooving lines on column -->
+    <g stroke="#475569" stroke-width="0.8" opacity="0.5">
+      <line x1="42" y1="80" x2="62" y2="80"/>
+      <line x1="42" y1="110" x2="62" y2="110"/>
+      <line x1="42" y1="140" x2="62" y2="140"/>
+      <line x1="42" y1="170" x2="62" y2="170"/>
+      <line x1="42" y1="200" x2="62" y2="200"/>
+      <line x1="42" y1="230" x2="62" y2="230"/>
+      <line x1="42" y1="260" x2="62" y2="260"/>
+      <line x1="42" y1="290" x2="62" y2="290"/>
+    </g>
+
+    <!-- Right Column -->
+    <rect x="188" y="55" width="20" height="270" rx="4" fill="url(#metalColumn)" stroke="#475569" stroke-width="1"/>
+    <g stroke="#475569" stroke-width="0.8" opacity="0.5">
+      <line x1="188" y1="80" x2="208" y2="80"/>
+      <line x1="188" y1="110" x2="208" y2="110"/>
+      <line x1="188" y1="140" x2="208" y2="140"/>
+      <line x1="188" y1="170" x2="208" y2="170"/>
+      <line x1="188" y1="200" x2="208" y2="200"/>
+      <line x1="188" y1="230" x2="208" y2="230"/>
+      <line x1="188" y1="260" x2="208" y2="260"/>
+      <line x1="188" y1="290" x2="208" y2="290"/>
+    </g>
+
+    <!-- Upper Fixed Crosshead Beam -->
+    <rect x="32" y="24" width="186" height="34" rx="5" fill="#0f3d2e" stroke="#1b6b50" stroke-width="1.5"/>
+    <rect x="80" y="32" width="90" height="18" rx="3" fill="#1b6b50"/>
+    <text x="125" y="45" text-anchor="middle" font-family="'Inter', system-ui" font-size="9" font-weight="700" fill="#ffffff" letter-spacing="0.5">
+      FIXED CROSSHEAD
+    </text>
+
+    <!-- Load Cell Transducer (Cylindrical with indicator ring) -->
+    <rect x="105" y="58" width="40" height="24" rx="3" fill="#475569" stroke="#334155"/>
+    <rect x="110" y="66" width="30" height="8" rx="2" fill="#10b981"/>
+    <circle cx="125" cy="70" r="2" fill="#ffffff"/>
+
+    <!-- Upper Tensile Wedge Grip Assembly -->
+    <path d="M 98 82 L 152 82 L 140 120 L 110 120 Z" fill="#334155" stroke="#1e293b" stroke-width="1.2"/>
+    <rect x="110" y="116" width="30" height="12" fill="#64748b" stroke="#334155"/>
+
+    <!-- Movable Testing Crosshead (Mid-position) -->
+    <g transform="translate(0, 110)">
+      <rect x="34" y="130" width="182" height="30" rx="4" fill="#1b6b50" stroke="#0f3d2e" stroke-width="1.2"/>
+      <circle cx="52" cy="145" r="4" fill="#ffffff"/>
+      <circle cx="198" cy="145" r="4" fill="#ffffff"/>
+      <text x="125" y="149" text-anchor="middle" font-family="'Inter', system-ui" font-size="8.5" font-weight="700" fill="#ffffff" letter-spacing="0.5">
+        MOVABLE CROSSHEAD (v = 2 mm/min)
+      </text>
+
+      <!-- Lower Grip Assembly -->
+      <path d="M 110 118 L 140 118 L 152 130 L 98 130 Z" fill="#334155" stroke="#1e293b" stroke-width="1.2"/>
+      <rect x="110" y="106" width="30" height="12" fill="#64748b" stroke="#334155"/>
+    </g>
+
+    <!-- =====================================================================
+         TENSILE SPECIMEN (ASTM E8 Standard Flat Dogbone with Necking)
+         ===================================================================== -->
+    <!-- Specimen Path with Visible Plastic Deformation / Necking Profile -->
     <path d="
-      M 30 150
-      L 70 80
-      L 75 88
-      L 95 88
-      Q 170 35 210 40
-      Q 245 45 265 95"
-      fill="none" stroke="url(#glowGrad)" stroke-width="3"/>
+      M 116 128
+      L 134 128
+      L 134 150
+      Q 132 170 128 178
+      Q 127 182 127 185
+      Q 127 188 128 192
+      Q 132 200 134 220
+      L 134 242
+      L 116 242
+      L 116 220
+      Q 118 200 122 192
+      Q 123 188 123 185
+      Q 123 182 122 178
+      Q 118 170 116 150
+      Z"
+      fill="url(#specimenGrad)" stroke="#475569" stroke-width="1.2"/>
 
-    <!-- Key Points -->
-    <circle cx="70" cy="80" r="4" fill="#d97706"/>
-    <circle cx="210" cy="40" r="5" fill="#dc2626"/>
-    <text x="210" y="28" text-anchor="middle" font-family="'Poppins', system-ui" font-size="9" font-weight="700" fill="#dc2626">UTS</text>
-    <circle cx="265" cy="95" r="4" fill="#059669"/>
+    <!-- Plastic Necking Zone Crosshair & Callout -->
+    <g filter="url(#softGlow)">
+      <!-- Localized high-stress concentration band -->
+      <ellipse cx="125" cy="185" rx="5" ry="2.5" fill="#ef4444" opacity="0.85"/>
+      <line x1="102" y1="185" x2="119" y2="185" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="2,2"/>
+      <line x1="131" y1="185" x2="148" y2="185" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="2,2"/>
+    </g>
+    <rect x="150" y="176" width="86" height="18" rx="3" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+    <text x="193" y="189" text-anchor="middle" font-family="'Inter', system-ui" font-size="8.5" font-weight="700" fill="#dc2626">
+      NECKING ZONE
+    </text>
 
-    <!-- Readout Card Footer -->
-    <rect x="15" y="175" width="85" height="40" fill="#f1f5f9" stroke="#e2e8f0" rx="4"/>
-    <text x="22" y="190" font-family="'Inter', system-ui" font-size="8" font-weight="700" fill="#475569">MODULUS</text>
-    <text x="22" y="206" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" fill="#0284c7">205 GPa</text>
+    <!-- Dual Laser Extensometer Beams -->
+    <!-- Upper gauge point -->
+    <line x1="65" y1="156" x2="120" y2="156" stroke="url(#laserGlow)" stroke-width="2" filter="url(#softGlow)"/>
+    <circle cx="120" cy="156" r="2.5" fill="#10b981"/>
+    <circle cx="65" cy="156" r="3" fill="#1b6b50"/>
 
-    <rect x="115" y="175" width="85" height="40" fill="#f1f5f9" stroke="#e2e8f0" rx="4"/>
-    <text x="122" y="190" font-family="'Inter', system-ui" font-size="8" font-weight="700" fill="#475569">YIELD (σ_y)</text>
-    <text x="122" y="206" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" fill="#d97706">250 MPa</text>
+    <!-- Lower gauge point -->
+    <line x1="65" y1="214" x2="120" y2="214" stroke="url(#laserGlow)" stroke-width="2" filter="url(#softGlow)"/>
+    <circle cx="120" cy="214" r="2.5" fill="#10b981"/>
+    <circle cx="65" cy="214" r="3" fill="#1b6b50"/>
 
-    <rect x="215" y="175" width="90" height="40" fill="#f1f5f9" stroke="#e2e8f0" rx="4"/>
-    <text x="222" y="190" font-family="'Inter', system-ui" font-size="8" font-weight="700" fill="#475569">UTS (σ_max)</text>
-    <text x="222" y="206" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="700" fill="#dc2626">440 MPa</text>
+    <!-- Laser Extensometer Label Bracket -->
+    <line x1="62" y1="156" x2="62" y2="214" stroke="#10b981" stroke-width="1.2" stroke-dasharray="3,2"/>
+    <rect x="18" y="176" width="48" height="18" rx="3" fill="#e8f5ef" stroke="#b7e4cf" stroke-width="1"/>
+    <text x="42" y="188" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="700" fill="#1b6b50">
+      L₀ 50mm
+    </text>
+
+    <!-- Tension Load Arrows -->
+    <!-- Top upward tensile arrow -->
+    <line x1="125" y1="18" x2="125" y2="6" stroke="#10b981" stroke-width="2.5"/>
+    <polygon points="120,8 125,1 130,8" fill="#10b981"/>
+    <text x="135" y="12" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700" fill="#1b6b50">+F (Tension)</text>
   </g>
 
-  <!-- Bottom Instrument Console Bar -->
-  <g transform="translate(40, 310)">
-    <rect width="520" height="110" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" rx="8"/>
-    <circle cx="30" cy="35" r="8" fill="#059669"/>
-    <text x="50" y="39" font-family="'Poppins', system-ui" font-size="13" font-weight="700" fill="#0f2b48">UNIVERSAL TESTING MACHINE — TELEMETRY READY</text>
+  <!-- =========================================================================
+       RIGHT SIDE TOP: DYNAMIC STRESS-STRAIN TELEMETRY MONITOR
+       ========================================================================= -->
+  <g transform="translate(290, 70)">
+    <!-- Main Card Body -->
+    <rect width="430" height="248" rx="10" fill="#ffffff" stroke="#d6e5dc" stroke-width="1.2" filter="url(#cardShadow)"/>
 
-    <text x="30" y="68" font-family="'Inter', system-ui" font-size="11" font-weight="500" fill="#475569">ASTM E8 Uniaxial Tensile | Dual Extensometer 100 Hz | High-Precision Load Cell Sensor</text>
+    <!-- Header bar -->
+    <rect x="0" y="0" width="430" height="34" rx="10" fill="#f8fafc"/>
+    <path d="M 0 24 L 0 34 L 430 34 L 430 24 Z" fill="#f8fafc"/>
+    <line x1="0" y1="34" x2="430" y2="34" stroke="#e2e8f0" stroke-width="1"/>
 
-    <!-- Badges -->
-    <rect x="30" y="82" width="115" height="20" fill="#0f2b48" rx="3"/>
-    <text x="87" y="96" text-anchor="middle" font-family="'Inter', system-ui" font-size="9" font-weight="700" fill="#ffffff">SIMULATION MODE</text>
+    <text x="16" y="22" font-family="'Poppins', system-ui" font-size="11" font-weight="700" fill="#0f3d2e">
+      STRESS-STRAIN REAL-TIME CURVE (σ - ε)
+    </text>
+    <text x="414" y="22" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="9.5" font-weight="600" fill="#64748b">
+      AISI 1018 STRUCTURAL STEEL
+    </text>
 
-    <rect x="155" y="82" width="130" height="20" fill="#e0f2fe" stroke="#0284c7" stroke-width="1" rx="3"/>
-    <text x="220" y="96" text-anchor="middle" font-family="'Inter', system-ui" font-size="9" font-weight="700" fill="#0369a1">REAL LAB MANUAL DATA</text>
+    <!-- Graph Coordinate Area -->
+    <g transform="translate(44, 46)">
+      <!-- Subtle graph grid -->
+      <rect width="360" height="135" fill="#fcfdfd" stroke="#e2e8f0" stroke-width="1"/>
+      <g stroke="#f1f5f9" stroke-width="1">
+        <line x1="0" y1="27" x2="360" y2="27"/>
+        <line x1="0" y1="54" x2="360" y2="54"/>
+        <line x1="0" y1="81" x2="360" y2="81"/>
+        <line x1="0" y1="108" x2="360" y2="108"/>
+        <line x1="72" y1="0" x2="72" y2="135"/>
+        <line x1="144" y1="0" x2="144" y2="135"/>
+        <line x1="216" y1="0" x2="216" y2="135"/>
+        <line x1="288" y1="0" x2="288" y2="135"/>
+      </g>
 
-    <rect x="295" y="82" width="120" height="20" fill="#ecfdf5" stroke="#059669" stroke-width="1" rx="3"/>
-    <text x="355" y="96" text-anchor="middle" font-family="'Inter', system-ui" font-size="9" font-weight="700" fill="#047857">PDF REPORT EXPORT</text>
+      <!-- Toughness Area Fill under curve -->
+      <path d="
+        M 0 135
+        L 48 58
+        L 56 65
+        L 74 65
+        Q 175 16 260 22
+        Q 310 26 335 78
+        L 335 135
+        Z"
+        fill="url(#curveAreaGrad)"/>
+
+      <!-- Yield Offset Line 0.2% (dashed) -->
+      <line x1="14" y1="135" x2="62" y2="58" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="3,3"/>
+      <text x="12" y="144" font-family="'JetBrains Mono', monospace" font-size="8" fill="#94a3b8">0.2%</text>
+
+      <!-- High-Precision Material Stress-Strain Curve -->
+      <path d="
+        M 0 135
+        L 48 58
+        L 52 66
+        L 74 65
+        Q 175 16 260 22
+        Q 310 26 335 78"
+        fill="none" stroke="#1b6b50" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- Axes Lines -->
+      <line x1="0" y1="135" x2="360" y2="135" stroke="#334155" stroke-width="1.5"/>
+      <line x1="0" y1="135" x2="0" y2="0" stroke="#334155" stroke-width="1.5"/>
+
+      <!-- Axis Labels -->
+      <text x="358" y="147" text-anchor="end" font-family="'Inter', system-ui" font-size="9" font-weight="700" fill="#475569">
+        Strain ε (mm/mm)
+      </text>
+      <text x="-4" y="-4" text-anchor="start" font-family="'Inter', system-ui" font-size="9" font-weight="700" fill="#475569">
+        Stress σ (MPa)
+      </text>
+
+      <!-- Key Mechanical Property Points & Annotations -->
+      <!-- Yield Point Marker -->
+      <circle cx="48" cy="58" r="4.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/>
+      <line x1="48" y1="58" x2="48" y2="40" stroke="#f59e0b" stroke-width="1"/>
+      <rect x="22" y="24" width="56" height="15" rx="3" fill="#fffbeb" stroke="#fde68a" stroke-width="1"/>
+      <text x="50" y="35" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="700" fill="#b45309">
+        σ_y 250 MPa
+      </text>
+
+      <!-- Ultimate Tensile Strength (UTS) Marker -->
+      <circle cx="260" cy="22" r="5" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="url(#softGlow)"/>
+      <line x1="260" y1="22" x2="260" y2="8" stroke="#ef4444" stroke-width="1"/>
+      <rect x="224" y="-6" width="72" height="15" rx="3" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+      <text x="260" y="5" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="700" fill="#dc2626">
+        UTS: 440 MPa
+      </text>
+
+      <!-- Fracture Point Marker -->
+      <circle cx="335" cy="78" r="4" fill="#64748b" stroke="#ffffff" stroke-width="1.5"/>
+      <text x="335" y="93" text-anchor="middle" font-family="'Inter', system-ui" font-size="8" font-weight="700" fill="#475569">
+        Fracture
+      </text>
+    </g>
+
+    <!-- Digital Telemetry Stat Cards Strip -->
+    <g transform="translate(16, 192)">
+      <!-- Stat 1: Modulus -->
+      <rect x="0" y="0" width="94" height="44" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+      <text x="8" y="15" font-family="'Inter', system-ui" font-size="8" font-weight="700" fill="#64748b" letter-spacing="0.5">ELASTIC MODULUS</text>
+      <text x="8" y="34" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="800" fill="#0f3d2e">205 GPa</text>
+
+      <!-- Stat 2: Yield Strength -->
+      <rect x="101" y="0" width="94" height="44" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+      <text x="109" y="15" font-family="'Inter', system-ui" font-size="8" font-weight="700" fill="#64748b" letter-spacing="0.5">YIELD STRESS</text>
+      <text x="109" y="34" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="800" fill="#d97706">250 MPa</text>
+
+      <!-- Stat 3: Ultimate Tensile Strength -->
+      <rect x="202" y="0" width="94" height="44" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+      <text x="210" y="15" font-family="'Inter', system-ui" font-size="8" font-weight="700" fill="#64748b" letter-spacing="0.5">PEAK UTS (σ_m)</text>
+      <text x="210" y="34" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="800" fill="#dc2626">440 MPa</text>
+
+      <!-- Stat 4: Elongation -->
+      <rect x="303" y="0" width="95" height="44" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+      <text x="311" y="15" font-family="'Inter', system-ui" font-size="8" font-weight="700" fill="#64748b" letter-spacing="0.5">TOTAL ELONG.</text>
+      <text x="311" y="34" font-family="'JetBrains Mono', monospace" font-size="13" font-weight="800" fill="#1b6b50">24.5 %</text>
+    </g>
+  </g>
+
+  <!-- =========================================================================
+       RIGHT SIDE BOTTOM: MULTI-STATION LABORATORY MODULE CARDS
+       ========================================================================= -->
+  <g transform="translate(290, 328)">
+    <!-- Station 1: Impact Testing (Charpy/Izod) -->
+    <g transform="translate(0, 0)">
+      <rect width="138" height="132" rx="8" fill="#ffffff" stroke="#d6e5dc" stroke-width="1.2" filter="url(#cardShadow)"/>
+      <!-- Header icon -->
+      <rect x="10" y="10" width="28" height="28" rx="6" fill="#e8f5ef"/>
+      <!-- Pendulum icon -->
+      <circle cx="24" cy="18" r="2.5" fill="#1b6b50"/>
+      <line x1="24" y1="18" x2="31" y2="30" stroke="#1b6b50" stroke-width="1.5"/>
+      <circle cx="31" cy="30" r="3.5" fill="#0f3d2e"/>
+      <path d="M 18 32 A 12 12 0 0 0 32 32" fill="none" stroke="#2e9e76" stroke-width="1" stroke-dasharray="2,2"/>
+
+      <text x="44" y="22" font-family="'Poppins', system-ui" font-size="10" font-weight="700" fill="#0f3d2e">IMPACT LAB</text>
+      <text x="44" y="33" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="600" fill="#64748b">ASTM E23</text>
+
+      <text x="12" y="58" font-family="'Inter', system-ui" font-size="8.5" font-weight="600" fill="#334155">Charpy &amp; Izod Test</text>
+      <text x="12" y="72" font-family="'Inter', system-ui" font-size="7.5" fill="#64748b">Dynamic Pendulum</text>
+
+      <!-- Badge -->
+      <rect x="10" y="82" width="118" height="20" rx="4" fill="#edf7f2" stroke="#b7e4cf"/>
+      <text x="69" y="95" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="700" fill="#1b6b50">
+        300 J / DBTT
+      </text>
+      <text x="69" y="118" text-anchor="middle" font-family="'Inter', system-ui" font-size="7.5" font-weight="600" fill="#059669">
+        ● Notch Toughness
+      </text>
+    </g>
+
+    <!-- Station 2: Hardness Testing (Rockwell / Brinell / Vickers) -->
+    <g transform="translate(146, 0)">
+      <rect width="138" height="132" rx="8" fill="#ffffff" stroke="#d6e5dc" stroke-width="1.2" filter="url(#cardShadow)"/>
+      <!-- Diamond indenter icon -->
+      <rect x="10" y="10" width="28" height="28" rx="6" fill="#e8f5ef"/>
+      <polygon points="24,14 31,23 24,32 17,23" fill="#1b6b50"/>
+      <circle cx="24" cy="23" r="2" fill="#ffffff"/>
+
+      <text x="44" y="22" font-family="'Poppins', system-ui" font-size="10" font-weight="700" fill="#0f3d2e">HARDNESS</text>
+      <text x="44" y="33" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="600" fill="#64748b">ASTM E10/E18</text>
+
+      <text x="12" y="58" font-family="'Inter', system-ui" font-size="8.5" font-weight="600" fill="#334155">Indentation Suite</text>
+      <text x="12" y="72" font-family="'Inter', system-ui" font-size="7.5" fill="#64748b">Diamond &amp; Ball Tip</text>
+
+      <!-- Badge -->
+      <rect x="10" y="82" width="118" height="20" rx="4" fill="#edf7f2" stroke="#b7e4cf"/>
+      <text x="69" y="95" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="700" fill="#1b6b50">
+        HRC / HBW / HV
+      </text>
+      <text x="69" y="118" text-anchor="middle" font-family="'Inter', system-ui" font-size="7.5" font-weight="600" fill="#059669">
+        ● Depth Analysis
+      </text>
+    </g>
+
+    <!-- Station 3: Compression & Structure Testing -->
+    <g transform="translate(292, 0)">
+      <rect width="138" height="132" rx="8" fill="#ffffff" stroke="#d6e5dc" stroke-width="1.2" filter="url(#cardShadow)"/>
+      <!-- Compression platen icon -->
+      <rect x="10" y="10" width="28" height="28" rx="6" fill="#e8f5ef"/>
+      <rect x="15" y="16" width="18" height="3" fill="#1b6b50"/>
+      <rect x="17" y="20" width="14" height="8" rx="1" fill="#334155"/>
+      <rect x="15" y="29" width="18" height="3" fill="#1b6b50"/>
+      <line x1="24" y1="12" x2="24" y2="15" stroke="#ef4444" stroke-width="1.5"/>
+
+      <text x="44" y="22" font-family="'Poppins', system-ui" font-size="10" font-weight="700" fill="#0f3d2e">COMPRESSION</text>
+      <text x="44" y="33" font-family="'JetBrains Mono', monospace" font-size="7.5" font-weight="600" fill="#64748b">ASTM E9</text>
+
+      <text x="12" y="58" font-family="'Inter', system-ui" font-size="8.5" font-weight="600" fill="#334155">Axial Upsetting</text>
+      <text x="12" y="72" font-family="'Inter', system-ui" font-size="7.5" fill="#64748b">Barreling &amp; Yield</text>
+
+      <!-- Badge -->
+      <rect x="10" y="82" width="118" height="20" rx="4" fill="#edf7f2" stroke="#b7e4cf"/>
+      <text x="69" y="95" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="8" font-weight="700" fill="#1b6b50">
+        TRUE σ - ε
+      </text>
+      <text x="69" y="118" text-anchor="middle" font-family="'Inter', system-ui" font-size="7.5" font-weight="600" fill="#059669">
+        ● Plastic Flow
+      </text>
+    </g>
   </g>
 </svg>
