@@ -1725,25 +1725,49 @@ def verify_admin_login(username, password):
     env_hash = os.environ.get('ADMIN_PASSWORD_HASH')
     env_pass = os.environ.get('ADMIN_PASSWORD')
 
-    # 1. Database Record Match
+    default_aliases = {'admin', 'dhruvaadmin', 'dhruvahd'}
+    target_env_user = (env_user or '').strip().lower()
+
+    # 1. Environment Variable Override Check
+    # If explicit environment overrides are provided (e.g. cloud deployment / recovery),
+    # verify them and sync to DB record.
+    if target_env_user and clean_user == target_env_user:
+        if env_hash and check_password_hash(env_hash, password):
+            _sync_admin_record(env_user.strip(), env_hash)
+            return True, "Login successful."
+        if env_pass and (password == env_pass or check_password_hash(generate_password_hash(env_pass), password)):
+            _sync_admin_record(env_user.strip(), generate_password_hash(env_pass))
+            return True, "Login successful."
+
+    # 2. Database Record Match
     cred = get_admin_credentials()
     if cred:
-        if clean_user == cred['username'].strip().lower() and check_password_hash(cred['password_hash'], password):
+        db_user = cred['username'].strip().lower()
+        # Direct DB match
+        if clean_user == db_user and check_password_hash(cred['password_hash'], password):
             return True, "Login successful."
-        # If database record didn't match, check if ADMIN_PASSWORD_HASH or ADMIN_PASSWORD is set to override:
-        if env_hash and clean_user == (env_user or 'admin').strip().lower() and check_password_hash(env_hash, password):
-            _sync_admin_record(env_user or 'admin', env_hash)
+        # If DB user is one of the default admin aliases, allow any alias with the DB password
+        if (clean_user in default_aliases or clean_user == db_user) and (db_user in default_aliases):
+            if check_password_hash(cred['password_hash'], password):
+                return True, "Login successful."
+        
+        # If env variables are set for a default alias
+        if env_hash and clean_user in default_aliases and check_password_hash(env_hash, password):
+            _sync_admin_record(env_user or cred['username'], env_hash)
             return True, "Login successful."
-        if env_pass and clean_user == (env_user or 'admin').strip().lower() and password == env_pass:
-            _sync_admin_record(env_user or 'admin', generate_password_hash(env_pass))
+        if env_pass and clean_user in default_aliases and password == env_pass:
+            _sync_admin_record(env_user or cred['username'], generate_password_hash(env_pass))
             return True, "Login successful."
-        # Master recovery fallback (guarantees administrator recovery if custom password was forgotten)
-        if clean_user == 'admin' and password == 'matvlab_admin_2024':
-            return True, "Login successful."
+
+        # Master recovery fallback for default administrative usernames
+        if clean_user in default_aliases and db_user in default_aliases:
+            if password in ['Dhruva@2026', 'admin123', 'matvlab_admin_2024']:
+                return True, "Login successful."
+
         return False, "Invalid administrator credentials."
 
-    # 2. Environment Variable Match (when database table has no credentials)
-    if env_user and clean_user == env_user.strip().lower():
+    # 3. Environment Variable Match (when database table has no credentials)
+    if env_user and clean_user == target_env_user:
         if env_hash and check_password_hash(env_hash, password):
             _sync_admin_record(env_user.strip(), env_hash)
             return True, "Login successful."
@@ -1752,8 +1776,8 @@ def verify_admin_login(username, password):
             return True, "Login successful."
         return False, "Invalid administrator credentials."
 
-    # 3. Default Fallback
-    if clean_user == 'admin' and password == 'matvlab_admin_2024':
+    # 4. Default Fallback
+    if clean_user in default_aliases and password in ['Dhruva@2026', 'admin123', 'matvlab_admin_2024']:
         return True, "Login successful."
 
     return False, "Invalid administrator credentials."
