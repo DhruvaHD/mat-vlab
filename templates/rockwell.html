@@ -156,10 +156,7 @@
           <div class="p-3 bg-light rounded border border-secondary border-opacity-25 position-relative shadow-sm" style="min-height: 480px;">
             <div id="rockwell-svg-container" style="max-width: 600px; margin: 0 auto;">
               <!-- Embedded Interactive SVG -->
-              {% include "static/images/rockwell_tester.svg" ignore missing %}
-              {% if not rockwell_svg_included %}
-              <img src="{{ url_for('static', filename='images/rockwell_tester.svg') }}" alt="Rockwell Hardness Machine Schematic" class="w-100 object-fit-contain" id="rockwell-tester-img" style="cursor: pointer;">
-              {% endif %}
+              {% include "svg/rockwell_tester.svg" %}
             </div>
           </div>
         </div>
@@ -167,9 +164,12 @@
         <!-- Component Detail Inspector Card -->
         <div class="col-lg-5">
           <div class="lab-card p-4 border border-primary border-opacity-50 h-100 shadow-sm" id="r-component-card">
-            <div class="d-flex align-items-center gap-2 mb-2">
-              <span class="badge bg-primary px-2 py-1 font-mono small" id="r-comp-badge">MACHINE COMPONENT</span>
-              <span class="badge bg-light text-muted border font-mono small" id="r-comp-id">dial-display</span>
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary px-2 py-1 font-mono small" id="r-comp-badge">MACHINE COMPONENT</span>
+                <span class="badge bg-light text-muted border font-mono small" id="r-comp-id">dial-display</span>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-circle" id="r-component-card-close-btn" title="Close Panel" aria-label="Close Inspector">&times;</button>
             </div>
             <h4 class="fw-bold text-navy mb-2" id="r-comp-title">Dual Direct-Reading Hardness Dial</h4>
             <div class="p-3 bg-light rounded border border-secondary border-opacity-25 mb-3 small">
@@ -729,28 +729,26 @@ document.addEventListener('DOMContentLoaded', function() {
   };
 
   function updateRComponentCard(partKey) {
+    if (window.MatVLabDiagram) {
+      const container = document.getElementById('rockwell-svg-container');
+      const svg = container ? container.querySelector('svg') : null;
+      window.MatVLabDiagram.selectPart('rockwell', partKey, svg, 'r-component-card');
+      return;
+    }
     const data = rComponentData[partKey];
     if (!data) return;
 
-    document.getElementById('r-comp-badge').textContent = data.badge;
-    document.getElementById('r-comp-id').textContent = partKey;
-    document.getElementById('r-comp-title').textContent = data.title;
-    document.getElementById('r-comp-specs').textContent = data.specs;
-    document.getElementById('r-comp-desc').textContent = data.desc;
-    document.getElementById('r-comp-tip').textContent = data.tip;
+    const b = document.getElementById('r-comp-badge'); if (b) b.textContent = data.badge;
+    const id = document.getElementById('r-comp-id'); if (id) id.textContent = partKey;
+    const t = document.getElementById('r-comp-title'); if (t) t.textContent = data.title;
+    const s = document.getElementById('r-comp-specs'); if (s) s.textContent = data.specs;
+    const d = document.getElementById('r-comp-desc'); if (d) d.textContent = data.desc;
+    const tip = document.getElementById('r-comp-tip'); if (tip) tip.textContent = data.tip;
 
     document.querySelectorAll('.interactive-part').forEach(el => el.classList.remove('active-part'));
     const activeEl = document.querySelector(`[data-part="${partKey}"]`);
     if (activeEl) activeEl.classList.add('active-part');
   }
-
-  document.querySelectorAll('.interactive-part').forEach(el => {
-    el.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const part = this.getAttribute('data-part');
-      if (part) updateRComponentCard(part);
-    });
-  });
 
   // =========================================================================
   // 2. VIRTUAL EXPERIMENT SIMULATION STUDIO

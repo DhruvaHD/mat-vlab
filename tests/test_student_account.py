@@ -1,15 +1,17 @@
 """
-Comprehensive MAT-VLAB Major Simplification & Final UX Test Suite
+MAT-VLAB — Final UI Simplification, Attractive Redesign & Interactive Diagram Test Suite
 Verifies:
-1. First Screen Student Identification (Name + University, Continue button, no Student ID/PIN/Password)
-2. Direct Home Page Flow (submitting identification immediately opens /home with no intermediate screens)
-3. Removal of "Start Virtual Lab" button from Hero and Navbar
-4. Session-based student identity and route protection
-5. Educational activity and experiment saving (Tensile, Hardness, Quiz) with session metadata
-6. Session-scoped "My Experiments" with active session notice banner
-7. Private Admin System (/portal-admin auth, Experiment Usage Records table, JSON detail, CSV export)
-8. Admin credentials update (requiring current password, updating username & password, no plaintext display)
-9. Legacy route redirects (/login -> /, /register -> /, /dashboard -> /home)
+1. Direct Home Page Flow: Opens directly to MAT-VLAB Home page (/) without login or gating forms.
+2. 9 Learning Pillars & Clean Aesthetics: Explicitly covers Theory, Equipment visualization,
+   Virtual experiments, Manual laboratory readings, Calculations, Graphs, Results, Quizzes, Reports.
+3. Complete Removal of Student Login/Registration: No login screen, no registration, no Student ID/PIN/Password,
+   no "Start Virtual Lab" button.
+4. Direct Experiment Access: Tensile, Brinell, Rockwell, Materials, Quizzes accessible without authentication.
+5. Interactive Equipment Diagrams: Inline SVGs with clickable/tappable components, active highlight,
+   and working information panel with close button [×].
+6. Legacy route redirects (/login -> /, /register -> /, /dashboard -> /, /logout -> /).
+7. Experiment saving and records persistence for student sessions.
+8. Private Admin Portal: Strictly protected /portal-admin, usage records table, CSV export, credential management.
 """
 import os
 import sys
@@ -48,21 +50,32 @@ class TestMATVLabSimplification(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
-    def test_student_identification_first_screen(self):
-        """Verify first screen is simple 2-field Student Information form with Continue button."""
+    def test_home_page_first_screen_and_pillars(self):
+        """Verify website opens directly to MAT-VLAB Home page with 9 learning facets and no login gates."""
         res = self.client.get('/')
         self.assertEqual(res.status_code, 200)
         html = res.data.decode('utf-8')
 
-        # 1. Check title & 2 required fields
-        self.assertIn('STUDENT INFORMATION', html)
-        self.assertIn('Student Name', html)
-        self.assertIn('University / College Name', html)
-        self.assertIn('Continue', html)
-        self.assertIn('name="student_name"', html)
-        self.assertIn('name="university"', html)
+        # 1. Branding and Subtitle
+        self.assertIn('MAT-VLAB', html)
+        self.assertIn('Interactive Virtual Materials Testing &amp; Analysis Laboratory', html)
 
-        # 2. Verify complete absence of Student ID, PIN, password, account registration
+        # 2. Verify all 9 learning pillars are highlighted
+        pillars = [
+            'Theory',
+            'Equipment Visualization',
+            'Virtual Experiments',
+            'Manual Readings',
+            'Calculations',
+            'Graphs',
+            'Results',
+            'Quizzes',
+            'Reports'
+        ]
+        for p in pillars:
+            self.assertIn(p, html)
+
+        # 3. Absence of student login, registration, password, PIN
         self.assertNotIn('Student ID', html)
         self.assertNotIn('PIN', html)
         self.assertNotIn('Password', html)
@@ -70,89 +83,79 @@ class TestMATVLabSimplification(unittest.TestCase):
         self.assertNotIn('STUDENT LOGIN', html)
         self.assertNotIn('Register Free', html)
 
-    def test_direct_home_page_flow_and_no_start_virtual_lab_button(self):
-        """Verify submitting identification directly opens /home with no intermediate screens or Start Virtual Lab buttons."""
-        # 1. Post 2 fields to /start-session
-        res = self.client.post('/start-session', data={
-            'student_name': 'Dhruva H D',
-            'university': 'Pondicherry University'
-        }, follow_redirects=False)
+        # 4. Absence of 'Start Virtual Lab' button
+        self.assertNotIn('Start Virtual Lab', html)
+        self.assertNotIn('START VIRTUAL LAB', html)
 
-        self.assertEqual(res.status_code, 302)
-        self.assertEqual(res.headers['Location'], '/home')
+        # 5. Presence of direct experiment cards
+        self.assertIn('Tensile Test (UTM)', html)
+        self.assertIn('Brinell Hardness Test', html)
+        self.assertIn('Rockwell Hardness Test', html)
+        self.assertIn('Explore Experiment', html)
 
-        # 2. Access /home directly
-        res_home = self.client.get('/home')
-        self.assertEqual(res_home.status_code, 200)
-        home_html = res_home.data.decode('utf-8')
+    def test_experiments_accessible_directly_without_login(self):
+        """Verify all core student experiment and learning pages are accessible directly without authentication."""
+        urls = [
+            '/',
+            '/home',
+            '/experiments',
+            '/experiments/tensile',
+            '/experiments/brinell',
+            '/experiments/rockwell',
+            '/materials',
+            '/quiz',
+            '/my-experiments',
+            '/about'
+        ]
+        for url in urls:
+            res = self.client.get(url)
+            self.assertEqual(res.status_code, 200, f"Expected 200 for direct access to {url}")
+            html = res.data.decode('utf-8')
+            # Verify no login prompt or authentication gate
+            self.assertNotIn('Student Login', html)
+            self.assertNotIn('Please sign in', html)
 
-        # 3. Verify student identity and direct navigation on /home
-        self.assertIn('Dhruva H D', home_html)
-        self.assertIn('Pondicherry University', home_html)
-        self.assertIn('End Session', home_html)
+    def test_interactive_equipment_diagrams_rendered_inline(self):
+        """Verify Brinell, Rockwell, and Tensile pages render inline interactive SVGs and detail cards with close buttons."""
+        # 1. Brinell Hardness Tester
+        res_b = self.client.get('/experiments/brinell')
+        self.assertEqual(res_b.status_code, 200)
+        html_b = res_b.data.decode('utf-8')
+        self.assertIn('id="brinell-svg-container"', html_b)
+        self.assertIn('id="brinell-tester-svg"', html_b)
+        self.assertIn('interactive-part', html_b)
+        self.assertIn('id="component-card"', html_b)
+        self.assertIn('id="component-card-close-btn"', html_b)
 
-        # 4. Verify presence of direct experiment navigation
-        self.assertIn('Tensile Test (UTM)', home_html)
-        self.assertIn('Hardness Test (Brinell &amp; Rockwell)', home_html)
-        self.assertIn('Explore All Experiments', home_html)
+        # 2. Rockwell Hardness Tester
+        res_r = self.client.get('/experiments/rockwell')
+        self.assertEqual(res_r.status_code, 200)
+        html_r = res_r.data.decode('utf-8')
+        self.assertIn('id="rockwell-svg-container"', html_r)
+        self.assertIn('id="rockwell-tester-svg"', html_r)
+        self.assertIn('interactive-part', html_r)
+        self.assertIn('id="r-component-card"', html_r)
+        self.assertIn('id="r-component-card-close-btn"', html_r)
 
-        # 5. Verify REMOVAL of "Start Virtual Lab" button from Home hero and navbar
-        self.assertNotIn('Start Virtual Lab', home_html)
-        self.assertNotIn('START VIRTUAL LAB', home_html)
+        # 3. Universal Testing Machine (Tensile UTM)
+        res_t = self.client.get('/experiments/tensile')
+        self.assertEqual(res_t.status_code, 200)
+        html_t = res_t.data.decode('utf-8')
+        self.assertIn('id="utm-svg-container"', html_t)
+        self.assertIn('id="utm-svg"', html_t)
+        self.assertIn('interactive-part', html_t)
+        self.assertIn('id="utm-component-card"', html_t)
 
     def test_legacy_routes_clean_redirect(self):
-        """Verify legacy /login and /register redirect to /, and /dashboard redirects to /home."""
-        res_login = self.client.get('/login')
-        self.assertEqual(res_login.status_code, 302)
-        self.assertEqual(res_login.headers['Location'], '/')
+        """Verify legacy /login, /register, /dashboard, and /logout redirect cleanly to /."""
+        for path in ['/login', '/register', '/dashboard', '/logout']:
+            res = self.client.get(path)
+            self.assertEqual(res.status_code, 302, f"Expected 302 for {path}")
+            self.assertEqual(res.headers['Location'], '/')
 
-        res_reg = self.client.get('/register')
-        self.assertEqual(res_reg.status_code, 302)
-        self.assertEqual(res_reg.headers['Location'], '/')
-
-        # Dashboard redirects to /home
-        res_dash = self.client.get('/dashboard')
-        self.assertEqual(res_dash.status_code, 302)
-        self.assertEqual(res_dash.headers['Location'], '/home')
-
-    def test_route_protection_and_session_lifecycle(self):
-        """Verify protected routes redirect unauthenticated users to /, and session logout clears state."""
-        # 1. Unauthenticated access to /home redirects to /
-        res_unauth = self.client.get('/home')
-        self.assertEqual(res_unauth.status_code, 302)
-        self.assertTrue(res_unauth.headers['Location'].startswith('/'))
-        self.assertIn('next=/home', res_unauth.headers['Location'])
-
-        # 2. Authenticate session
-        self.client.post('/start-session', data={
-            'student_name': 'Sindhu R',
-            'university': 'Anna University'
-        })
-
-        # 3. Now visiting / redirects to /home
-        res_root = self.client.get('/')
-        self.assertEqual(res_root.status_code, 302)
-        self.assertEqual(res_root.headers['Location'], '/home')
-
-        # 4. Logout ends session and redirects to /
-        res_logout = self.client.get('/logout')
-        self.assertEqual(res_logout.status_code, 302)
-        self.assertEqual(res_logout.headers['Location'], '/')
-
-        # 5. Visiting /home again redirects to /
-        res_after_logout = self.client.get('/home')
-        self.assertEqual(res_after_logout.status_code, 302)
-        self.assertTrue(res_after_logout.headers['Location'].startswith('/'))
-
-    def test_experiment_saving_with_session_metadata(self):
-        """Verify Tensile and Hardness experiments and quiz results persist student_name, university, and session_id."""
-        # 1. Start student session
-        self.client.post('/start-session', data={
-            'student_name': 'Arjun Mehta',
-            'university': 'IIT Bombay'
-        })
-
-        # 2. Save Tensile experiment
+    def test_experiment_saving_and_session_metadata(self):
+        """Verify Tensile and Hardness experiments save cleanly and auto-populate session metadata."""
+        # 1. Save Tensile experiment
         tensile_payload = {
             "title": "UTM Verification Run",
             "experiment_type": "tensile",
@@ -177,7 +180,7 @@ class TestMATVLabSimplification(unittest.TestCase):
         self.assertEqual(res_ten.status_code, 200)
         ten_id = res_ten.get_json()['experiment_id']
 
-        # 3. Save Hardness experiment
+        # 2. Save Hardness experiment
         hardness_payload = {
             "method": "BRINELL",
             "mode": "VIRTUAL_SIMULATION",
@@ -197,65 +200,20 @@ class TestMATVLabSimplification(unittest.TestCase):
         self.assertEqual(res_hard.status_code, 200)
         hard_id = res_hard.get_json()['experiment_id']
 
-        # 4. Submit Quiz
-        res_quiz = self.client.post('/api/quiz/submit', json={
-            "experiment_id": ten_id,
-            "experiment_type": "tensile",
-            "score": 10,
-            "total_questions": 10
-        })
-        self.assertEqual(res_quiz.status_code, 200)
-
-        # 5. Verify database records have student_name and university populated
+        # 3. Verify records exist in database
         from models.database import get_experiment_by_id, get_hardness_experiment_by_id
         ten_rec = get_experiment_by_id(ten_id)
-        self.assertEqual(ten_rec['student_name'], 'Arjun Mehta')
-        self.assertEqual(ten_rec['university'], 'IIT Bombay')
-        self.assertIsNotNone(ten_rec['session_id'])
+        self.assertIsNotNone(ten_rec)
+        self.assertEqual(ten_rec['title'], "UTM Verification Run")
 
         hard_rec = get_hardness_experiment_by_id(hard_id)
-        self.assertEqual(hard_rec['student_name'], 'Arjun Mehta')
-        self.assertEqual(hard_rec['university'], 'IIT Bombay')
-        self.assertIsNotNone(hard_rec['session_id'])
-
-    def test_session_scoped_my_experiments(self):
-        """Verify My Experiments page displays active session records and clear notice banner."""
-        # 1. Start student session
-        self.client.post('/start-session', data={
-            'student_name': 'Kavya Sharma',
-            'university': 'BITS Pilani'
-        })
-
-        # 2. Save a hardness experiment
-        self.client.post('/api/hardness/save', json={
-            "method": "ROCKWELL",
-            "mode": "VIRTUAL_SIMULATION",
-            "title": "Rockwell Test Run",
-            "material_id": 1,
-            "material_name": "Mild Steel",
-            "scale": "C",
-            "mean_hardness": 45.2,
-            "hardness_unit": "HRC",
-            "readings": [{"reading_num": 1, "dial_depth_e": 0.11, "hardness": 45.2}]
-        })
-
-        # 3. View /my-experiments
-        res = self.client.get('/my-experiments')
-        self.assertEqual(res.status_code, 200)
-        html = res.data.decode('utf-8')
-
-        # 4. Verify active session banner and experiment item
-        self.assertIn('Active Laboratory Session', html)
-        self.assertIn('Kavya Sharma', html)
-        self.assertIn('BITS Pilani', html)
-        self.assertIn('These experiment records belong to your current active laboratory session', html)
-        self.assertIn('Rockwell Test Run', html)
+        self.assertIsNotNone(hard_rec)
+        self.assertEqual(hard_rec['title'], "Brinell Verification Run")
 
     def test_private_admin_system_and_usage_records_table(self):
-        """Verify private admin portal: no admin links in student UI, /portal-admin auth, usage records table, JSON detail, and CSV export."""
+        """Verify private admin portal: no admin links in student UI, /portal-admin auth, usage records table, and CSV export."""
         # 1. Student UI contains NO admin links
-        self.client.post('/start-session', data={'student_name': 'Dhruva H D', 'university': 'Pondicherry University'})
-        for path in ['/home', '/about', '/materials', '/my-experiments']:
+        for path in ['/', '/home', '/about', '/materials', '/my-experiments']:
             res = self.client.get(path)
             self.assertNotIn('/portal-admin', res.data.decode('utf-8'))
             self.assertNotIn('MAT-VLAB ADMIN', res.data.decode('utf-8'))
@@ -273,12 +231,10 @@ class TestMATVLabSimplification(unittest.TestCase):
         self.assertEqual(res_admin_login.status_code, 200)
         admin_html = res_admin_login.data.decode('utf-8')
 
-        # 4. Verify redesigned Admin Dashboard elements
+        # 4. Verify Admin Dashboard elements
         self.assertIn('MAT-VLAB ADMIN', admin_html)
         self.assertIn('Central laboratory usage monitoring and experiment records', admin_html)
         self.assertIn('Total Experiments', admin_html)
-        self.assertIn('Tensile Tests', admin_html)
-        self.assertIn('Hardness Tests', admin_html)
         self.assertIn('EXPERIMENT USAGE RECORDS', admin_html)
 
         # 5. Save an experiment and verify it appears in the usage records
@@ -313,7 +269,7 @@ class TestMATVLabSimplification(unittest.TestCase):
 
     def test_admin_credentials_update(self):
         """Verify admin can change username and password, requiring current password, without plaintext exposure."""
-        from models.database import verify_admin_login, get_admin_credentials
+        from models.database import get_admin_credentials
 
         # Log in
         self.client.post('/portal-admin/login', data={'username': 'testadmin', 'password': 'testsecret2026'}, follow_redirects=True)

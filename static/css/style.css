@@ -1172,4 +1172,142 @@ mjx-container svg {
   display: inline-block;
 }
 
+/* ==========================================================================
+   Interactive Equipment Diagram Part Styling & Mobile Touch Optimization
+   ========================================================================== */
+.interactive-part {
+  cursor: pointer;
+  outline: none;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(14, 165, 233, 0.25);
+}
+
+.interactive-part:hover,
+.interactive-part:focus-visible {
+  filter: drop-shadow(0 0 10px rgba(14, 165, 233, 0.85)) !important;
+  stroke: #0ea5e9 !important;
+  stroke-width: 2.5px !important;
+}
+
+.interactive-part.active-part {
+  filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.95)) !important;
+  stroke: #10b981 !important;
+  stroke-width: 3.5px !important;
+  animation: partPulse 2s infinite alternate ease-in-out;
+}
+
+@keyframes partPulse {
+  0% {
+    filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.7));
+  }
+  100% {
+    filter: drop-shadow(0 0 18px rgba(16, 185, 129, 1));
+  }
+}
+
+/* ==========================================================================
+   Modern Engineering Experiment Cards & Home Page Redesign
+   ========================================================================== */
+.experiment-card-modern {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  box-shadow: 0 4px 12px rgba(15, 43, 72, 0.05);
+}
+
+.experiment-card-modern:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 32px rgba(15, 43, 72, 0.12);
+  border-color: var(--steel-blue);
+}
+
+.experiment-card-modern .card-img-wrapper {
+  background: linear-gradient(135deg, rgba(241, 245, 249, 0.8) 0%, rgba(226, 232, 240, 0.6) 100%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem;
+}
+
+.experiment-card-modern .card-img-wrapper img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.experiment-card-modern:hover .card-img-wrapper img {
+  transform: scale(1.04);
+}
+
+/* Status Badges */
+.badge-status-available {
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.badge-status-soon {
+  background-color: #f8fafc;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* 9-Pillar Pedagogical Capabilities Grid */
+.pillar-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.22s ease;
+  box-shadow: 0 2px 6px rgba(15, 43, 72, 0.04);
+}
+
+.pillar-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(15, 43, 72, 0.08);
+  border-color: var(--accent-cyan);
+}
+
+.pillar-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-bottom: 0.85rem;
+}
+
+
 

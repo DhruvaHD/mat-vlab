@@ -43,7 +43,7 @@
   <!-- Navigation Bar -->
   <nav class="navbar navbar-expand-lg navbar-dark navbar-matvlab sticky-top">
     <div class="container-fluid px-2 px-sm-3 px-lg-4">
-      <a class="navbar-brand" href="{% if is_logged_in %}{{ url_for('home') }}{% else %}{{ url_for('index') }}{% endif %}">
+      <a class="navbar-brand" href="{{ url_for('index') }}">
         <div class="brand-icon">
           <i class="fas fa-atom"></i>
         </div>
@@ -56,11 +56,10 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarMain">
-        <!-- Main Laboratory Navigation: Visible ONLY after student has logged in -->
-        {% if is_logged_in %}
+        <!-- Main Laboratory Navigation: Clean & Directly Accessible -->
         <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
           <li class="nav-item">
-            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('home') }}">
+            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('index') }}">
               <i class="fas fa-home me-1"></i> Home
             </a>
           </li>
@@ -71,36 +70,36 @@
             <ul class="dropdown-menu dropdown-menu-matvlab shadow-sm border" aria-labelledby="experimentsDropdown">
               <li>
                 <a class="dropdown-item py-2 fw-semibold" href="{{ url_for('experiments') }}">
-                  <i class="fas fa-th-large text-primary me-2"></i> All Experiments
+                  <i class="fas fa-th-large text-primary me-2"></i> All Experiments Catalog
                 </a>
               </li>
               <li><hr class="dropdown-divider"></li>
               <li class="dropdown-header text-uppercase small fw-bold text-muted">Tensile Testing</li>
               <li>
                 <a class="dropdown-item py-2" href="{{ url_for('tensile_hub') }}">
-                  <i class="fas fa-compress-arrows-alt text-steel me-2"></i> Tensile Test (UTM)
+                  <i class="fas fa-compress-arrows-alt text-steel me-2"></i> Tensile Test (UTM ASTM E8)
                 </a>
               </li>
               <li><hr class="dropdown-divider"></li>
               <li class="dropdown-header text-uppercase small fw-bold text-muted">Hardness Testing</li>
               <li>
                 <a class="dropdown-item py-2" href="{{ url_for('hardness_hub') }}">
-                  <i class="fas fa-bullseye text-warning me-2"></i> Hardness Test Overview
+                  <i class="fas fa-bullseye text-warning me-2"></i> Hardness Hub &amp; Method Selector
                 </a>
               </li>
               <li>
                 <a class="dropdown-item py-2 ps-4" href="{{ url_for('hardness_brinell') }}">
-                  <i class="fas fa-circle text-primary me-2"></i> Brinell Hardness Test
+                  <i class="fas fa-circle text-primary me-2"></i> Brinell Hardness Test (ASTM E10)
                 </a>
               </li>
               <li>
                 <a class="dropdown-item py-2 ps-4" href="{{ url_for('hardness_rockwell') }}">
-                  <i class="fas fa-gem text-danger me-2"></i> Rockwell Hardness Test
+                  <i class="fas fa-gem text-danger me-2"></i> Rockwell Hardness Test (ASTM E18)
                 </a>
               </li>
               <li>
                 <a class="dropdown-item py-2 ps-4" href="{{ url_for('hardness_compare') }}">
-                  <i class="fas fa-balance-scale text-success me-2"></i> Compare &amp; ASTM E140
+                  <i class="fas fa-balance-scale text-success me-2"></i> Comparison &amp; ASTM E140 Conversion
                 </a>
               </li>
             </ul>
@@ -110,19 +109,19 @@
               <i class="fas fa-microscope me-1"></i> Virtual Lab
             </a>
             <ul class="dropdown-menu dropdown-menu-matvlab shadow-sm border" aria-labelledby="vlabDropdown">
-              <li class="dropdown-header text-uppercase small fw-bold text-muted">Tensile Testing</li>
+              <li class="dropdown-header text-uppercase small fw-bold text-muted">Tensile Testing Station</li>
               <li>
                 <a class="dropdown-item py-2" href="{{ url_for('simulation') }}">
-                  <i class="fas fa-desktop text-primary me-2"></i> Virtual Simulation Mode
+                  <i class="fas fa-desktop text-primary me-2"></i> UTM Virtual Simulation Mode
                 </a>
               </li>
               <li>
                 <a class="dropdown-item py-2" href="{{ url_for('manual_entry') }}">
-                  <i class="fas fa-keyboard text-success me-2"></i> Manual Data Entry Mode
+                  <i class="fas fa-keyboard text-success me-2"></i> Manual Laboratory Data Entry
                 </a>
               </li>
               <li><hr class="dropdown-divider"></li>
-              <li class="dropdown-header text-uppercase small fw-bold text-muted">Hardness Testing</li>
+              <li class="dropdown-header text-uppercase small fw-bold text-muted">Hardness Testing Station</li>
               <li>
                 <a class="dropdown-item py-2" href="{{ url_for('hardness_brinell') }}#simulation">
                   <i class="fas fa-circle text-primary me-2"></i> Brinell Virtual Machine
@@ -136,7 +135,7 @@
               <li><hr class="dropdown-divider"></li>
               <li>
                 <a class="dropdown-item py-2" href="{{ url_for('tensile_hub') }}">
-                  <i class="fas fa-book-open text-warning me-2"></i> Tensile Theory &amp; Apparatus
+                  <i class="fas fa-book-open text-warning me-2"></i> Apparatus &amp; Machine Inspector
                 </a>
               </li>
             </ul>
@@ -152,13 +151,13 @@
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if active_page == 'my_experiments' %}active{% endif %}" href="{{ url_for('my_experiments') }}">
-              <i class="fas fa-folder-open me-1"></i> My Experiments
+            <a class="nav-link {% if active_page == 'quizzes' %}active{% endif %}" href="{{ url_for('quizzes') }}">
+              <i class="fas fa-graduation-cap me-1"></i> Quizzes
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if active_page == 'quizzes' %}active{% endif %}" href="{{ url_for('quizzes') }}">
-              <i class="fas fa-graduation-cap me-1"></i> Quizzes
+            <a class="nav-link {% if active_page == 'my_experiments' %}active{% endif %}" href="{{ url_for('my_experiments') }}">
+              <i class="fas fa-folder-open me-1"></i> My Experiments
             </a>
           </li>
           <li class="nav-item">
@@ -167,50 +166,12 @@
             </a>
           </li>
         </ul>
-        {% else %}
-        <!-- Spacer for unauthenticated visitor view -->
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
-        {% endif %}
 
+        <!-- Right Quick Action: Direct Experiment Launcher -->
         <div class="d-flex align-items-center flex-wrap gap-2 pt-2 pt-lg-0">
-          {% if current_student %}
-          <div class="dropdown">
-            <button class="btn btn-sm btn-outline-light dropdown-toggle d-flex align-items-center gap-2" type="button" id="studentMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="fas fa-user-graduate text-cyan"></i>
-              <span class="fw-semibold text-truncate d-none d-sm-inline" style="max-width: 150px;">{{ current_student.name }}</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow border" aria-labelledby="studentMenuDropdown">
-              <li class="px-3 py-2 border-bottom bg-light">
-                <div class="fw-bold text-navy">{{ current_student.name }}</div>
-                <div class="small text-muted text-truncate" style="max-width: 220px;" title="{{ current_student.university }}"><i class="fas fa-university me-1"></i>{{ current_student.university }}</div>
-                <div class="small text-muted font-mono"><i class="fas fa-clock me-1"></i>Active Lab Session</div>
-              </li>
-              <li>
-                <a class="dropdown-item py-2 {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('home') }}">
-                  <i class="fas fa-home text-primary me-2"></i> Laboratory Home
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item py-2 {% if active_page == 'my_experiments' %}active{% endif %}" href="{{ url_for('my_experiments') }}">
-                  <i class="fas fa-folder-open text-info me-2"></i> My Experiments (Session)
-                </a>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <a class="dropdown-item py-2 text-danger" href="{{ url_for('logout') }}">
-                  <i class="fas fa-sign-out-alt me-2"></i> End Session
-                </a>
-              </li>
-            </ul>
-          </div>
-          <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-light text-nowrap d-none d-md-inline-flex align-items-center gap-1">
-            <i class="fas fa-sign-out-alt"></i> End Session
+          <a href="{{ url_for('experiments') }}" class="btn btn-sm btn-lab-primary d-inline-flex align-items-center gap-1 shadow-sm px-3">
+            <i class="fas fa-flask"></i> Explore Experiments
           </a>
-          {% else %}
-          <a href="{{ url_for('index') }}" class="btn btn-sm btn-lab-primary d-inline-flex align-items-center gap-1">
-            <i class="fas fa-user-graduate"></i> Student Identification
-          </a>
-          {% endif %}
         </div>
       </div>
     </div>
@@ -266,9 +227,10 @@
           <h6 class="footer-heading">Engineering Tools</h6>
           <ul class="list-unstyled small mb-0">
             <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('materials') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">Material Database</a></li>
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('compare') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">Material Comparison</a></li>
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('my_experiments') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">Saved Experiments</a></li>
-            <li class="mb-2"><a href="{% if is_logged_in %}{{ url_for('quizzes') }}{% else %}{{ url_for('index') }}{% endif %}" class="footer-link">Knowledge Assessment</a></li>
+            <li class="mb-2"><a href="{{ url_for('materials') }}" class="footer-link">Material Database</a></li>
+            <li class="mb-2"><a href="{{ url_for('compare') }}" class="footer-link">Material Comparison</a></li>
+            <li class="mb-2"><a href="{{ url_for('my_experiments') }}" class="footer-link">Saved Experiments</a></li>
+            <li class="mb-2"><a href="{{ url_for('quizzes') }}" class="footer-link">Knowledge Assessment</a></li>
           </ul>
         </div>
 
@@ -302,6 +264,9 @@
 
   <!-- Global App JS -->
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+  <!-- Interactive Equipment Diagram Inspector -->
+  <script src="{{ url_for('static', filename='js/diagram_inspector.js') }}"></script>
 
   <!-- MathJax Dynamic Rendering Controller -->
   <script src="{{ url_for('static', filename='js/math_render.js') }}"></script>

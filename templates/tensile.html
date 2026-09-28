@@ -140,26 +140,29 @@
               <span class="text-secondary small">Click any component to inspect details</span>
             </div>
             <!-- Embedded Interactive SVG -->
-            <div class="d-flex justify-content-center align-items-center w-100" style="min-height: 280px; max-height: 540px;">
-              {% include "static/images/utm_diagram.svg" ignore missing %}
+            <div class="d-flex justify-content-center align-items-center w-100" style="min-height: 280px; max-height: 540px;" id="utm-svg-container">
+              {% include "svg/utm_diagram.svg" %}
             </div>
           </div>
         </div>
 
         <div class="col-lg-5">
-          <div class="lab-card h-100">
+          <div class="lab-card h-100 shadow-sm border border-primary border-opacity-50 p-4" id="utm-component-card">
             <div class="d-flex align-items-center justify-content-between mb-3">
               <h5 class="text-navy fw-bold mb-0">Component Inspector</h5>
-              <select id="utm-component-select" class="form-select form-select-sm form-lab-control w-auto">
-                <option value="part-load-cell">Load Cell (50 kN)</option>
-                <option value="part-crosshead">Movable Crosshead</option>
-                <option value="part-upper-grip">Upper Hydraulic Grip</option>
-                <option value="part-specimen">Tensile Specimen</option>
-                <option value="part-extensometer">Clip-on Extensometer</option>
-                <option value="part-lower-grip">Lower Fixed Grip</option>
-                <option value="part-lead-screws">Twin Lead Screws</option>
-                <option value="part-control-panel">Control Console</option>
-              </select>
+              <div class="d-flex align-items-center gap-2">
+                <select id="utm-component-select" class="form-select form-select-sm form-lab-control w-auto">
+                  <option value="part-load-cell">Load Cell (50 kN)</option>
+                  <option value="part-crosshead">Movable Crosshead</option>
+                  <option value="part-upper-grip">Upper Hydraulic Grip</option>
+                  <option value="part-specimen">Tensile Specimen</option>
+                  <option value="part-extensometer">Clip-on Extensometer</option>
+                  <option value="part-lower-grip">Lower Fixed Grip</option>
+                  <option value="part-lead-screws">Twin Lead Screws</option>
+                  <option value="part-control-panel">Control Console</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-circle" id="inspector-close-btn" title="Close Panel" aria-label="Close">&times;</button>
+              </div>
             </div>
 
             <div class="p-3 rounded mb-3" style="background: rgba(43, 108, 176, 0.08); border: 1px solid rgba(43, 108, 176, 0.2);">

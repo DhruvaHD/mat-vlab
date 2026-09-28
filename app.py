@@ -66,15 +66,14 @@ with app.app_context():
 
 # Access Control Decorators
 def login_required(f):
+    """Pass-through decorator; student-facing laboratory is open and requires no login."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not session.get('student_name'):
-            flash("Please enter your name and institution to access the laboratory.", "info")
-            return redirect(url_for('index', next=request.path))
         return f(*args, **kwargs)
     return decorated_function
 
 def admin_required(f):
+    """Guards private administrative endpoints."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not session.get('is_admin'):
@@ -96,98 +95,66 @@ def inject_student_context():
         }
     return {
         'current_student': student,
-        'is_logged_in': bool(student),
+        'is_logged_in': True,  # Full laboratory navigation is permanently visible
         'is_admin': bool(session.get('is_admin'))
     }
 
 # ==========================================
-# FIRST SCREEN & STUDENT IDENTIFICATION FLOW
+# HOME PAGE & CORE LABORATORY NAVIGATION
 # ==========================================
 
 @app.route('/')
 def index():
     """
-    First Screen:
-    If student has active session, open Home page directly.
-    If unauthenticated, show simple 2-field Student Information form.
+    Main Laboratory Home page:
+    Directly opens the MAT-VLAB Home page without any login screen,
+    account creation, or gatekeeping identification form.
     """
-    if session.get('student_name') and session.get('university'):
-        return redirect(url_for('home'))
-    return render_template('student_info.html', active_page='landing')
-
-@app.route('/start-session', methods=['POST'])
-def start_session():
-    """
-    Direct Student Identification Gateway:
-    Receives Student Name and University / College Name.
-    Stores in current session and redirects directly to Home.
-    """
-    import secrets
-    student_name = request.form.get('student_name', '').strip()
-    university = request.form.get('university', '').strip()
-
-    if not student_name or not university:
-        flash("Please provide both your Student Name and University / College Name.", "danger")
-        return render_template('student_info.html', active_page='landing')
-
-    session['student_name'] = student_name
-    session['university'] = university
-    session['session_id'] = secrets.token_hex(16)
-
-    log_activity(
-        activity_type='SESSION_START',
-        details='Entered MAT-VLAB laboratory session',
-        student_name=student_name,
-        university=university,
-        session_id=session['session_id']
-    )
-
-    next_page = request.args.get('next') or request.form.get('next')
-    if next_page and next_page.startswith('/') and not next_page.startswith('//'):
-        return redirect(next_page)
-    return redirect(url_for('home'))
+    return render_template('index.html', active_page='home')
 
 @app.route('/home')
-@login_required
 def home():
-    """Main Laboratory Home page — directly accessible after entering identification."""
+    """Alias for laboratory home page."""
     return render_template('index.html', active_page='home')
+
+@app.route('/start-session', methods=['GET', 'POST'])
+def start_session():
+    """Optional session identification setter for laboratory reports; redirects directly to Home."""
+    if request.method == 'POST':
+        import secrets
+        student_name = request.form.get('student_name', '').strip()
+        university = request.form.get('university', '').strip()
+        if student_name:
+            session['student_name'] = student_name
+        if university:
+            session['university'] = university
+        if not session.get('session_id'):
+            session['session_id'] = secrets.token_hex(16)
+    return redirect(url_for('index'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    """Student registration deprecated; redirect cleanly to first identification screen."""
+    """Student registration eliminated; redirect cleanly to Home page."""
     return redirect(url_for('index'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Student login deprecated; redirect cleanly to first identification screen."""
+    """Student login eliminated; redirect cleanly to Home page."""
     return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
-    """Ends the current student session."""
-    name = session.get('student_name')
-    sess_id = session.get('session_id')
-    uni = session.get('university')
-    if name:
-        log_activity(
-            activity_type='SESSION_END',
-            details='Ended laboratory session',
-            student_name=name,
-            university=uni,
-            session_id=sess_id
-        )
+    """Clears any optional session identifiers and redirects to Home."""
     session.pop('student_name', None)
     session.pop('university', None)
     session.pop('session_id', None)
     session.pop('student_id', None)
-    flash(f"Your laboratory session has ended. Have a productive day{', ' + name if name else ''}!", 'info')
     return redirect(url_for('index'))
 
 @app.route('/dashboard')
 def dashboard():
-    """Direct route to laboratory home as per UX simplification specification."""
-    return redirect(url_for('home'))
+    """Direct route to laboratory home."""
+    return redirect(url_for('index'))
 
 # ==========================================
 # PRIVATE ADMIN SYSTEM (NON-OBVIOUS ROUTE)
@@ -436,7 +403,6 @@ def compare():
     return render_template('compare.html', active_page='compare', materials=mat_list, saved_experiments=saved_list)
 
 @app.route('/my-experiments')
-@login_required
 def my_experiments():
     sess_id = session.get('session_id')
     s_name = session.get('student_name')
@@ -458,6 +424,7 @@ def view_experiment(experiment_id):
     return render_template('results.html', active_page='results', preloaded_experiment=exp)
 
 @app.route('/quizzes')
+@app.route('/quiz')
 @login_required
 def quizzes():
     exp_type = request.args.get('type', 'tensile').lower()
@@ -588,13 +555,17 @@ def api_student_me():
 @app.route('/api/save', methods=['POST'])
 def api_save():
     try:
+        import secrets
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Missing payload to save.'}), 400
 
+        if not session.get('session_id'):
+            session['session_id'] = secrets.token_hex(16)
+
         student_id = data.get('student_id') or session.get('student_id')
-        student_name = data.get('student_name') or session.get('student_name')
-        university = data.get('university') or session.get('university')
+        student_name = data.get('student_name') or session.get('student_name') or 'Student Investigator'
+        university = data.get('university') or session.get('university') or 'Materials Testing Laboratory'
         session_id = data.get('session_id') or session.get('session_id')
 
         experiment_id = save_experiment(
@@ -731,13 +702,17 @@ def api_hardness_calculate():
 def api_hardness_save():
     """Persists a Brinell or Rockwell experiment to the database."""
     try:
+        import secrets
         data = request.get_json()
         if not data:
             return jsonify({'error': 'Missing payload to save.'}), 400
 
+        if not session.get('session_id'):
+            session['session_id'] = secrets.token_hex(16)
+
         student_id = data.get('student_id') or session.get('student_id')
-        student_name = data.get('student_name') or session.get('student_name')
-        university = data.get('university') or session.get('university')
+        student_name = data.get('student_name') or session.get('student_name') or 'Student Investigator'
+        university = data.get('university') or session.get('university') or 'Materials Testing Laboratory'
         session_id = data.get('session_id') or session.get('session_id')
 
         exp_id = save_hardness_experiment(

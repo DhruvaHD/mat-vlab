@@ -3,44 +3,61 @@
 {% block title %}MAT-VLAB — Interactive Virtual Materials Testing & Analysis Laboratory{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero-section">
-  <div class="container">
+<!-- ==========================================================================
+     HERO SECTION
+     ========================================================================== -->
+<section class="hero-section py-5 position-relative overflow-hidden">
+  <div class="container py-lg-4">
     <div class="row align-items-center g-5">
       <div class="col-lg-6">
         <div class="badge-lab mb-3">
-          <span class="badge-pulse"></span> Virtual Laboratory Platform
+          <span class="badge-pulse"></span> Virtual Materials Science &amp; Engineering Laboratory
         </div>
-        <h1 class="hero-title">
-          <span class="hero-gradient-text">MAT-VLAB</span>
-          <br>
-          <span class="fs-2 text-navy fw-bold">Interactive Virtual Materials Testing &amp; Analysis Laboratory</span>
+        <h1 class="hero-title mb-3">
+          <span class="hero-gradient-text d-block fs-1 fw-extrabold mb-1">MAT-VLAB</span>
+          <span class="fs-2 text-navy fw-bold lh-sm d-block">
+            Interactive Virtual Materials Testing &amp; Analysis Laboratory
+          </span>
         </h1>
-        <h2 class="hero-subtitle">
-          Learn. Simulate. Experiment. Analyze.
-        </h2>
-        <p class="hero-desc">
-          MAT-VLAB is an educational virtual laboratory designed to help students understand materials testing through interactive visual experiments, physics-based simulations, real laboratory data entry, and automatic engineering property calculations.
+        <p class="hero-desc text-secondary leading-relaxed mb-4 fs-6">
+          MAT-VLAB is an educational virtual engineering platform designed to help Materials Science, Metallurgical, and Mechanical Engineering students master materials characterization through a unified 9-pillar learning methodology:
         </p>
+
+        <!-- 9 Core Learning Pillars Quick-Badge Strip -->
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          <span class="badge bg-light text-navy border py-2 px-3 small"><i class="fas fa-book-open text-primary me-1"></i> Theory</span>
+          <span class="badge bg-light text-navy border py-2 px-3 small"><i class="fas fa-microscope text-steel me-1"></i> Equipment Visualization</span>
+          <span class="badge bg-light text-navy border py-2 px-3 small"><i class="fas fa-desktop text-info me-1"></i> Virtual Experiments</span>
+          <span class="badge bg-light text-navy border py-2 px-3 small"><i class="fas fa-keyboard text-success me-1"></i> Manual Readings</span>
+          <span class="badge bg-light text-navy border py-2 px-3 small"><i class="fas fa-calculator text-purple me-1"></i> Calculations</span>
+          <span class="badge bg-light text-navy border py-2 px-3 small"><i class="fas fa-chart-line text-warning me-1"></i> Graphs</span>
+          <span class="badge bg-light text-navy border py-2 px-3 small"><i class="fas fa-check-circle text-danger me-1"></i> Results</span>
+          <span class="badge bg-light text-navy border py-2 px-3 small"><i class="fas fa-graduation-cap text-primary me-1"></i> Quizzes</span>
+          <span class="badge bg-light text-navy border py-2 px-3 small"><i class="fas fa-file-pdf text-danger me-1"></i> Reports</span>
+        </div>
+
+        <!-- Direct Action Buttons (Direct Experiment Access) -->
         <div class="d-flex flex-wrap gap-3">
-          <a href="{{ url_for('experiments') }}" class="btn btn-lab-primary btn-lg">
+          <a href="{{ url_for('experiments') }}" class="btn btn-lab-primary btn-lg shadow-sm">
             <i class="fas fa-compass me-2"></i> Explore All Experiments
           </a>
-          <a href="{{ url_for('tensile_hub') }}" class="btn btn-lab-secondary btn-lg">
-            <i class="fas fa-compress-arrows-alt text-primary me-2"></i> Tensile Test (UTM)
+          <a href="{{ url_for('tensile_hub') }}" class="btn btn-lab-secondary btn-lg shadow-sm">
+            <i class="fas fa-compress-arrows-alt text-steel me-2"></i> Tensile Test (UTM)
           </a>
-          <a href="{{ url_for('hardness_hub') }}" class="btn btn-lab-secondary btn-lg">
-            <i class="fas fa-bullseye text-warning me-2"></i> Hardness Test (Brinell &amp; Rockwell)
+          <a href="{{ url_for('hardness_hub') }}" class="btn btn-lab-secondary btn-lg shadow-sm">
+            <i class="fas fa-bullseye text-warning me-2"></i> Hardness Laboratory
           </a>
         </div>
+
         <div class="mt-4 pt-3 border-top border-secondary border-opacity-25 d-flex gap-4 text-muted small flex-wrap">
-          <div><i class="fas fa-check-circle text-success me-1"></i> Tensile &amp; Hardness Laboratories</div>
-          <div><i class="fas fa-check-circle text-success me-1"></i> Dual Mode (Simulation + Manual Entry)</div>
+          <div><i class="fas fa-check-circle text-success me-1"></i> ASTM &amp; ISO Protocols</div>
+          <div><i class="fas fa-check-circle text-success me-1"></i> Interactive Component Diagrams</div>
           <div><i class="fas fa-check-circle text-success me-1"></i> Certified PDF Reports</div>
         </div>
       </div>
+
       <div class="col-lg-6">
-        <div class="p-2 utm-container shadow-lg">
+        <div class="p-2 utm-container shadow-lg border border-secondary border-opacity-25">
           <img src="{{ url_for('static', filename='images/lab_hero.svg') }}" alt="Materials Laboratory Virtual Setup" class="img-fluid rounded w-100">
         </div>
       </div>
@@ -48,276 +65,442 @@
   </div>
 </section>
 
-<!-- Why MAT-VLAB? Section -->
+<!-- ==========================================================================
+     EXPERIMENT CARDS SECTION (DIRECT ACCESS)
+     ========================================================================== -->
 <section class="py-5" style="background-color: var(--bg-primary);">
   <div class="container py-4">
     <div class="text-center mb-5">
-      <span class="badge-lab mb-2">Key Pedagogical Capabilities</span>
-      <h2 class="fw-bold text-navy fs-1">Why MAT-VLAB?</h2>
-      <p class="text-secondary mx-auto" style="max-width: 650px;">
-        Engineered specifically for Materials Science &amp; Technology students to bridge the gap between abstract solid mechanics theory and physical laboratory practice.
+      <span class="badge-lab mb-2">Standardized Testing Modules</span>
+      <h2 class="fw-bold text-navy fs-1">Laboratory Experiments Catalog</h2>
+      <p class="text-secondary mx-auto" style="max-width: 680px;">
+        Directly launch full-featured mechanical testing stations. Each experiment integrates constitutive simulation, real data entry, apparatus anatomy, calculations, and certified reporting.
       </p>
     </div>
 
     <div class="row g-4">
-      <!-- 1. Interactive Experiments -->
-      <div class="col-md-6 col-lg-3">
-        <div class="lab-card h-100">
-          <div class="lab-card-header">
-            <div class="lab-card-icon">
-              <i class="fas fa-sliders-h"></i>
-            </div>
+      <!-- 1. TENSILE TESTING (ACTIVE) -->
+      <div class="col-lg-4 col-md-6">
+        <div class="experiment-card-modern">
+          <div class="card-img-wrapper">
+            <img src="{{ url_for('static', filename='images/specimen_diagram.svg') }}" alt="Tensile Test Specimen Schematic">
+            <span class="position-absolute top-0 end-0 m-2 badge-status-available">
+              <i class="fas fa-check-circle"></i> Available
+            </span>
+            <span class="position-absolute bottom-0 start-0 m-2 badge bg-white text-navy border font-mono small">
+              ASTM E8 / ISO 6892
+            </span>
           </div>
-          <h5 class="text-navy fw-bold mb-2">Interactive Experiments</h5>
-          <p class="text-secondary small mb-0">
-            Control testing variables, adjust specimen gauge geometry, and test different materials in an active simulation environment.
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 font-mono small">
+              Uniaxial Tension
+            </span>
+            <span class="text-secondary small"><i class="fas fa-signal text-warning me-1"></i> Core Curricular</span>
+          </div>
+
+          <h3 class="fw-bold text-navy fs-5 mb-2">Uniaxial Tensile Test (UTM)</h3>
+          <p class="text-secondary small mb-4 flex-grow-1">
+            Evaluate tensile stress-strain behavior on standard dogbone specimens. Measure Young's Modulus, 0.2% yield offset, UTS, total elongation, and ductile necking with real-time interactive plotting.
           </p>
+
+          <div class="pt-3 border-top border-secondary border-opacity-25 mt-auto">
+            <a href="{{ url_for('tensile_hub') }}" class="btn btn-lab-primary w-100 d-flex align-items-center justify-content-center gap-2">
+              <span>Explore Experiment</span> <i class="fas fa-arrow-right small"></i>
+            </a>
+          </div>
         </div>
       </div>
 
-      <!-- 2. Visual Learning -->
-      <div class="col-md-6 col-lg-3">
-        <div class="lab-card h-100">
-          <div class="lab-card-header">
-            <div class="lab-card-icon text-cyan">
-              <i class="fas fa-eye"></i>
-            </div>
+      <!-- 2. BRINELL HARDNESS TEST (ACTIVE) -->
+      <div class="col-lg-4 col-md-6">
+        <div class="experiment-card-modern">
+          <div class="card-img-wrapper">
+            <img src="{{ url_for('static', filename='images/brinell_tester.svg') }}" alt="Brinell Hardness Machine Schematic">
+            <span class="position-absolute top-0 end-0 m-2 badge-status-available">
+              <i class="fas fa-check-circle"></i> Available
+            </span>
+            <span class="position-absolute bottom-0 start-0 m-2 badge bg-white text-navy border font-mono small">
+              ASTM E10 / ISO 6506
+            </span>
           </div>
-          <h5 class="text-navy fw-bold mb-2">Visual Learning</h5>
-          <p class="text-secondary small mb-0">
-            Explore interactive SVG schematics of Universal Testing Machines, dogbone specimens, and metallurgical necking and fracture stages.
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-info bg-opacity-10 text-primary border border-info border-opacity-25 font-mono small">
+              Spherical Indentation
+            </span>
+            <span class="text-secondary small"><i class="fas fa-microscope text-steel me-1"></i> Optical Metrology</span>
+          </div>
+
+          <h3 class="fw-bold text-navy fs-5 mb-2">Brinell Hardness Test</h3>
+          <p class="text-secondary small mb-4 flex-grow-1">
+            Conduct static indentation tests using a 10 mm tungsten carbide ball indenter under forces up to 3000 kgf. Measure dual impression diameters with a graduated reticle microscope to calculate HBW.
           </p>
+
+          <div class="pt-3 border-top border-secondary border-opacity-25 mt-auto">
+            <a href="{{ url_for('hardness_brinell') }}" class="btn btn-lab-primary w-100 d-flex align-items-center justify-content-center gap-2">
+              <span>Explore Experiment</span> <i class="fas fa-arrow-right small"></i>
+            </a>
+          </div>
         </div>
       </div>
 
-      <!-- 3. Manual Data Entry -->
-      <div class="col-md-6 col-lg-3">
-        <div class="lab-card h-100">
-          <div class="lab-card-header">
-            <div class="lab-card-icon text-warning">
-              <i class="fas fa-keyboard"></i>
-            </div>
+      <!-- 3. ROCKWELL HARDNESS TEST (ACTIVE) -->
+      <div class="col-lg-4 col-md-6">
+        <div class="experiment-card-modern">
+          <div class="card-img-wrapper">
+            <img src="{{ url_for('static', filename='images/rockwell_tester.svg') }}" alt="Rockwell Hardness Machine Schematic">
+            <span class="position-absolute top-0 end-0 m-2 badge-status-available">
+              <i class="fas fa-check-circle"></i> Available
+            </span>
+            <span class="position-absolute bottom-0 start-0 m-2 badge bg-white text-navy border font-mono small">
+              ASTM E18 / ISO 6508
+            </span>
           </div>
-          <h5 class="text-navy fw-bold mb-2">Manual Data Entry</h5>
-          <p class="text-secondary small mb-0">
-            Enter real observation readings obtained during physical college lab sessions or import batch laboratory CSV files directly.
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 font-mono small">
+              Differential Depth
+            </span>
+            <span class="text-secondary small"><i class="fas fa-tachometer-alt text-danger me-1"></i> Direct Reading</span>
+          </div>
+
+          <h3 class="fw-bold text-navy fs-5 mb-2">Rockwell Hardness Test</h3>
+          <p class="text-secondary small mb-4 flex-grow-1">
+            Direct-reading penetration testing across HRA, HRB, and HRC scales using diamond brale and carbide ball indenters. Simulate the minor-major-minor 3-stage load cycle with dashpot regulation.
           </p>
+
+          <div class="pt-3 border-top border-secondary border-opacity-25 mt-auto">
+            <a href="{{ url_for('hardness_rockwell') }}" class="btn btn-lab-primary w-100 d-flex align-items-center justify-content-center gap-2">
+              <span>Explore Experiment</span> <i class="fas fa-arrow-right small"></i>
+            </a>
+          </div>
         </div>
       </div>
 
-      <!-- 4. Automatic Calculations -->
-      <div class="col-md-6 col-lg-3">
-        <div class="lab-card h-100">
-          <div class="lab-card-header">
-            <div class="lab-card-icon text-success">
-              <i class="fas fa-calculator"></i>
+      <!-- 4. IMPACT TESTING (CHARPY / IZOD) — COMING SOON -->
+      <div class="col-lg-4 col-md-6">
+        <div class="experiment-card-modern opacity-85">
+          <div class="card-img-wrapper">
+            <div class="text-center p-3">
+              <i class="fas fa-history text-secondary opacity-50" style="font-size: 3.5rem;"></i>
+              <div class="text-secondary small mt-2 fw-semibold">Pendulum Hammer &amp; V-Notch Anvil</div>
             </div>
+            <span class="position-absolute top-0 end-0 m-2 badge-status-soon">
+              <i class="fas fa-clock"></i> Coming Soon
+            </span>
+            <span class="position-absolute bottom-0 start-0 m-2 badge bg-white text-secondary border font-mono small">
+              ASTM E23 / ISO 148
+            </span>
           </div>
-          <h5 class="text-navy fw-bold mb-2">Automatic Calculations</h5>
-          <p class="text-secondary small mb-0">
-            Calculate cross-sectional area, engineering stress, strain, Young's modulus ($E$), 0.2% proof stress, UTS, and % elongation instantly.
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 font-mono small">
+              Dynamic Toughness
+            </span>
+            <span class="text-muted small">Phase 2 Planned</span>
+          </div>
+
+          <h3 class="fw-bold text-navy fs-5 mb-2">Impact Testing (Charpy &amp; Izod)</h3>
+          <p class="text-secondary small mb-4 flex-grow-1">
+            Evaluate notch toughness, impact fracture energy, and the Ductile-to-Brittle Transition Temperature (DBTT) of structural alloys using a 300 Joule swinging pendulum striker.
           </p>
+
+          <div class="pt-3 border-top border-secondary border-opacity-25 mt-auto">
+            <button type="button" class="btn btn-outline-secondary w-100" disabled>
+              <i class="fas fa-clock me-1"></i> Coming Soon (In Development)
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- 5. Graphs & Analysis -->
-      <div class="col-md-6 col-lg-3">
-        <div class="lab-card h-100">
-          <div class="lab-card-header">
-            <div class="lab-card-icon text-purple">
-              <i class="fas fa-chart-line"></i>
+      <!-- 5. COMPRESSION TESTING — COMING SOON -->
+      <div class="col-lg-4 col-md-6">
+        <div class="experiment-card-modern opacity-85">
+          <div class="card-img-wrapper">
+            <div class="text-center p-3">
+              <i class="fas fa-compress-arrows-alt text-secondary opacity-50" style="font-size: 3.5rem;"></i>
+              <div class="text-secondary small mt-2 fw-semibold">Sub-press Platens &amp; Compression Cylinder</div>
             </div>
+            <span class="position-absolute top-0 end-0 m-2 badge-status-soon">
+              <i class="fas fa-clock"></i> Coming Soon
+            </span>
+            <span class="position-absolute bottom-0 start-0 m-2 badge bg-white text-secondary border font-mono small">
+              ASTM E9
+            </span>
           </div>
-          <h5 class="text-navy fw-bold mb-2">Graphs &amp; Analysis</h5>
-          <p class="text-secondary small mb-0">
-            Generate responsive, publication-quality Plotly.js Stress-Strain curves with interactive hover telemetry and critical point markers.
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 font-mono small">
+              Uniaxial Compression
+            </span>
+            <span class="text-muted small">Phase 2 Planned</span>
+          </div>
+
+          <h3 class="fw-bold text-navy fs-5 mb-2">Compression Testing</h3>
+          <p class="text-secondary small mb-4 flex-grow-1">
+            Determine compressive yield strength, crushing behavior, and lateral platen friction (barreling effect) in brittle cast irons, structural ceramics, and ductile bearing alloys.
           </p>
+
+          <div class="pt-3 border-top border-secondary border-opacity-25 mt-auto">
+            <button type="button" class="btn btn-outline-secondary w-100" disabled>
+              <i class="fas fa-clock me-1"></i> Coming Soon (In Development)
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- 6. Quiz & Assessment -->
-      <div class="col-md-6 col-lg-3">
-        <div class="lab-card h-100">
-          <div class="lab-card-header">
-            <div class="lab-card-icon text-danger">
-              <i class="fas fa-check-double"></i>
+      <!-- 6. ASTM E140 HARDNESS EQUIVALENCE TOOL (ACTIVE) -->
+      <div class="col-lg-4 col-md-6">
+        <div class="experiment-card-modern">
+          <div class="card-img-wrapper">
+            <div class="text-center p-3">
+              <i class="fas fa-balance-scale text-success" style="font-size: 3.5rem;"></i>
+              <div class="text-navy small mt-2 fw-semibold">Cross-Scale Equivalence Engine</div>
             </div>
+            <span class="position-absolute top-0 end-0 m-2 badge-status-available">
+              <i class="fas fa-check-circle"></i> Available
+            </span>
+            <span class="position-absolute bottom-0 start-0 m-2 badge bg-white text-navy border font-mono small">
+              ASTM E140 / ISO 18265
+            </span>
           </div>
-          <h5 class="text-navy fw-bold mb-2">Quiz &amp; Assessment</h5>
-          <p class="text-secondary small mb-0">
-            Test your comprehension of mechanical testing standards, ASTM E8 methods, Hooke's Law, and ductile fracture with instant explanations.
-          </p>
-        </div>
-      </div>
 
-      <!-- 7. PDF Reports -->
-      <div class="col-md-6 col-lg-3">
-        <div class="lab-card h-100">
-          <div class="lab-card-header">
-            <div class="lab-card-icon text-info">
-              <i class="fas fa-file-pdf"></i>
-            </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 font-mono small">
+              Standard Conversion
+            </span>
+            <span class="text-secondary small"><i class="fas fa-calculator text-purple me-1"></i> Multi-Scale</span>
           </div>
-          <h5 class="text-navy fw-bold mb-2">PDF Reports</h5>
-          <p class="text-secondary small mb-0">
-            Generate professional, downloadable PDF lab reports complete with institutional headers, observation tables, graphs, and conclusions.
-          </p>
-        </div>
-      </div>
 
-      <!-- 8. Material Comparison -->
-      <div class="col-md-6 col-lg-3">
-        <div class="lab-card h-100">
-          <div class="lab-card-header">
-            <div class="lab-card-icon text-primary">
-              <i class="fas fa-balance-scale"></i>
-            </div>
-          </div>
-          <h5 class="text-navy fw-bold mb-2">Material Comparison</h5>
-          <p class="text-secondary small mb-0">
-            Compare ferrous, non-ferrous, and light engineering alloys side-by-side on stiffness, yield strength, UTS, density, and ductility.
+          <h3 class="fw-bold text-navy fs-5 mb-2">Hardness Conversion Tool</h3>
+          <p class="text-secondary small mb-4 flex-grow-1">
+            Convert hardness readings between Brinell (HBW), Rockwell (HRA, HRB, HRC), Vickers (HV), and approximate tensile strength according to ASTM E140 standard conversion tables.
           </p>
+
+          <div class="pt-3 border-top border-secondary border-opacity-25 mt-auto">
+            <a href="{{ url_for('hardness_compare') }}" class="btn btn-lab-primary w-100 d-flex align-items-center justify-content-center gap-2">
+              <span>Explore Conversion Tool</span> <i class="fas fa-arrow-right small"></i>
+            </a>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Flagship Experiment Showcase: Tensile Test -->
+<!-- ==========================================================================
+     THE 9 PEDAGOGICAL PILLARS OF MAT-VLAB
+     ========================================================================== -->
 <section class="py-5" style="background-color: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
-  <div class="container py-3">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-6">
-        <div class="badge-lab mb-2">
-          <span class="badge-pulse"></span> Fully Implemented Flagship Lab
-        </div>
-        <h2 class="fw-bold text-navy fs-1 mb-3">Uniaxial Tensile Test (UTM)</h2>
-        <p class="text-secondary mb-4">
-          Master the cornerstone experiment of mechanical metallurgy. Learn machine anatomy, inspect load cell sensors, simulate testing on Mild Steel, Aluminium 6061-T6, Copper, and Brass, or enter real data from your physical laboratory session.
-        </p>
+  <div class="container py-4">
+    <div class="text-center mb-5">
+      <span class="badge-lab mb-2">Educational Architecture</span>
+      <h2 class="fw-bold text-navy fs-1">How MAT-VLAB Facilitates Learning</h2>
+      <p class="text-secondary mx-auto" style="max-width: 680px;">
+        Designed to bridge the gap between abstract solid mechanics theory and physical laboratory practice through nine integrated educational facets.
+      </p>
+    </div>
 
-        <div class="row g-3 mb-4">
-          <div class="col-sm-6">
-            <div class="p-3 rounded border border-secondary border-opacity-25" style="background: var(--bg-card);">
-              <div class="fw-bold text-steel fs-5 mb-1"><i class="fas fa-desktop me-1"></i> Virtual Simulation</div>
-              <p class="text-secondary small mb-0">Watch crosshead movement, specimen necking, and real-time stress-strain graph formation.</p>
-            </div>
+    <div class="row g-4">
+      <!-- 1. Theory -->
+      <div class="col-lg-4 col-md-6">
+        <div class="pillar-card">
+          <div class="pillar-icon-box bg-primary bg-opacity-10 text-primary">
+            <i class="fas fa-book-open"></i>
           </div>
-          <div class="col-sm-6">
-            <div class="p-3 rounded border border-secondary border-opacity-25" style="background: var(--bg-card);">
-              <div class="fw-bold text-steel fs-5 mb-1"><i class="fas fa-edit me-1"></i> Manual Lab Readings</div>
-              <p class="text-secondary small mb-0">Type or upload real laboratory load-extension readings to calculate E, Yield, and UTS.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="d-flex flex-wrap gap-3">
-          <a href="{{ url_for('tensile_hub') }}" class="btn btn-lab-primary">
-            <i class="fas fa-flask me-2"></i> Launch Tensile Laboratory
-          </a>
-          <a href="{{ url_for('quizzes') }}" class="btn btn-lab-secondary">
-            <i class="fas fa-graduation-cap me-2"></i> Take Tensile Quiz
-          </a>
+          <h4 class="fw-bold text-navy fs-5 mb-2">1. Scientific Theory</h4>
+          <p class="text-secondary small mb-0">
+            Comprehensive foundations of stress states, Hooke's Law, dislocation glide, work hardening, resolved shear stress, and standard testing protocols (ASTM E8, E10, E18).
+          </p>
         </div>
       </div>
 
-      <div class="col-lg-6">
-        <div class="utm-container shadow-lg">
-          <img src="{{ url_for('static', filename='images/specimen_diagram.svg') }}" alt="ASTM Tensile Specimen" class="img-fluid rounded w-100 mb-3">
-          <div class="text-center">
-            <span class="badge bg-light text-primary border">ASTM E8 / ISO 6892 Standard Specimen Model</span>
+      <!-- 2. Equipment Visualization -->
+      <div class="col-lg-4 col-md-6">
+        <div class="pillar-card">
+          <div class="pillar-icon-box bg-info bg-opacity-10 text-primary">
+            <i class="fas fa-microscope"></i>
           </div>
+          <h4 class="fw-bold text-navy fs-5 mb-2">2. Equipment Visualization</h4>
+          <p class="text-secondary small mb-0">
+            Interactive, clickable SVG machine diagrams of the Universal Testing Machine, Brinell Tester, and Rockwell Machine detailing load cells, lead screws, indenters, and anvils.
+          </p>
+        </div>
+      </div>
+
+      <!-- 3. Virtual Experiments -->
+      <div class="col-lg-4 col-md-6">
+        <div class="pillar-card">
+          <div class="pillar-icon-box bg-success bg-opacity-10 text-success">
+            <i class="fas fa-desktop"></i>
+          </div>
+          <h4 class="fw-bold text-navy fs-5 mb-2">3. Virtual Experiments</h4>
+          <p class="text-secondary small mb-0">
+            Simulate tensile crosshead elongation, localized necking, and 3000 kgf indentation dwell sequences with dynamic physics-based specimen deformation graphics.
+          </p>
+        </div>
+      </div>
+
+      <!-- 4. Manual Laboratory Readings -->
+      <div class="col-lg-4 col-md-6">
+        <div class="pillar-card">
+          <div class="pillar-icon-box bg-warning bg-opacity-10 text-warning">
+            <i class="fas fa-keyboard"></i>
+          </div>
+          <h4 class="fw-bold text-navy fs-5 mb-2">4. Manual Laboratory Readings</h4>
+          <p class="text-secondary small mb-0">
+            Enter real observation data gathered during physical university lab sessions or import raw CSV files from physical testing machines for automated data reduction.
+          </p>
+        </div>
+      </div>
+
+      <!-- 5. Calculations -->
+      <div class="col-lg-4 col-md-6">
+        <div class="pillar-card">
+          <div class="pillar-icon-box bg-purple bg-opacity-10 text-purple">
+            <i class="fas fa-calculator"></i>
+          </div>
+          <h4 class="fw-bold text-navy fs-5 mb-2">5. Step-by-Step Calculations</h4>
+          <p class="text-secondary small mb-0">
+            Immediate mathematical evaluation of cross-sectional area, engineering stress, true stress, 0.2% offset proof stress, Young's modulus, and Brinell/Rockwell hardness numbers.
+          </p>
+        </div>
+      </div>
+
+      <!-- 6. Graphs -->
+      <div class="col-lg-4 col-md-6">
+        <div class="pillar-card">
+          <div class="pillar-icon-box bg-danger bg-opacity-10 text-danger">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h4 class="fw-bold text-navy fs-5 mb-2">6. Responsive Graphs</h4>
+          <p class="text-secondary small mb-0">
+            Interactive Plotly.js Stress-Strain curves with real-time hover telemetry, proportional limit lines, yield tangent overlays, and ultimate tensile strength markers.
+          </p>
+        </div>
+      </div>
+
+      <!-- 7. Results -->
+      <div class="col-lg-4 col-md-6">
+        <div class="pillar-card">
+          <div class="pillar-icon-box bg-teal bg-opacity-10 text-teal">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h4 class="fw-bold text-navy fs-5 mb-2">7. Mechanical Property Results</h4>
+          <p class="text-secondary small mb-0">
+            Standardized summary scorecards reporting modulus of elasticity, yield strength, tensile strength, ductility, percentage reduction of area, and material classification.
+          </p>
+        </div>
+      </div>
+
+      <!-- 8. Quizzes -->
+      <div class="col-lg-4 col-md-6">
+        <div class="pillar-card">
+          <div class="pillar-icon-box bg-primary bg-opacity-10 text-steel">
+            <i class="fas fa-graduation-cap"></i>
+          </div>
+          <h4 class="fw-bold text-navy fs-5 mb-2">8. Knowledge Assessment</h4>
+          <p class="text-secondary small mb-0">
+            Formative multiple-choice questions assessing understanding of ASTM test procedures, calibration standards, failure mechanisms, and metallurgical calculations.
+          </p>
+        </div>
+      </div>
+
+      <!-- 9. Reports -->
+      <div class="col-lg-4 col-md-6">
+        <div class="pillar-card">
+          <div class="pillar-icon-box bg-danger bg-opacity-10 text-danger">
+            <i class="fas fa-file-pdf"></i>
+          </div>
+          <h4 class="fw-bold text-navy fs-5 mb-2">9. Certified PDF Reports</h4>
+          <p class="text-secondary small mb-0">
+            Instant generation of publication-grade laboratory reports complete with institutional headers, observation tables, embedded stress-strain graphs, and formal conclusions.
+          </p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Flagship Experiment Showcase: Hardness Testing (Brinell & Rockwell) -->
-<section class="py-5" style="background-color: var(--bg-primary); border-bottom: 1px solid var(--border-color);">
-  <div class="container py-3">
-    <div class="row align-items-center g-5">
-      <div class="col-lg-6 order-lg-2">
-        <div class="badge-lab mb-2">
-          <span class="badge-pulse"></span> Complete Module: ASTM Standards
-        </div>
-        <h2 class="fw-bold text-navy fs-1 mb-3">Hardness Testing Laboratory</h2>
-        <p class="text-secondary mb-4">
-          Characterize material resistance to localized plastic deformation using industrial Brinell and Rockwell methodologies. Explore complete machine anatomy, standard indenter geometries, load sequences, step-by-step mathematical calculations, and instant PDF report generation.
-        </p>
-
-        <div class="row g-3 mb-4">
-          <div class="col-sm-6">
-            <div class="p-3 rounded border border-secondary border-opacity-25" style="background: var(--bg-card);">
-              <div class="fw-bold text-primary fs-5 mb-1"><i class="fas fa-circle me-1"></i> Brinell (ASTM E10)</div>
-              <p class="text-secondary small mb-0">Tungsten carbide ball indentation, optical impression diameter micrometer readings, and HBW calculations.</p>
-            </div>
-          </div>
-          <div class="col-sm-6">
-            <div class="p-3 rounded border border-secondary border-opacity-25" style="background: var(--bg-card);">
-              <div class="fw-bold text-danger fs-5 mb-1"><i class="fas fa-gem me-1"></i> Rockwell (ASTM E18)</div>
-              <p class="text-secondary small mb-0">Direct dial depth measurement across HRA, HRB, HRC, HRD, HRF scales with diamond brale and steel ball indenters.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="d-flex flex-wrap gap-3">
-          <a href="{{ url_for('hardness_hub') }}" class="btn btn-lab-primary">
-            <i class="fas fa-microscope me-2"></i> Open Hardness Testing Lab
-          </a>
-          <a href="{{ url_for('hardness_brinell') }}" class="btn btn-outline-primary">
-            <i class="fas fa-circle me-1"></i> Brinell Test
-          </a>
-          <a href="{{ url_for('hardness_rockwell') }}" class="btn btn-outline-danger">
-            <i class="fas fa-gem me-1"></i> Rockwell Test
-          </a>
-        </div>
-      </div>
-
-      <div class="col-lg-6 order-lg-1">
-        <div class="row g-3">
-          <div class="col-6">
-            <div class="lab-card p-3 text-center h-100 shadow-sm border border-primary border-opacity-25">
-              <img src="{{ url_for('static', filename='images/brinell_tester.svg') }}" alt="Brinell Hardness Tester" class="img-fluid rounded mb-2" style="max-height: 180px;">
-              <div class="fw-bold text-navy small">Brinell Machine</div>
-              <span class="badge bg-light text-primary border font-mono small">ASTM E10</span>
-            </div>
-          </div>
-          <div class="col-6">
-            <div class="lab-card p-3 text-center h-100 shadow-sm border border-danger border-opacity-25">
-              <img src="{{ url_for('static', filename='images/rockwell_tester.svg') }}" alt="Rockwell Hardness Tester" class="img-fluid rounded mb-2" style="max-height: 180px;">
-              <div class="fw-bold text-navy small">Rockwell Machine</div>
-              <span class="badge bg-light text-danger border font-mono small">ASTM E18</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- "Designed for Students" Pedagogical Scope Section -->
+<!-- ==========================================================================
+     APPARATUS PREVIEW & MACHINE ANATOMY SECTION
+     ========================================================================== -->
 <section class="py-5" style="background-color: var(--bg-primary);">
   <div class="container py-3">
-    <div class="lab-card p-4 p-md-5">
+    <div class="lab-card p-4 p-md-5 border border-secondary border-opacity-25 shadow-sm">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+          <div class="badge-lab mb-2">
+            <i class="fas fa-hand-pointer text-steel me-1"></i> Interactive Component Schematics
+          </div>
+          <h2 class="fw-bold text-navy mb-3">Explore Real Machine Anatomy</h2>
+          <p class="text-secondary mb-3">
+            Every laboratory station includes an interactive SVG diagram of the testing apparatus. You can click or tap directly on the load cell, ball indenter, elevating screw, optical microscope, or dial indicators to inspect their internal mechanics and testing functions.
+          </p>
+          <div class="d-flex flex-wrap gap-2 mb-4">
+            <span class="badge bg-light text-navy border py-2 px-3"><i class="fas fa-check text-success me-1"></i> Touch &amp; Mobile Optimized</span>
+            <span class="badge bg-light text-navy border py-2 px-3"><i class="fas fa-check text-success me-1"></i> Mouse Hover &amp; Click</span>
+            <span class="badge bg-light text-navy border py-2 px-3"><i class="fas fa-check text-success me-1"></i> Detailed Specifications</span>
+          </div>
+          <div class="d-flex flex-wrap gap-3">
+            <a href="{{ url_for('tensile_hub') }}#content-apparatus" class="btn btn-lab-primary">
+              <i class="fas fa-compress-arrows-alt me-1"></i> Inspect UTM Machine
+            </a>
+            <a href="{{ url_for('hardness_brinell') }}#apparatus" class="btn btn-outline-primary">
+              <i class="fas fa-circle me-1"></i> Inspect Brinell Tester
+            </a>
+            <a href="{{ url_for('hardness_rockwell') }}#apparatus" class="btn btn-outline-danger">
+              <i class="fas fa-gem me-1"></i> Inspect Rockwell Tester
+            </a>
+          </div>
+        </div>
+
+        <div class="col-lg-5 text-center">
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="p-2 bg-light rounded border border-secondary border-opacity-25 shadow-sm">
+                <img src="{{ url_for('static', filename='images/brinell_tester.svg') }}" alt="Brinell Apparatus" class="img-fluid rounded" style="max-height: 160px;">
+                <div class="fw-bold text-navy small mt-2">Brinell Tester</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-2 bg-light rounded border border-secondary border-opacity-25 shadow-sm">
+                <img src="{{ url_for('static', filename='images/rockwell_tester.svg') }}" alt="Rockwell Apparatus" class="img-fluid rounded" style="max-height: 160px;">
+                <div class="fw-bold text-navy small mt-2">Rockwell Tester</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==========================================================================
+     PEDAGOGICAL SCOPE & ACADEMIC NOTICE
+     ========================================================================== -->
+<section class="py-5" style="background-color: var(--bg-secondary); border-top: 1px solid var(--border-color);">
+  <div class="container py-3">
+    <div class="lab-card p-4 p-md-5 border border-secondary border-opacity-25">
       <div class="row align-items-center g-4">
         <div class="col-lg-8">
           <div class="d-flex align-items-center gap-2 mb-3">
-            <i class="fas fa-user-graduate text-steel fs-3"></i>
-            <h3 class="fw-bold text-navy mb-0">Designed for Materials Science &amp; Engineering Students</h3>
+            <i class="fas fa-graduation-cap text-steel fs-3"></i>
+            <h3 class="fw-bold text-navy mb-0">Engineered for Materials Science &amp; Technology Students</h3>
           </div>
           <p class="text-secondary mb-3">
-            Physical laboratory testing machines such as Universal Testing Machines (UTM), Charpy impact pendulums, and creep frames are capital-intensive, high-maintenance instruments. Often, students have limited hands-on machine time, or must perform experiments in large batches where individual interactive experimentation is constrained.
+            Physical laboratory testing machines such as Universal Testing Machines (UTM), Charpy impact pendulums, and hardness testers are capital-intensive, high-maintenance instruments. Frequently, student access is constrained by machine availability, batch testing schedules, or specimen costs.
           </p>
           <p class="text-secondary mb-0">
-            <strong>MAT-VLAB</strong> addresses this challenge by providing an accessible, rigorous virtual platform for pre-lab preparation, constitutive simulation, post-lab data reduction, and automated reporting.
+            <strong>MAT-VLAB</strong> bridges this gap by offering a comprehensive platform for pre-lab preparation, interactive simulation, post-lab data reduction, and automated laboratory reporting.
           </p>
         </div>
         <div class="col-lg-4">
           <div class="alert-lab-info p-3">
             <h6 class="fw-bold mb-2"><i class="fas fa-shield-alt me-1"></i> Academic Scope &amp; Role</h6>
             <p class="small mb-0">
-              MAT-VLAB is designed as a learning companion. <strong>It does not claim to replace physical laboratories.</strong> Hands-on machine operation, physical calibration, specimen preparation, and laboratory safety protocols remain vital components of engineering education.
+              MAT-VLAB is an educational simulator and analysis tool. <strong>It serves to reinforce experimental understanding when physical equipment access is limited</strong> and does not replace certified physical testing accreditation or hands-on machine safety training.
             </p>
           </div>
         </div>
