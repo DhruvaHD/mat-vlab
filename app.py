@@ -49,10 +49,9 @@ from calculations.compression import (
     calculate_cylindrical_area, calculate_compressive_stress, calculate_compressive_strain,
     COMPRESSION_SPECIMEN_STANDARDS, COMPRESSION_MATERIAL_PRESETS
 )
-from reports.report_generator import generate_tensile_pdf
-from reports.hardness_report_generator import generate_hardness_pdf
-from reports.impact_report_generator import generate_impact_pdf
-from reports.compression_report_generator import generate_compression_pdf
+
+# PDF Report Generators are lazily imported in their respective routes
+# to prevent heavy libraries (ReportLab, Matplotlib font-cache rebuild) from delaying app startup.
 
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -799,6 +798,7 @@ def download_hardness_report_by_id(experiment_id):
         session_id=session.get('session_id')
     )
 
+    from reports.hardness_report_generator import generate_hardness_pdf
     pdf_buffer = generate_hardness_pdf(exp)
     clean_mat = (exp.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
     filename = f"MAT_VLAB_{exp.get('method', 'HARDNESS')}_Exp{experiment_id}_{clean_mat}.pdf"
@@ -831,6 +831,7 @@ def api_hardness_generate_pdf():
             session_id=session.get('session_id')
         )
 
+        from reports.hardness_report_generator import generate_hardness_pdf
         pdf_buffer = generate_hardness_pdf(data)
         clean_mat = (data.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
         filename = f"MAT_VLAB_{data.get('method', 'HARDNESS')}_{clean_mat}.pdf"
@@ -863,6 +864,7 @@ def download_report_by_id(experiment_id):
         session_id=session.get('session_id')
     )
 
+    from reports.report_generator import generate_tensile_pdf
     pdf_buffer = generate_tensile_pdf(exp)
     filename = f"MAT_VLAB_Report_Exp{experiment_id}_{(exp.get('material_name', 'tensile')).replace(' ', '_')}.pdf"
     return send_file(
@@ -893,6 +895,7 @@ def api_generate_pdf():
             session_id=session.get('session_id')
         )
 
+        from reports.report_generator import generate_tensile_pdf
         pdf_buffer = generate_tensile_pdf(data)
         filename = f"MAT_VLAB_Report_{(data.get('material_name', 'tensile')).replace(' ', '_')}.pdf"
         return send_file(
@@ -1025,6 +1028,7 @@ def download_impact_report_by_id(experiment_id):
         session_id=session.get('session_id')
     )
 
+    from reports.impact_report_generator import generate_impact_pdf
     pdf_buffer = generate_impact_pdf(exp)
     clean_mat = (exp.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
     filename = f"MAT_VLAB_Impact_Exp{experiment_id}_{clean_mat}.pdf"
@@ -1057,6 +1061,7 @@ def api_impact_generate_pdf():
             session_id=session.get('session_id')
         )
 
+        from reports.impact_report_generator import generate_impact_pdf
         pdf_buffer = generate_impact_pdf(data)
         clean_mat = (data.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
         filename = f"MAT_VLAB_Impact_{clean_mat}.pdf"
@@ -1187,6 +1192,7 @@ def download_compression_report_by_id(experiment_id):
         session_id=session.get('session_id')
     )
 
+    from reports.compression_report_generator import generate_compression_pdf
     pdf_buffer = generate_compression_pdf(exp)
     clean_mat = (exp.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
     filename = f"MAT_VLAB_Compression_Exp{experiment_id}_{clean_mat}.pdf"
@@ -1219,6 +1225,7 @@ def api_compression_generate_pdf():
             session_id=session.get('session_id')
         )
 
+        from reports.compression_report_generator import generate_compression_pdf
         pdf_buffer = generate_compression_pdf(data)
         clean_mat = (data.get('material_name', 'metal')).replace(' ', '_').replace('/', '_')
         filename = f"MAT_VLAB_Compression_{clean_mat}.pdf"

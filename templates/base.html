@@ -16,8 +16,11 @@
   <!-- Font Awesome 6 Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <!-- Plotly.js -->
-  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+  <!-- Plotly.js (loaded conditionally with defer on experiment and comparison pages that plot graphs) -->
+  {% if active_page in ['tensile', 'simulation', 'manual', 'hardness_compare', 'impact', 'compression', 'compare', 'results'] or needs_plotly %}
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js" defer></script>
+  {% endif %}
+  {% block plotly_script %}{% endblock %}
 
   <!-- MathJax 3 Global Configuration (MUST appear BEFORE MathJax script is loaded) -->
   <script>
@@ -39,11 +42,89 @@
   {% block extra_head %}{% endblock %}
 </head>
 <body>
+  <!-- =========================================================================
+       MAT-VLAB INSTANT INITIALIZATION & COLD-START SCREEN
+       Renders instantly on first byte paint (zero external dependencies)
+       ========================================================================= -->
+  <div id="matvlab-loading-screen" class="matvlab-loading-overlay">
+    <div class="matvlab-loading-card">
+      <div class="matvlab-loading-logo-wrapper">
+        <div class="matvlab-atom-pulse"></div>
+        <div class="brand-icon matvlab-brand-icon-lg">
+          <i class="fas fa-atom"></i>
+        </div>
+      </div>
+      <h1 class="matvlab-loading-title">MAT-VLAB</h1>
+      <p class="matvlab-loading-subtitle">Interactive Materials Testing &amp; Analysis Laboratory</p>
 
-  <!-- Navigation Bar -->
+      <div class="matvlab-loading-status-box" id="matvlab-loading-status-box">
+        <div class="matvlab-progress-track">
+          <div class="matvlab-progress-bar"></div>
+        </div>
+        <p class="matvlab-loading-text" id="matvlab-loading-text">
+          <span class="spinner-grow spinner-grow-sm text-success me-2" role="status"></span>
+          Starting laboratory...
+        </p>
+      </div>
+
+      <!-- Timeout / Cold-Start Failsafe (revealed if container takes > 10s to wake up) -->
+      <div id="matvlab-timeout-warning" class="matvlab-timeout-warning d-none">
+        <div class="alert alert-warning border border-warning shadow-sm small mb-3 text-start">
+          <i class="fas fa-hourglass-half me-1"></i>
+          <strong>Cloud Server Startup:</strong> The virtual laboratory is waking up from cloud cold storage. This usually takes 30–60 seconds on initial load.
+        </div>
+        <div class="d-flex justify-content-center gap-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.reload();">
+            <i class="fas fa-redo-alt me-1"></i> Retry
+          </button>
+          <button type="button" class="btn btn-sm btn-lab-primary" onclick="dismissLoadingScreen();">
+            <i class="fas fa-arrow-right me-1"></i> Enter Laboratory
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      window.dismissLoadingScreen = function() {
+        var screen = document.getElementById('matvlab-loading-screen');
+        if (screen && !screen.classList.contains('dismissed')) {
+          screen.classList.add('dismissed');
+          setTimeout(function() { screen.remove(); }, 400);
+        }
+      };
+
+      // Failsafe timer: if page isn't ready in 10s (Render cold start), show retry options
+      var coldStartTimer = setTimeout(function() {
+        var warn = document.getElementById('matvlab-timeout-warning');
+        var statusBox = document.getElementById('matvlab-loading-status-box');
+        if (warn) {
+          warn.classList.remove('d-none');
+          if (statusBox) statusBox.classList.add('d-none');
+        }
+      }, 10000);
+
+      // Automatically dismiss as soon as DOM is ready
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(window.dismissLoadingScreen, 150);
+      } else {
+        window.addEventListener('DOMContentLoaded', function() {
+          clearTimeout(coldStartTimer);
+          setTimeout(window.dismissLoadingScreen, 180);
+        });
+        window.addEventListener('load', function() {
+          clearTimeout(coldStartTimer);
+          window.dismissLoadingScreen();
+        });
+      }
+    })();
+  </script>
+
+  <!-- Navigation Bar: Centered & Animated -->
   <nav class="navbar navbar-expand-lg navbar-dark navbar-matvlab sticky-top">
     <div class="container-fluid px-2 px-sm-3 px-lg-4">
-      <a class="navbar-brand" href="{{ url_for('index') }}">
+      <a class="navbar-brand me-lg-4" href="{{ url_for('index') }}">
         <div class="brand-icon">
           <i class="fas fa-atom"></i>
         </div>
@@ -55,9 +136,9 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="navbarMain">
-        <!-- Main Laboratory Navigation: Clean & Directly Accessible -->
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+      <div class="collapse navbar-collapse justify-content-center" id="navbarMain">
+        <!-- Main Laboratory Navigation: Centered with Animated Interactions -->
+        <ul class="navbar-nav mx-auto mb-2 mb-lg-0 nav-center-links">
           <li class="nav-item">
             <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('index') }}">
               <i class="fas fa-home me-1"></i> Home
@@ -95,6 +176,9 @@
           </li>
         </ul>
       </div>
+
+      <!-- Desktop Right Balancing Spacer for True Geometric Centering -->
+      <div class="d-none d-lg-block nav-right-spacer" style="width: 140px;" aria-hidden="true"></div>
     </div>
   </nav>
 
@@ -189,8 +273,10 @@
   <!-- Global App JS -->
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
-  <!-- Interactive Equipment Diagram Inspector -->
-  <script src="{{ url_for('static', filename='js/diagram_inspector.js') }}"></script>
+  {% if active_page in ['tensile', 'hardness', 'brinell', 'rockwell', 'impact', 'compression'] %}
+  <!-- Interactive Equipment Diagram Inspector (loaded on experiment pages) -->
+  <script src="{{ url_for('static', filename='js/diagram_inspector.js') }}" defer></script>
+  {% endif %}
 
   <!-- MathJax Dynamic Rendering Controller -->
   <script src="{{ url_for('static', filename='js/math_render.js') }}"></script>

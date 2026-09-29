@@ -349,8 +349,21 @@ def init_db():
     cursor = conn.cursor()
 
     if is_postgres():
-        # PostgreSQL Schema Initialization
-        cursor.execute('''
+        # Fast schema check: if latest table and column are present, skip redundant DDL roundtrips
+        schema_ready = False
+        try:
+            cursor.execute("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'impact_readings')")
+            row = cursor.fetchone()
+            if row and (row[0] is True or row[0] == 1):
+                cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'experiments' AND column_name = 'session_id'")
+                if cursor.fetchone():
+                    schema_ready = True
+        except Exception:
+            schema_ready = False
+
+        if not schema_ready:
+            # PostgreSQL Schema Initialization
+            cursor.execute('''
         CREATE TABLE IF NOT EXISTS materials (
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
@@ -578,8 +591,21 @@ def init_db():
         auto_migrate_sqlite_to_postgres_if_empty(conn)
 
     else:
-        # SQLite Schema Initialization
-        cursor.execute('''
+        # Fast SQLite schema check
+        schema_ready = False
+        try:
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='impact_readings'")
+            if cursor.fetchone():
+                cursor.execute("PRAGMA table_info(experiments)")
+                cols = [col['name'] for col in cursor.fetchall()]
+                if 'session_id' in cols:
+                    schema_ready = True
+        except Exception:
+            schema_ready = False
+
+        if not schema_ready:
+            # SQLite Schema Initialization
+            cursor.execute('''
         CREATE TABLE IF NOT EXISTS materials (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,

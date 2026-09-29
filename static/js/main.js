@@ -124,3 +124,32 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(triggerPlotlyResize, 200);
   });
 });
+
+/**
+ * Asynchronously loads Plotly.js on demand if not already loaded.
+ * Ensures experiment curves render without requiring Plotly to block the Home page.
+ */
+window.ensurePlotly = function(callback) {
+  if (typeof Plotly !== 'undefined') {
+    if (callback) callback();
+    return Promise.resolve();
+  }
+  return new Promise((resolve, reject) => {
+    let script = document.getElementById('plotly-cdn-script');
+    if (!script) {
+      script = document.createElement('script');
+      script.id = 'plotly-cdn-script';
+      script.src = 'https://cdn.plot.ly/plotly-2.30.0.min.js';
+      script.async = true;
+      document.head.appendChild(script);
+    }
+    script.addEventListener('load', () => {
+      if (callback) callback();
+      resolve();
+    });
+    script.addEventListener('error', (err) => {
+      console.error('Failed to load Plotly from CDN', err);
+      if (reject) reject(err);
+    });
+  });
+};
